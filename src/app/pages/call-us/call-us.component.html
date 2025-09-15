@@ -1,0 +1,97 @@
+<div class="container py-5" dir="rtl">
+  <h4 class="text-center text-primary fw-bold">اتصل بنا</h4>
+  <p class="text-center text-muted mb-4 small">
+    نحن على استعداد لمساعدتك والرد على أسئلتك وملاحظاتك
+  </p>
+
+  <div class="row shadow-sm p-4 bg-white rounded">
+    <!-- ✅ معلومات الاتصال -->
+<div class="col-md-4 bg-primary bg-opacity-25 p-4 rounded-start order-md-1 order-2 text-end">
+      <h6 class="fw-bold mb-3 text-muted">معلومات الاتصال</h6>
+      <p>
+        <i class="bi bi-geo-alt-fill text-primary ms-2"></i>
+        1014 N Main St, Miami, United States
+      </p>
+      <p>
+        <i class="bi bi-telephone-fill text-primary ms-2"></i>
+        01028252809
+      </p>
+      <p>
+        <i class="bi bi-envelope-fill text-primary ms-2"></i>
+        example&#64;gmail.com
+      </p>
+
+      <hr />
+      <div class="text-center mt-3">
+        <p class="small text-muted mb-2">تواصل معنا من خلال</p>
+        <div class="d-flex justify-content-center gap-3 fs-5">
+          <i class="bi bi-facebook"></i>
+          <i class="bi bi-instagram"></i>
+          <i class="bi bi-twitter"></i>
+          <i class="bi bi-youtube"></i>
+          <i class="bi bi-whatsapp"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ النموذج -->
+    <div class="col-md-8 order-md-2 order-1">
+      <form (ngSubmit)="submitForm()" #form="ngForm">
+        <h6 class="fw-bold mb-3 text-muted">البيانات الشخصية</h6>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="الاسم الكامل"
+              [(ngModel)]="user.fullName"
+              name="fullName"
+              required
+            />
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="رقم الهاتف"
+              [(ngModel)]="user.phone"
+              name="phone"
+              required
+            />
+          </div>
+
+          <div class="col-12">
+            <input
+              type="email"
+              class="form-control"
+              placeholder="البريد الإلكتروني"
+              [(ngModel)]="user.email"
+              name="email"
+              required
+            />
+          </div>
+        </div>
+
+        <h6 class="fw-bold text-muted mb-2">الملاحظات</h6>
+        <textarea
+          rows="5"
+          class="form-control mb-3"
+          placeholder="اكتب ملاحظاتك"
+          [(ngModel)]="user.notes"
+          name="notes"
+        ></textarea>
+<div *ngIf="message" class="alert text-center small py-2"
+     [ngClass]="{
+       'alert-success': messageType === 'success',
+       'alert-danger': messageType === 'danger'
+     }">
+  {{ message }}
+</div>
+
+        <button type="submit" class="btn btn-success px-5">إرسال</button>
+      </form>
+    </div>
+  </div>
+</div>

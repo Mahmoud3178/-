@@ -1,0 +1,112 @@
+<div class="container-fluid p-0">
+
+  <!-- ✅ Header (مكرر من صفحة مقدم الخدمة) -->
+  <div class="provider-header d-flex justify-content-between align-items-center px-4 py-3">
+    <div class="d-flex align-items-center gap-3">
+      <img [src]="provider.avatar" class="rounded-circle" width="70" height="70" alt="Avatar">
+      <div>
+        <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
+        <small class="text-muted">(التقييمات: {{ provider.reviews }}) {{ provider.rating }} ⭐</small>
+        <div class="badge bg-light text-primary mt-1">{{ provider.orders }} طلب منفذ</div>
+      </div>
+    </div>
+    <div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="toggleStatus" id="onlineSwitch">
+        <label class="form-check-label fw-bold" for="onlineSwitch">
+          {{ toggleStatus ? 'متصل' : 'غير متصل' }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Main Layout -->
+  <div class="row g-0">
+
+    <!-- ✅ Sidebar -->
+<div class="col-lg-3 col-md-4 col-12 bg-light p-3 provider-sidebar">
+  <div class="d-flex flex-column gap-2">
+    <button routerLink="/provider-home" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-person-badge icon-circle"></i> المهام
+    </button>
+    <button routerLink="/wallet" class="sidebar-btn active" routerLinkActive="active">
+      <i class="bi bi-briefcase icon-circle"></i> المحفظة
+    </button>
+    <button routerLink="/appointments" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-calendar icon-circle"></i> المواعيد المتاحة
+    </button>
+    <button routerLink="/chats" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-chat-left-text icon-circle"></i> المحادثات
+    </button>
+    <button routerLink="/ratings" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-star icon-circle"></i> التقييمات
+    </button>
+    <button routerLink="/previos-work" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-tools icon-circle"></i> الأعمال السابقة
+    </button>
+    <button routerLink="/overview" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-eye icon-circle"></i> نظرة عامة
+    </button>
+    <button routerLink="/edit-profile" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-pencil icon-circle"></i> تعديل البيانات
+    </button>
+    <button routerLink="/service-provider-change-pass" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-lock icon-circle"></i> تعديل كلمة المرور
+    </button>
+    <button class="sidebar-btn" (click)="logout()">
+      <i class="bi bi-box-arrow-right icon-circle"></i> تسجيل الخروج
+    </button>
+  </div>
+</div>
+
+
+    <!-- ✅ Wallet Content -->
+    <div class="col-lg-9 col-md-8 p-4">
+
+     <!-- ✅ Actions + Summary -->
+<div class="d-flex justify-content-between flex-wrap align-items-center mb-4">
+
+  <!-- Buttons -->
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-primary d-flex align-items-center gap-1">
+      سحب <i class="bi bi-arrow-up-right"></i>
+    </button>
+    <button class="btn btn-primary d-flex align-items-center gap-1">
+      <i class="bi bi-plus"></i> إضافة
+    </button>
+  </div>
+
+  <!-- Wallet Summary -->
+  <div class="d-flex gap-3 text-center">
+    <div class="wallet-box">
+      <div class="fw-bold">الإجمالي</div>
+      <div class="text-success">{{ wallet.total }} ج.م</div>
+    </div>
+    <div class="wallet-box">
+      <div class="fw-bold">رصيدك</div>
+      <div class="text-dark">{{ wallet.available }} ج.م</div>
+    </div>
+    <div class="wallet-box">
+      <div class="fw-bold">نسبة الموقع</div>
+      <div class="text-danger">{{ wallet.feePercentage }}% الخصم</div>
+    </div>
+  </div>
+</div>
+
+
+      <!-- ✅ Transactions List -->
+      <div class="d-flex flex-column gap-3">
+        <div *ngFor="let tx of wallet.transactions" class="p-3 border rounded d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold">{{ tx.label }}</div>
+            <small class="text-muted">{{ tx.date }}</small>
+          </div>
+          <div [ngClass]="{ 'text-success': tx.amount > 0, 'text-danger': tx.amount < 0 }" class="fw-bold">
+            {{ tx.amount > 0 ? '+' : '' }}{{ tx.amount }} ج.م
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+
+<!-- ✅ register-verify.component.html -->
+<div class="container py-5 d-flex justify-content-center align-items-center">
+  <div class="card shadow border-0 text-center p-4" style="max-width: 350px; width: 100%;">
+    <img src="images/FB_IMG_1754589930346.png" alt="شعار" class="mx-auto mb-3" style="width: 60px; height: 60px; border-radius: 50%;">
+    <h6 class="fw-bold text-success">تفعيل البريد الإلكتروني</h6>
+    <p class="text-muted small">لقد قمنا بإرسال رمز التأكيد إلى بريدك الإلكتروني</p>
+
+    <form [formGroup]="verifyForm" (ngSubmit)="onVerify()" autocomplete="off">
+      <div class="d-flex justify-content-center gap-2 my-3">
+        <input #codeBox maxlength="1" type="text" formControlName="digit1" class="form-control text-center code-box"
+          (input)="onInput($event, 0)" (keydown)="onKeyDown($event, 0)" />
+        <input #codeBox maxlength="1" type="text" formControlName="digit2" class="form-control text-center code-box"
+          (input)="onInput($event, 1)" (keydown)="onKeyDown($event, 1)" />
+        <input #codeBox maxlength="1" type="text" formControlName="digit3" class="form-control text-center code-box"
+          (input)="onInput($event, 2)" (keydown)="onKeyDown($event, 2)" />
+        <input #codeBox maxlength="1" type="text" formControlName="digit4" class="form-control text-center code-box"
+          (input)="onInput($event, 3)" (keydown)="onKeyDown($event, 3)" />
+        <input #codeBox maxlength="1" type="text" formControlName="digit5" class="form-control text-center code-box"
+          (input)="onInput($event, 4)" (keydown)="onKeyDown($event, 4)" />
+        <input #codeBox maxlength="1" type="text" formControlName="digit6" class="form-control text-center code-box"
+          (input)="onInput($event, 5)" (keydown)="onKeyDown($event, 5)" />
+      </div>
+
+      <div class="text-muted small mb-2">00:45</div>
+      <a href="#" class="text-primary small fw-bold mb-3 d-block">إعادة إرسال الرمز</a>
+
+      <button type="submit" class="btn btn-primary w-100">تأكيد</button>
+    </form>
+  </div>
+</div>

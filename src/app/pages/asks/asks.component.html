@@ -1,0 +1,18 @@
+<div class="container py-5 text-center" dir="rtl">
+  <h5 class="fw-bold text-orange mb-4">الأسئلة الشائعة</h5>
+
+  <div class="row g-4">
+    <div class="col-md-6" *ngFor="let faq of faqs; let i = index">
+      <div class="faq-item p-3 rounded bg-light shadow-sm">
+        <div class="d-flex justify-content-between align-items-center cursor-pointer" (click)="toggle(i)">
+          <span class="fw-bold">{{ faq.question }}</span>
+          <i class="bi bi-question-circle-fill text-orange fs-5"></i>
+        </div>
+
+        <div class="answer text-muted mt-2" *ngIf="faq.open">
+          {{ faq.answer }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

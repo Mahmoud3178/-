@@ -1,0 +1,96 @@
+<div class="container-fluid p-0">
+  <!-- ✅ Header -->
+  <div class="provider-header d-flex justify-content-between align-items-center px-4 py-3">
+    <div class="d-flex align-items-center gap-3">
+      <img [src]="provider.avatar" class="rounded-circle" width="70" height="70" alt="Avatar">
+      <div>
+        <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
+        <!-- <small class="text-muted">(التقييمات: {{ provider.reviews }}) {{ provider.rating }} ⭐</small>
+        <div class="badge bg-light text-primary mt-1">{{ provider.orders }} طلب منفذ</div> -->
+      </div>
+    </div>
+    <div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="toggleStatus" id="onlineSwitch">
+        <label class="form-check-label fw-bold" for="onlineSwitch">
+          {{ toggleStatus ? 'متصل' : 'غير متصل' }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Layout -->
+  <div class="row g-0">
+    <!-- Sidebar -->
+<div class="col-lg-3 col-md-4 col-12 bg-light p-3 provider-sidebar">
+  <div class="d-flex flex-column gap-2">
+    <button routerLink="/provider-home" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-person-badge icon-circle"></i> المهام
+    </button>
+    <!-- <button routerLink="/wallet" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-briefcase icon-circle"></i> المحفظة
+    </button>
+    <button routerLink="/appointments" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-calendar icon-circle"></i> المواعيد المتاحة
+    </button>
+    <button routerLink="/chats" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-chat-left-text icon-circle"></i> المحادثات
+    </button> -->
+    <button routerLink="/ratings" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-star icon-circle"></i> التقييمات
+    </button>
+    <button routerLink="/previos-work" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-tools icon-circle"></i> الأعمال السابقة
+    </button>
+    <button routerLink="/overview" class="sidebar-btn active" routerLinkActive="active">
+      <i class="bi bi-eye icon-circle"></i> نظرة عامة
+    </button>
+    <button routerLink="/edit-profile" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-pencil icon-circle"></i> تعديل البيانات
+    </button>
+    <button routerLink="/service-provider-change-pass" class="sidebar-btn" routerLinkActive="active">
+      <i class="bi bi-lock icon-circle"></i> تعديل كلمة المرور
+    </button>
+    <button class="sidebar-btn" (click)="logout()">
+      <i class="bi bi-box-arrow-right icon-circle"></i> تسجيل الخروج
+    </button>
+  </div>
+</div>
+
+<div *ngIf="successMessage" class="alert alert-success text-center">
+  {{ successMessage }}
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger text-center">
+  {{ errorMessage }}
+</div>
+
+   <!-- ✅ Main Content -->
+<div class="col-lg-9 col-md-8 p-4 d-flex flex-column gap-2">
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">القسم</div>
+    <div class="text-primary">{{ overview.section }}</div>
+  </div>
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">سنوات الخبرة</div>
+    <div class="text-primary">{{ overview.experienceYears }}</div>
+  </div>
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">المحافظة</div>
+    <div class="text-primary">{{ overview.city }}</div>
+  </div>
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">مناطق الخدمة</div>
+    <div class="text-primary">{{ overview.areas }}</div>
+  </div>
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">الخدمات المقدمة</div>
+    <div class="text-primary">{{ overview.services }}</div>
+  </div>
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">ساعات العمل</div>
+    <div class="text-primary">{{ overview.workHours }}</div>
+  </div>
+</div>
+
+  </div>
+</div>

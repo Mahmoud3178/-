@@ -1,0 +1,113 @@
+<div class="container-fluid p-0">
+  <!-- Header -->
+  <div class="provider-header d-flex justify-content-between align-items-center px-4 py-3">
+    <div class="d-flex align-items-center gap-3">
+      <!-- هنا استخدم selectedImage أولًا -->
+      <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'" class="rounded-circle" width="70" height="70" alt="Avatar">
+      <div>
+        <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
+        <!-- <small class="text-muted">(التقييمات: {{ provider.reviews }}) {{ provider.rating }} ⭐</small>
+        <div class="badge bg-light text-primary mt-1">{{ provider.orders }} طلب منفذ</div> -->
+      </div>
+    </div>
+    <div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="toggleStatus" id="onlineSwitch">
+        <label class="form-check-label fw-bold" for="onlineSwitch">
+          {{ toggleStatus ? 'متصل' : 'غير متصل' }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-0">
+    <!-- Sidebar -->
+    <div class="col-lg-3 col-md-4 col-12 bg-light p-3 provider-sidebar">
+      <div class="d-flex flex-column gap-2">
+        <button routerLink="/provider-home" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-person-badge icon-circle"></i> المهام
+        </button>
+        <!-- <button routerLink="/wallet" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-briefcase icon-circle"></i> المحفظة
+        </button>
+        <button routerLink="/appointments" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-calendar icon-circle"></i> المواعيد المتاحة
+        </button>
+        <button routerLink="/chats" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-chat-left-text icon-circle"></i> المحادثات
+        </button> -->
+        <button routerLink="/ratings" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-star icon-circle"></i> التقييمات
+        </button>
+        <button routerLink="/previos-work" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-tools icon-circle"></i> الأعمال السابقة
+        </button>
+        <button routerLink="/overview" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-eye icon-circle"></i> نظرة عامة
+        </button>
+        <button routerLink="/edit-profile" class="sidebar-btn active" routerLinkActive="active">
+          <i class="bi bi-pencil icon-circle"></i> تعديل البيانات
+        </button>
+        <button routerLink="/service-provider-change-pass" class="sidebar-btn" routerLinkActive="active">
+          <i class="bi bi-lock icon-circle"></i> تعديل كلمة المرور
+        </button>
+        <button class="sidebar-btn" (click)="logout()">
+          <i class="bi bi-box-arrow-right icon-circle"></i> تسجيل الخروج
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9 col-md-8 p-4">
+      <!-- الصورة الشخصية -->
+      <div class="text-center mb-4">
+        <div class="position-relative d-inline-block">
+          <!-- نفس هنا -->
+          <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'" width="100" height="100" class="rounded-circle border">
+          <button class="delete-avatar-btn" (click)="onDeleteImage()">
+            <i class="bi bi-trash3-fill"></i>
+          </button>
+        </div>
+        <div class="text-primary mt-2 fw-bold cursor-pointer">
+          <label>
+            تغيير الصورة الشخصية
+            <input type="file" accept="image/*" (change)="onChangeImage($event)" hidden>
+          </label>
+        </div>
+      </div>
+
+      <!-- الحقول -->
+      <div class="row g-2 mb-4">
+        <div class="col-md-6"><input type="text" class="form-control" placeholder="الاسم الكامل" [(ngModel)]="profileData.name"></div>
+        <div class="col-md-6"><input type="text" class="form-control" placeholder="القسم" [(ngModel)]="profileData.categoryName"></div>
+        <div class="col-md-6"><input type="email" class="form-control" placeholder="البريد الإلكتروني" [(ngModel)]="profileData.email"></div>
+        <div class="col-md-6"><input type="text" class="form-control" placeholder="رقم الهاتف" [(ngModel)]="profileData.phoneNumber"></div>
+        <div class="col-md-6"><input type="text" class="form-control" placeholder="الرقم القومي" [(ngModel)]="profileData.nationalId"></div>
+        <div class="col-md-6"><input type="text" class="form-control" placeholder="مناطق الخدمة" [(ngModel)]="profileData.serviceAreas"></div>
+        <div class="col-md-6"><input type="number" class="form-control" placeholder="عدد ساعات العمل" [(ngModel)]="profileData.workingHours"></div>
+        <div class="col-md-6"><input type="number" class="form-control" placeholder="سنوات الخبرة" [(ngModel)]="profileData.yearsOfExperience"></div>
+        <div class="col-md-6"><input type="text" class="form-control" placeholder="اسم البنك" [(ngModel)]="profileData.bankName"></div>
+        <div class="col-md-6"><input type="text" class="form-control" placeholder="رقم الحساب البنكي" [(ngModel)]="profileData.bankAccountNumber"></div>
+        <div class="col-12"><input type="text" class="form-control" placeholder="الخدمات المقدمة" [(ngModel)]="profileData.nameServices"></div>
+      </div>
+
+  <!-- Toast-style Alert -->
+<div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+    {{ successMessage }}
+    <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
+  </div>
+</div>
+
+      <!-- زر الحفظ -->
+      <div class="text-center">
+        <button class="btn btn-primary px-5" (click)="onSave()">حفظ</button>
+      </div>
+    </div>
+  </div>
+</div>

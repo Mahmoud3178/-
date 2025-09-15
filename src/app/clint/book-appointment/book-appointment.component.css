@@ -1,0 +1,47 @@
+/* Header Background */
+.provider-header {
+  background: linear-gradient(to bottom, #e6f4ee, #b5d6cb);
+  border-bottom: 1px solid #ccc;
+}
+
+.text-brown {
+  color: #6b3c1f;
+}
+
+.badge i {
+  margin-left: 5px;
+}
+
+/* Tabs Styling */
+.tab-btn {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  text-align: right;
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tab-btn i {
+  margin-left: 8px;
+}
+
+.tab-btn.active-tab {
+  background-color: #f4ae7d;
+  color: white;
+  border: none;
+}
+.tab-btn {
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  text-align: right;
+}
+
+.tab-btn.active-tab {
+  background-color: #fdbd8c;
+  border-color: #fdbd8c;
+  color: #000;
+  font-weight: bold;
+}

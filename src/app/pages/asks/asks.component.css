@@ -1,0 +1,20 @@
+.text-orange {
+  color: #d35400;
+}
+
+.faq-item {
+  transition: all 0.3s ease-in-out;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.answer {
+  text-align: right;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #555;
+}

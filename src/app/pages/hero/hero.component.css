@@ -1,0 +1,18 @@
+/* الأزرق الأساسي */
+.text-primary-custom {
+  color: #0156b8 !important;
+}
+
+/* زر أزرق مخصص */
+.btn-primary-custom {
+  background-color: #0156b8 !important;
+  border-color: #0156b8 !important;
+  color: #fff !important;
+  transition: 0.3s;
+}
+
+.btn-primary-custom:hover {
+  background-color: #014a9e !important;
+  border-color: #014a9e !important;
+  color: #fff !important;
+}

@@ -1,0 +1,21 @@
+.text-orange {
+  color: #e67e22;
+}
+
+.text-brown {
+  color: #6e2c00;
+}
+
+.summary-card {
+  background-color: #f0f0f0; /* لون رمادي فاتح */
+}
+
+.card {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.form-control,
+.form-select {
+  font-size: 14px;
+}

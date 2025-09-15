@@ -1,0 +1,29 @@
+<div class="container py-5 d-flex justify-content-center align-items-center">
+  <div class="card shadow border-0 text-center p-4" style="max-width: 350px; width: 100%;">
+    <img src="images/FB_IMG_1754589930346.png" alt="شعار" class="mx-auto mb-3" style="width: 60px; height: 60px; border-radius: 50%;">
+    <h6 class="fw-bold text-primary">نسيت كلمة المرور؟</h6>
+    <p class="text-muted small">لقد قمنا بإرسال رمز التأكيد إلى بريدك الإلكتروني</p>
+
+    <form [formGroup]="verifyForm" (ngSubmit)="onVerify()" autocomplete="off">
+      <div class="d-flex justify-content-center gap-2 my-3 flex-row-reverse">
+        <ng-container *ngFor="let digit of [0,1,2,3,4,5]; let i = index">
+          <input
+            #codeBox
+            maxlength="1"
+            type="text"
+            [formControlName]="'digit' + (i + 1)"
+            class="form-control text-center code-box"
+            (input)="onInput($event, i)"
+            (keydown)="onKeyDown($event, i)"
+            style="width: 40px; height: 40px"
+          />
+        </ng-container>
+      </div>
+
+      <div class="text-muted small mb-2">00:45</div>
+      <a href="#" class="text-primary small fw-bold mb-3 d-block">إعادة إرسال الرمز</a>
+
+      <button type="submit" class="btn btn-primary w-100">تأكيد</button>
+    </form>
+  </div>
+</div>

@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa; /* خلفية رمادية فاتحة زي Bootstrap */
+  direction: rtl;
+  font-family: 'Cairo', sans-serif; /* أو أي خط عربي */
+  scroll-behavior: smooth;
+
+}
+a{
+  cursor: pointer;
+}
+
+/* تأكد أن app-root يملى الصفحة */
+app-root {
+  display: block;
+  min-height: 100vh;
+  background-color: inherit;
+}
+

@@ -1,0 +1,121 @@
+/* ✅ ألوان موحدة أزرق وأبيض */
+
+/* الهيدر */
+.provider-header {
+  background: linear-gradient(to bottom, #f0f6fb, #c7ddf5);
+  border-radius: 0 0 12px 12px;
+  color: #333;
+}
+
+/* السايدبار */
+.provider-sidebar {
+  direction: rtl;
+}
+
+/* أزرار السايدبار */
+.sidebar-btn {
+  background-color: #f5f5f5;
+  border: none;
+  text-align: right;
+  padding: 10px 12px;
+  font-weight: 500;
+  color: #555;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.sidebar-btn:hover {
+  background-color: #e4e4e4;
+}
+
+.sidebar-btn.active {
+  background-color: #0156b8;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* الأيقونة الدائرية */
+.icon-circle {
+  background-color: white;
+  color: #0156b8;
+  padding: 6px;
+  border-radius: 50%;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* البطاقة الرئيسية */
+.card {
+  border-radius: 12px;
+}
+
+/* زر أزرق */
+.btn-primary-custom {
+  background-color: #0156b8;
+  color: #fff;
+  border: none;
+}
+.btn-primary-custom:hover {
+  background-color: #014a9b;
+  color: #fff;
+}
+
+/* زر حدود أزرق */
+.btn-outline-primary-custom {
+  border: 1px solid #0156b8;
+  color: #0156b8;
+}
+.btn-outline-primary-custom:hover {
+  background-color: #0156b8;
+  color: #fff;
+}
+
+/* حدود input */
+.border-primary-custom {
+  border: 1px solid #0156b8 !important;
+}
+
+/* الهواتف المحمولة */
+@media (max-width: 768px) {
+  .provider-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .provider-header img {
+    margin-bottom: 10px;
+  }
+
+  .provider-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .sidebar-btn {
+    white-space: nowrap;
+  }
+}
+.provider-sidebar {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.sidebar-btn {
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
+.sidebar-btn:focus, .sidebar-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+

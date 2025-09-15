@@ -1,0 +1,22 @@
+.text-orange {
+  color: #d35400;
+}
+
+.bg-light-green {
+  background-color: #e8f5e9;
+}
+
+input.form-control,
+textarea.form-control {
+  border: 1px solid #ccc;
+}
+
+input:focus, textarea:focus {
+  border-color: #431cec;
+  box-shadow: none;
+}
+
+.btn-success {
+  background-color: #1f00a7;
+  border-color: #320bdf;
+}

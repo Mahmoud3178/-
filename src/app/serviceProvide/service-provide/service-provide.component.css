@@ -1,0 +1,32 @@
+.header-gradient {
+  background: linear-gradient(to bottom, #d7f0e4, white);
+}
+
+.text-orange {
+  color: #ec6c12;
+}
+
+.profile-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px dashed #198754;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-rounded {
+  border-radius: 10px;
+  border: 1px solid #a1c9b7;
+  padding: 10px 15px;
+}
+
+.input-rounded:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}

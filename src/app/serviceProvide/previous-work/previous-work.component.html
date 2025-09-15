@@ -1,0 +1,111 @@
+<div class="container-fluid p-0">
+  <!-- Header -->
+  <div class="provider-header d-flex justify-content-between align-items-center px-4 py-3">
+    <div class="d-flex align-items-center gap-3">
+      <img [src]="provider.avatar" class="rounded-circle" width="70" height="70" alt="Avatar">
+      <div>
+        <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
+        <!-- <small class="text-muted">(التقييمات: {{ provider.reviews }}) {{ provider.rating }} ⭐</small>
+        <div class="badge bg-light text-primary mt-1">{{ provider.orders }} طلب منفذ</div> -->
+      </div>
+    </div>
+    <div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="toggleStatus" id="onlineSwitch">
+        <label class="form-check-label fw-bold" for="onlineSwitch">
+          {{ toggleStatus ? 'متصل' : 'غير متصل' }}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="row g-0">
+    <!-- Sidebar -->
+    <div class="col-lg-3 col-md-4 bg-light p-3 provider-sidebar">
+      <div class="d-flex flex-column gap-2">
+       <button class="sidebar-btn" routerLink="/provider-home"><i class="bi bi-person-badge icon-circle"></i> المهام</button>
+        <!-- <button routerLink="/wallet" class="sidebar-btn"><i class="bi bi-briefcase icon-circle"></i> المحفظة</button>
+        <button routerLink="/appointments" class="sidebar-btn"><i class="bi bi-calendar icon-circle"></i> المواعيد المتاحة</button>
+        <button routerLink="/chats" class="sidebar-btn"><i class="bi bi-chat-left-text icon-circle"></i> المحادثات</button> -->
+        <button routerLink="/ratings" class="sidebar-btn"><i class="bi bi-star icon-circle"></i> التقييمات</button>
+        <button routerLink="/previos-work" class="sidebar-btn active"><i class="bi bi-tools icon-circle"></i> الأعمال السابقة</button>
+        <button routerLink="/overview" class="sidebar-btn"><i class="bi bi-eye icon-circle"></i> نظرة عامة</button>
+        <button routerLink="/edit-profile" class="sidebar-btn"><i class="bi bi-pencil icon-circle"></i> تعديل البيانات</button>
+        <button routerLink="/service-provider-change-pass" class="sidebar-btn"><i class="bi bi-lock icon-circle"></i> تعديل كلمة المرور</button>
+                 <button class="sidebar-btn" (click)="logout()">
+  <i class="bi bi-box-arrow-right icon-circle"></i> تسجيل الخروج
+</button>
+      </div>
+    </div>
+
+
+
+<!-- Toast-style Alert -->
+<div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+    {{ successMessage }}
+    <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
+  </div>
+</div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9 col-md-8 p-4">
+      <!-- Add New Work -->
+      <div class="mb-4 d-flex flex-column gap-2">
+        <input class="form-control" placeholder="أدخل عنوان الخدمة" [(ngModel)]="newWork.title">
+        <textarea class="form-control" placeholder="أدخل وصف الخدمة" rows="2" [(ngModel)]="newWork.description"></textarea>
+
+        <div class="d-flex gap-3">
+          <div class="upload-box text-center position-relative">
+            <label class="w-100 h-100 cursor-pointer m-0">
+              <input type="file" hidden accept="image/*" (change)="onImageSelected($event, 'before')">
+              <div class="badge bg-warning text-white position-absolute">قبل</div>
+              <ng-container *ngIf="beforePreview; else beforePlaceholder">
+                <img [src]="beforePreview" class="w-100 h-100 object-fit-cover rounded" />
+              </ng-container>
+              <ng-template #beforePlaceholder>
+                <i class="bi bi-plus fs-1 text-muted"></i>
+              </ng-template>
+            </label>
+          </div>
+
+          <div class="upload-box text-center position-relative">
+            <label class="w-100 h-100 cursor-pointer m-0">
+              <input type="file" hidden accept="image/*" (change)="onImageSelected($event, 'after')">
+              <div class="badge bg-warning text-white position-absolute">بعد</div>
+              <ng-container *ngIf="afterPreview; else afterPlaceholder">
+                <img [src]="afterPreview" class="w-100 h-100 object-fit-cover rounded" />
+              </ng-container>
+              <ng-template #afterPlaceholder>
+                <i class="bi bi-plus fs-1 text-muted"></i>
+              </ng-template>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn-primary mt-3 align-self-start" (click)="submitWork()">حفظ</button>
+      </div>
+
+      <!-- Works List -->
+      <div *ngFor="let work of works" class="mb-4">
+        <div class="fw-bold">{{ work.description }}</div>
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="work-image-wrapper">
+            <div class="badge bg-warning text-white position-absolute">قبل</div>
+            <img [src]="work.imageBeforeUrl" class="work-image" alt="قبل">
+          </div>
+          <div class="work-image-wrapper">
+            <div class="badge bg-warning text-white position-absolute">بعد</div>
+            <img [src]="work.imageAfterUrl" class="work-image" alt="بعد">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,130 @@
+<ng-container *ngIf="ready">
+  <header dir="rtl" class="bg-light shadow-sm">
+    <!-- ✅ Top bar -->
+    <div class="bg-primary-subtle py-1">
+      <div class="w-90-custom d-flex justify-content-between align-items-center mx-auto">
+        <ng-container *ngIf="(userData$ | async) as user">
+          <ng-container *ngIf="!(isLoggedIn$ | async) || user.role !== 'provider'; else placeholder">
+            <a routerLink="/dashboard" class="btn-outline-primary btn-sm d-flex align-items-center gap-1 fw-bold">
+            </a>
+          </ng-container>
+          <ng-template #placeholder>
+            <div style="width: 130px;"></div>
+          </ng-template>
+
+          <!-- اللغة ووسائل التواصل -->
+          <div class="d-flex align-items-center gap-3">
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- ✅ Main Navbar -->
+    <nav class="navbar navbar-expand-lg py-3">
+      <div class="w-90-custom mx-auto position-relative d-flex align-items-center justify-content-between">
+        <!-- ✅ جرس الإشعارات -->
+        <ng-container *ngIf="(userData$ | async)?.role === 'provider'">
+          <div class="position-absolute bell-left">
+            <a routerLink="/provider-notifications" class="btn btn-outline-secondary">
+              <i class="bi bi-bell fs-5"></i>
+            </a>
+          </div>
+        </ng-container>
+
+        <!-- ✅ اللوجو -->
+        <a class="navbar-brand" [routerLink]="(userData$ | async)?.role === 'provider' ? '/provider-home' : '/hero'">
+          <img src="images/FB_IMG_1754589930346.png" alt="logo" style="height: 60px; max-width: 60px; border-radius: 50%;">
+        </a>
+
+        <!-- ✅ زر القائمة (يظهر فقط في الشاشات الصغيرة) -->
+        <button class="menu-btn d-lg-none" (click)="showMobileMenu = true">
+          <i class="bi bi-list fs-3 text-dark"></i>
+        </button>
+
+        <!-- ✅ المحتوى القابل للطي -->
+        <div [ngClass]="{'collapse': isNavbarCollapsed, 'navbar-collapse': true}" class="justify-content-between mt-3 mt-lg-0" id="mainNavbar">
+          <!-- ✅ روابط المستخدم العادي -->
+          <ul *ngIf="(userData$ | async)?.role !== 'provider'" class="navbar-nav mb-2 mb-lg-0 flex-grow-1 justify-content-center">
+            <li class="nav-item px-2"><a class="nav-link" href="#hero">الرئيسية</a></li>
+            <li class="nav-item px-2"><a class="nav-link" href="#offers">العروض</a></li>
+            <li class="nav-item px-2"><a class="nav-link" href="#features">مميزاتنا</a></li>
+            <li class="nav-item px-2"><a class="nav-link" href="#srvices">الخدمات</a></li>
+            <li class="nav-item px-2"><a class="nav-link" routerLink="/call-us">اتصل بنا</a></li>
+            <li class="nav-item px-2" *ngIf="!(isLoggedIn$ | async)">
+              <a class="nav-link" routerLink="/login">انضم إلينا</a>
+            </li>
+          </ul>
+
+          <!-- ✅ أزرار التسجيل والدخول أو روابط العميل -->
+          <div class="d-flex align-items-center gap-4" *ngIf="(userData$ | async)?.role !== 'provider'">
+            <ng-container *ngIf="!(isLoggedIn$ | async); else clientLinks">
+              <button routerLink="/register" class="btn btn-primary fw-bold px-5 py-1">إنشاء حساب</button>
+              <button routerLink="/login" class="btn btn-outline-warning fw-bold px-5 py-1">تسجيل الدخول</button>
+            </ng-container>
+
+            <ng-template #clientLinks>
+              <a routerLink="/order" class="text-center d-flex flex-column align-items-center text-decoration-none">
+                <i class="bi bi-basket fs-5 text-primary"></i><small class="text-dark">الطلبات</small>
+              </a>
+              <a routerLink="/notifications" class="text-center d-flex flex-column align-items-center text-decoration-none">
+                <i class="bi bi-bell fs-5 text-primary"></i><small class="text-dark">الإشعارات</small>
+              </a>
+              <ng-container *ngIf="(userData$ | async) as user">
+                <div routerLink="/profile" class="text-center d-flex flex-column align-items-center">
+                  <img [src]="user.image" alt="User" class="rounded-circle" style="width: 36px; height: 36px;" />
+                  <small>{{ user.name }}</small>
+                </div>
+              </ng-container>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ✅ قائمة الموبايل فقط -->
+  <div
+    class="mobile-menu d-lg-none"
+    *ngIf="showMobileMenu && (userData$ | async) as user"
+    [hidden]="user.role === 'provider'"
+  >
+    <div class="mobile-menu-header d-flex justify-content-between align-items-center">
+      <button class="btn-close-menu" (click)="showMobileMenu = false">
+        <i class="bi bi-x-lg fs-4 text-white"></i>
+      </button>
+      <img src="images/FB_IMG_1754589930346.png" alt="logo" style="height: 50px; height: 60px; border-radius: 50%;" />
+    </div>
+
+    <ul class="mobile-nav mt-4">
+      <li><a href="#hero">الرئيسية</a></li>
+      <li><a href="#offers">العروض</a></li>
+      <li><a href="#features">مميزاتنا</a></li>
+      <li><a href="#srvices">الخدمات</a></li>
+      <li><a routerLink="/call-us">اتصل بنا</a></li>
+
+      <!-- ✅ فقط لو مش مسجل دخول -->
+      <li *ngIf="!(isLoggedIn$ | async)">
+        <a routerLink="/login">انضم إلينا</a>
+      </li>
+
+      <!-- ✅ روابط العميل -->
+      <ng-container *ngIf="user.role === 'client'">
+        <li><a routerLink="/order">الطلبات</a></li>
+        <li><a routerLink="/notifications">الإشعارات</a></li>
+        <li><a routerLink="/profile">الملف الشخصي</a></li>
+      </ng-container>
+
+      <!-- ✅ روابط مقدم الخدمة -->
+      <ng-container *ngIf="user.role === 'provider'">
+        <li><a routerLink="/provider-home">لوحة التحكم</a></li>
+        <li><a routerLink="/provider-notifications">الإشعارات</a></li>
+      </ng-container>
+    </ul>
+
+    <!-- ✅ أزرار التسجيل فقط لغير المسجلين -->
+    <div class="mobile-actions mt-4" *ngIf="!(isLoggedIn$ | async)">
+      <button routerLink="/register" class="btn btn-primary w-100 mb-2">إنشاء حساب</button>
+      <button routerLink="/login" class="btn btn-outline-warning w-100">تسجيل الدخول</button>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,30 @@
+<div class="chat-container p-4 border rounded bg-light shadow-sm">
+  <div class="chat-header mb-3 d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">المحادثة</h5>
+    <button class="btn btn-sm btn-outline-secondary" (click)="goBack()">رجوع</button>
+  </div>
+
+  <div class="chat-box mb-3" style="height: 300px; overflow-y: auto;" #chatBox>
+    <div *ngFor="let message of messages" [ngClass]="{'text-end': message.senderId === currentUserId, 'text-start': message.senderId !== currentUserId}">
+      <div class="d-inline-block p-2 m-1 rounded" [ngClass]="{
+          'bg-success text-white': message.senderId === currentUserId,
+          'bg-white border': message.senderId !== currentUserId
+        }">
+        {{ message.text }}
+        <div class="small text-muted mt-1">{{ message.timestamp | date:'shortTime' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <form class="d-flex" (ngSubmit)="sendMessage()" #chatForm="ngForm">
+    <input
+      type="text"
+      class="form-control me-2"
+      [(ngModel)]="messageText"
+      name="message"
+      placeholder="اكتب رسالتك هنا..."
+      required
+    />
+    <button class="btn btn-primary" type="submit" [disabled]="!messageText.trim()">إرسال</button>
+  </form>
+</div>

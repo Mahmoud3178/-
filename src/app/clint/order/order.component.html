@@ -1,0 +1,85 @@
+<div class="container py-4" dir="rtl">
+  <h5 class="text-center text-primary fw-bold mb-4">الطلبات</h5>
+
+  <!-- ✅ شريط الفلتر -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+<div class="dropdown">
+  <button class="btn btn-primary dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+    <i class="bi bi-filter me-1"></i> {{ selectedStatusLabel }}
+  </button>
+  <ul class="dropdown-menu text-end">
+    <li><a class="dropdown-item" (click)="changeStatusFilter(1, 'الطلبات الجديدة')">الطلبات الجديدة</a></li>
+    <li><a class="dropdown-item" (click)="changeStatusFilter(2, 'العامل في الطريق')">العامل في الطريق</a></li>
+    <li><a class="dropdown-item" (click)="changeStatusFilter(3, 'العامل وصل')">العامل وصل</a></li>
+    <li><a class="dropdown-item" (click)="changeStatusFilter(4, 'قيد التنفيذ')">العامل قيد التنفيذ</a></li>
+    <li><a class="dropdown-item" (click)="changeStatusFilter(5, 'اكتمل الطلب')">العامل اكمل الطلب</a></li>
+    <li><a class="dropdown-item" (click)="changeStatusFilter(6, 'الطلبات الملغية')">الطلبات الملغية</a></li>
+  </ul>
+</div>
+
+  </div>
+
+   <!-- Toast-style Alert -->
+    <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        {{ successMessage }}
+        <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
+      </div>
+    </div>
+
+  <!-- ✅ عرض الطلبات -->
+  <div *ngFor="let order of orders" class="rounded shadow-sm border d-flex p-4 bg-white justify-content-between flex-wrap mb-4">
+    <!-- الحالة -->
+    <div class="col-md-5 mb-3 mb-md-0 border-end px-4">
+      <h6 class="fw-bold text-center mb-3">حالة الطلب</h6>
+      <ul class="list-unstyled">
+        <li *ngFor="let step of statusSteps; let i = index" [class.text-success]="i <= (order.status - 1)">
+          <i class="bi bi-check-circle me-2"></i> {{ step }}
+        </li>
+      </ul>
+<div class="text-center mt-3" *ngIf="order.status === 1">
+  <button class="btn btn-outline-danger btn-sm" (click)="cancelOrder(order.id)">إلغاء</button>
+</div>
+
+
+    </div>
+
+    <!-- التفاصيل -->
+    <div class="col-md-6 px-4">
+      <h6 class="fw-bold mb-3">تفاصيل الطلب</h6>
+      <p><strong>رقم الطلب:</strong> {{ order.id }}</p>
+      <p><strong>موعد الزيارة:</strong> {{ order.visitDate | date:'dd/MM/yyyy' }}</p>
+      <p><strong>الوقت:</strong> {{ order.time }}</p>
+      <p><strong>القسم:</strong> {{ order.departmentName }}</p>
+      <p><strong>النوع:</strong> {{ order.serviceType }}</p>
+       <!-- ✅ عرض التقييم فقط للحالة الأخيرة -->
+    <div class="text-center mt-3" *ngIf="order.status === 5 && !order.isRated">
+      <h6 class="mb-2">قيّم الفني:</h6>
+      <div class="mb-2">
+        <ng-container *ngFor="let star of [1,2,3,4,5]">
+          <i class="bi"
+            [ngClass]="{
+              'bi-star-fill text-warning': star <= order.tempRating,
+              'bi-star text-muted': star > order.tempRating
+            }"
+            (click)="setRating(order, star)"
+            style="cursor: pointer;"></i>
+        </ng-container>
+      </div>
+      <textarea [(ngModel)]="order.tempComment" class="form-control mb-2" rows="2" placeholder="اكتب تعليقك هنا"></textarea>
+      <button class="btn btn-sm btn-primary" (click)="submitRating(order)">إرسال التقييم</button>
+    </div>
+
+    <!-- ✅ شكراً بعد التقييم -->
+    <div class="text-center mt-3" *ngIf="order.status === 5 && order.isRated">
+      <p class="text-success">تم إرسال التقييم بنجاح. شكراً لك!</p>
+    </div>
+
+    </div>
+  </div>
+</div>

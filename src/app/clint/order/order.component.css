@@ -1,0 +1,28 @@
+.text-orange {
+  color: #d35400;
+}
+
+.btn-success {
+  background-color: #218c4d;
+  border-color: #218c4d;
+}
+
+.shadow-sm {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.list-unstyled li {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.list-unstyled li i {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.list-unstyled li.text-success i {
+  color: #218c4d;
+}

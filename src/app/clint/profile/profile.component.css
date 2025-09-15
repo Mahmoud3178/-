@@ -1,0 +1,61 @@
+/* ✅ profile.component.css */
+
+/* اللون الأساسي */
+.text-primary-custom {
+  color: #0156b8 !important;
+}
+
+.bg-primary-custom {
+  background-color: #0156b8 !important;
+}
+
+.btn-primary-custom {
+  background-color: #0156b8;
+  color: #fff;
+  border: none;
+}
+.btn-primary-custom:hover {
+  background-color: #014a9b;
+  color: #fff;
+}
+
+/* زر التبويب النشط */
+.btn-outline-secondary.active {
+  background-color: #0156b8;
+  color: #fff;
+  border-color: #0156b8;
+}
+
+.provider-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+.chat-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #fefefe;
+}
+
+/* الصورة الدائرية */
+.profile-img {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* أيقونة الحذف */
+.delete-icon {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 35px;
+  height: 35px;
+  background-color: #0156b8;
+  font-size: 1.2rem;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}

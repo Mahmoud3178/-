@@ -1,0 +1,19 @@
+<div class="container py-4" dir="rtl">
+  <h4 class="text-primary fw-bold text-center mb-4">الشروط والأحكام</h4>
+
+  <div *ngFor="let section of sections" class="mb-4">
+    <h6 class="fw-bold d-flex align-items-center text-primary-custom">
+      <span class="me-2">
+        <!-- درع بعلامة صح -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#e67e22" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+          <path d="M10.5 16l-3.5-3.5 1.41-1.41L10.5 13.67l5.59-5.59L17.5 9.5z" fill="#fff"/>
+        </svg>
+      </span>
+      {{ section.title }}
+    </h6>
+    <ul class="ps-3 mt-2">
+      <li *ngFor="let item of section.items" class="text-muted mb-1">{{ item }}</li>
+    </ul>
+  </div>
+</div>

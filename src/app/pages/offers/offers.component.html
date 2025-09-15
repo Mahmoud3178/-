@@ -1,0 +1,40 @@
+<div class="container py-5 text-center" style="background: rgba(1, 86, 184, 0.03); border-radius: 2rem;">
+  <h2 class="fw-bold text-primary-custom mb-4">العروض والخصومات</h2>
+
+  <div class="bg-white bg-opacity-75 p-4 rounded-4 position-relative">
+
+    <!-- العنوان + الأيقونة -->
+    <div class="mb-4 d-flex align-items-center justify-content-center gap-2">
+      <img src="images/offer-icon.png" alt="كهرباء" style="width: 28px;">
+      <h5 class="fw-bold text-primary-custom m-0">كهرباء</h5>
+    </div>
+
+    <!-- ✅ العروض -->
+    <div class="row g-4">
+      <div class="col-12 col-md-6 col-lg-3" *ngFor="let offer of visibleOffers">
+        <div class="card h-100 shadow-sm rounded-4 offer-card">
+          <div class="position-relative">
+            <img [src]="offer.img" class="card-img-top" alt="عرض" />
+            <span *ngIf="offer.code" class="discount-code-badge">
+              كود الخصم {{ offer.code }}
+            </span>
+          </div>
+          <div class="card-body offer-text">
+            {{ offer.text }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ أزرار التقليب -->
+    <div class="d-flex justify-content-center mt-4 gap-3">
+      <div (click)="slideRight()" class="nav-circle">
+        <i class="bi bi-chevron-right text-white"></i>
+      </div>
+      <div (click)="slideLeft()" class="nav-circle">
+        <i class="bi bi-chevron-left text-white"></i>
+      </div>
+    </div>
+
+  </div>
+</div>

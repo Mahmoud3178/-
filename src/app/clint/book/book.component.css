@@ -1,0 +1,16 @@
+/* تأكّد إن العنصر اللي فيه الخريطة له ارتفاع واضح */
+#map {
+  height: 300px;
+  width: 100%;
+}
+
+/* إذا المودال مخفي ثم يظهر، تأكد أن الخريطة تعيد حساب الحجم */
+.modal .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* تنسيق بسيط للصور، الحقول */
+.border-dashed {
+  border-style: dashed !important;
+}

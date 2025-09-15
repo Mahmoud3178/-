@@ -1,0 +1,150 @@
+.w-90-custom {
+  width: 90%;
+  max-width: 1440px;
+}
+
+.bell-left {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+[dir="rtl"] .bell-left {
+  left: 0 !important;
+  right: auto !important;
+}
+
+.nav-link {
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.nav-link:hover {
+  color: #0156b8 !important;
+}
+
+.nav-link.active {
+  color: #0156b8 !important;
+  font-weight: bold;
+}
+
+/* أزرار */
+.btn-outline-primary {
+  color: #0156b8 !important;
+  border-color: #0156b8 !important;
+}
+.btn-outline-primary:hover {
+  background-color: #0156b8 !important;
+  color: white !important;
+  border-color: #0156b8 !important;
+}
+
+.btn-primary {
+  background-color: #0156b8 !important;
+  border-color: #0156b8 !important;
+  color: white !important;
+}
+.btn-primary:hover {
+  background-color: #014a9e !important;
+  border-color: #014a9e !important;
+}
+
+/* أيقونات */
+.text-primary {
+  color: #0156b8 !important;
+}
+
+/* قائمة الموبايل */
+.menu-btn {
+  background: none;
+  border: none;
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+  z-index: 9999;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+.mobile-menu-header {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1rem;
+}
+
+.btn-close-menu {
+  background-color: #0156b8 !important;
+  border: none;
+  padding: 0.4rem 0.7rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-close-menu i {
+  color: #fff !important;
+}
+
+.mobile-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mobile-nav li {
+  margin-bottom: 1.2rem;
+}
+
+.mobile-nav a {
+  text-decoration: none;
+  color: #000;
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: block;
+}
+
+.mobile-actions {
+  border-top: 1px solid #ddd;
+  padding-top: 1.5rem;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 991px) {
+  .navbar-collapse .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar-collapse .d-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .bell-left {
+    position: static !important;
+    transform: none !important;
+    margin-bottom: 1rem;
+  }
+
+  .navbar-toggler {
+    margin-right: 0;
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,38 @@
+.service-card {
+  background-color: #f3f3fd;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  height: 590px; /* ✅ كارت طويل */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.service-card:hover .service-img {
+  transform: scale(1.05);
+}
+
+.service-img-wrapper {
+  height: 100%; /* ✅ الصورة تاخد النسبة الأكبر */
+  position: relative;
+  overflow: hidden;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.service-img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+  display: block;
+}
+
+.card-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

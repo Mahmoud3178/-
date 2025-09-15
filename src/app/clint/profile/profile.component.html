@@ -1,0 +1,125 @@
+<!-- ✅ profile.component.html -->
+<div class="text-center my-4">
+  <h4 class="text-primary-custom fw-bold">الملف الشخصي</h4>
+
+   <!-- Toast-style Alert -->
+    <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        {{ successMessage }}
+        <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
+      </div>
+    </div>
+
+  <div class="position-relative d-inline-block profile-pic-wrapper">
+    <img
+      [src]="userImage"
+      class="rounded-circle profile-img"
+      alt="User Image"
+    />
+    <span
+      class="delete-icon bg-primary-custom text-white rounded-circle d-flex align-items-center justify-content-center"
+      (click)="onDeleteImage()">
+      <i class="bi bi-trash"></i>
+    </span>
+  </div>
+
+  <p class="text-primary-custom mt-2 text-decoration-underline" style="cursor: pointer;" (click)="fileInput.click()">
+    تغيير الصورة الشخصية
+  </p>
+  <input type="file" accept="image/*" #fileInput hidden (change)="onChangeImage($event)">
+</div>
+
+<hr />
+
+<div class="row container mx-auto">
+  <div class="col-md-3">
+    <div class="d-flex flex-column gap-2">
+      <button class="btn btn-outline-secondary" [class.active]="selectedTab === 'info'" (click)="setTab('info')">
+        <i class="bi bi-person"></i> تعديل البيانات
+      </button>
+      <button class="btn btn-outline-secondary" [class.active]="selectedTab === 'password'" (click)="setTab('password')">
+        <i class="bi bi-shield-lock"></i> تغيير كلمة المرور
+      </button>
+      <!-- <button class="btn btn-outline-secondary" [class.active]="selectedTab === 'favorites'" (click)="setTab('favorites')">
+        <i class="bi bi-heart"></i> المفضلة
+      </button>
+      <button class="btn btn-outline-secondary" [class.active]="selectedTab === 'conversations'" (click)="setTab('conversations')">
+        <i class="bi bi-chat-dots"></i> المحادثات
+      </button> -->
+      <button class="btn btn-outline-secondary text-danger" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> تسجيل الخروج
+      </button>
+    </div>
+  </div>
+
+  <div class="col-md-9">
+    <div [ngSwitch]="selectedTab">
+
+      <!-- ✅ تعديل البيانات -->
+      <ng-container *ngSwitchCase="'info'">
+        <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()">
+          <input type="text" class="form-control mb-2" formControlName="name" placeholder="الاسم الكامل" />
+          <input type="text" class="form-control mb-2" formControlName="phoneNumber" placeholder="رقم الهاتف" />
+          <input type="email" class="form-control mb-2" formControlName="email" placeholder="البريد الإلكتروني" />
+          <button class="btn btn-primary-custom mt-2" type="submit" [disabled]="profileForm.invalid">حفظ</button>
+        </form>
+      </ng-container>
+
+      <!-- ✅ تغيير كلمة المرور -->
+      <ng-container *ngSwitchCase="'password'">
+        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+          <input type="password" class="form-control mb-2" formControlName="currentPassword" placeholder="كلمة المرور الحالية" />
+          <input type="password" class="form-control mb-2" formControlName="newPassword" placeholder="كلمة المرور الجديدة" />
+          <button class="btn btn-primary-custom mt-2" type="submit" [disabled]="passwordForm.invalid">تغيير كلمة المرور</button>
+        </form>
+      </ng-container>
+
+      <!-- ✅ المفضلة -->
+      <ng-container *ngSwitchCase="'favorites'">
+        <div class="provider-card mb-3" *ngFor="let fav of favorites">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-end">
+              <h6 class="fw-bold mb-0">{{ fav.name }}</h6>
+              <div class="text-warning small">
+                <i class="bi bi-star-fill" *ngFor="let s of [].constructor(fav.rating)"></i>
+              </div>
+              <span class="badge bg-secondary small mt-1">{{ fav.orders }} طلب منفذ</span>
+            </div>
+            <img [src]="fav.image" class="rounded-circle" width="50" height="50" />
+          </div>
+          <button class="btn btn-outline-primary-custom w-100 mt-2" routerLink="/book-appointment">عرض الملف</button>
+        </div>
+      </ng-container>
+
+      <!-- ✅ المحادثات -->
+      <ng-container *ngSwitchCase="'conversations'">
+        <div *ngFor="let conv of conversations" class="border rounded p-3 shadow-sm mb-3">
+          <div class="d-flex justify-content-between">
+            <span class="badge bg-light text-primary-custom px-3 py-2">{{ conv.time }}</span>
+            <span class="text-muted">رقم الطلب: {{ conv.orderId }}</span>
+          </div>
+
+          <div class="mt-3 d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1 fw-bold">{{ conv.name }}</h6>
+              <div class="text-muted small">آخر رسالة: {{ conv.message }}</div>
+            </div>
+
+            <button
+              class="btn btn-primary-custom btn-sm px-4"
+              [routerLink]="['/chat-user']"
+              [queryParams]="{ orderId: conv.orderId, techId: conv.techId }">
+              عرض المحادثة
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>

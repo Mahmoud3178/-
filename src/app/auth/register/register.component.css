@@ -1,0 +1,33 @@
+.avatar-circle-light {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #f6f9fd;
+  border: 1px solid #007bff;
+  position: relative;
+}
+
+.plus-icon {
+  top: 2px;
+  right: 2px;
+  font-size: 14px;
+}
+
+.avatar-upload input[type="file"] {
+  display: none;
+}
+
+.object-fit-cover {
+  object-fit: cover;
+}
+
+.border-orange {
+  border-color: #f48c06 !important;
+}
+
+.bg-orange {
+  background-color: #f48c06 !important;
+}
+input::placeholder {
+  text-align: right;
+}
