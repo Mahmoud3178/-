@@ -39,66 +39,93 @@ departmentsOptions: { id: number, name: string }[] = [];
 
   }
 
-  createForm(): void {
-    this.registerForm = this.fb.group(
-      {
-        fullName: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        phone: ['', Validators.required],
-        password: [
-          '',
-          [
-            Validators.required,
-            Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/)
-          ]
-        ],
-        confirmPassword: ['', Validators.required],
-        city: ['', Validators.required],
-        department: [''],
-        nationalId: ['', [Validators.pattern(/^\d{14}$/)]],
-        serviceAreas: ['', Validators.required],  // خليه required لو عايز
-        workingHours: [''],
-        experienceYears: [''],
-        bankName: [''],
-        bankAccountNumber: [''],
-        serviceName: ['']
-      },
-      { validators: this.passwordsMatchValidator }
-    );
-  }
+createForm(): void {
+  this.registerForm = this.fb.group(
+    {
+      fullName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', Validators.required],
+ password: [
+  '',
+  [
+    Validators.required,
+    Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/)
+  ]
+]
+,
+      confirmPassword: ['', Validators.required],
+      city: ['', Validators.required],
+      department: [''],
+      nationalId: [''],
+      serviceAreas: [''],
+      workingHours: [''],
+      experienceYears: [''],
+      bankName: [''],
+      bankAccountNumber: [''],
+      serviceName: ['']
+    },
+    { validators: this.passwordsMatchValidator }
+  );
+
+  this.updateValidatorsForRole();
+}
 
   private passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
     const password = group.get('password')?.value;
     const confirmPassword = group.get('confirmPassword')?.value;
     return password === confirmPassword ? null : { passwordsMismatch: true };
   }
+setRole(role: 'client' | 'provider') {
+  this.selectedRole = role;
 
-  setRole(role: 'client' | 'provider') {
-    this.selectedRole = role;
-
-    if (this.rolePhotos[role]) {
-      this.userPhotoFile = this.rolePhotos[role]!.file;
-      this.imagePreview = this.rolePhotos[role]!.preview;
-    } else {
-      this.userPhotoFile = null;
-      this.imagePreview = null;
-    }
+  // 👇 استخدم صورة الدور الحالي
+  if (this.rolePhotos[role]) {
+    this.userPhotoFile = this.rolePhotos[role]!.file;
+    this.imagePreview = this.rolePhotos[role]!.preview;
+  } else {
+    this.userPhotoFile = null;
+    this.imagePreview = null;
   }
 
-  onPhotoSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        const preview = reader.result as string;
-        this.userPhotoFile = file;
-        this.imagePreview = preview;
-        this.rolePhotos[this.selectedRole] = { file, preview };
-      };
-      reader.readAsDataURL(file);
-    }
+  this.updateValidatorsForRole();
+}
+updateValidatorsForRole(): void {
+  const isProvider = this.selectedRole === 'provider';
+
+  this.registerForm.get('department')?.setValidators(isProvider ? [Validators.required] : []);
+  this.registerForm.get('nationalId')?.setValidators(isProvider ? [Validators.pattern(/^\d{14}$/)] : []);
+  this.registerForm.get('serviceAreas')?.setValidators(isProvider ? [Validators.required] : []);
+  this.registerForm.get('workingHours')?.setValidators(isProvider ? [Validators.required] : []);
+  this.registerForm.get('experienceYears')?.setValidators(isProvider ? [Validators.required] : []);
+  this.registerForm.get('bankName')?.setValidators(isProvider ? [Validators.required] : []);
+  this.registerForm.get('bankAccountNumber')?.setValidators(isProvider ? [Validators.required] : []);
+  this.registerForm.get('serviceName')?.setValidators(isProvider ? [Validators.required] : []);
+
+  this.registerForm.updateValueAndValidity();
+}
+
+
+onPhotoSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const preview = reader.result as string;
+      this.userPhotoFile = file;
+      this.imagePreview = preview;
+
+      // خزنها للدور الحالي
+      this.rolePhotos[this.selectedRole] = { file, preview };
+
+      // 👇 خزنها كمان للدور التاني علشان تفضل محفوظة
+      const otherRole = this.selectedRole === 'client' ? 'provider' : 'client';
+      this.rolePhotos[otherRole] = { file, preview };
+    };
+    reader.readAsDataURL(file);
   }
+}
+
 
   onSubmit(): void {
     if (this.registerForm.invalid || !this.userPhotoFile) {
