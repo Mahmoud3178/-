@@ -6,7 +6,8 @@ import { IngeneralEye } from '../DTOS/ingeneral-eye.dto';
 
 @Injectable({ providedIn: 'root' })
 export class IngeneralEyeService {
-  private api = 'http://on-demand-service-backend.runasp.net/api/Services/technicianProfile';
+  // خلي الرابط نسبي للبروكسي
+  private api = '/api/Services/technicianProfile';
 
   constructor(private http: HttpClient) {}
 

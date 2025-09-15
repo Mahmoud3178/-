@@ -79,21 +79,22 @@ export class BookComponent implements OnInit, AfterViewInit {
   }
 
   // دالة لجلب الأقسام من الـ API
-  loadDepartments(): void {
-    const url = 'http://on-demand-service-backend.runasp.net/api/Category/GetAll';
-    this.http.get<any[]>(url).subscribe({
-      next: (categories) => {
-        this.departmentsOptions = categories.map(cat => ({
-          id: cat.id,
-          name: cat.name
-        }));
-      },
-      error: (err) => {
-        console.error('خطأ في تحميل الأقسام', err);
-        this.departmentsOptions = [];
-      }
-    });
-  }
+loadDepartments(): void {
+  const url = '/api/Category/GetAll';
+  this.http.get<any[]>(url).subscribe({
+    next: (categories) => {
+      this.departmentsOptions = categories.map(cat => ({
+        id: cat.id,
+        name: cat.name
+      }));
+    },
+    error: (err) => {
+      console.error('خطأ في تحميل الأقسام', err);
+      this.departmentsOptions = [];
+    }
+  });
+}
+
 
   openModal() {
     const modal = new bootstrap.Modal(this.locationModalRef.nativeElement);

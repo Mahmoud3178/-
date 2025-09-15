@@ -21,8 +21,8 @@ export class EditProfileComponent implements OnInit {
 
   provider: any = {};
   orders: any[] = [];
-successMessage: string | null = null;
-errorMessage: string | null = null;
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
 
   profileData = {
     name: '',
@@ -70,7 +70,7 @@ errorMessage: string | null = null;
       return;
     }
 
-    const url = `http://on-demand-service-backend.runasp.net/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
+    const url = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`; // نسبي
 
     this.http.get<any>(url).subscribe({
       next: (res) => {
@@ -151,33 +151,32 @@ errorMessage: string | null = null;
       imageUrl: this.profileData.imageUrl
     };
 
-  const url = `http://on-demand-service-backend.runasp.net/api/Profile/UpdateTechnician?id=${this.technicianId}`;
+    const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`; // نسبي
 
-   this.http.patch(url, data, { responseType: 'text' }).subscribe({
-  next: (res) => {
-    this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
-    this.errorMessage = '';
+    this.http.patch(url, data, { responseType: 'text' }).subscribe({
+      next: (res) => {
+        this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+        this.errorMessage = '';
 
-    // تحديث الصورة المعروضة والصورة في provider.avatar
-    if (this.selectedImage) {
-      this.userImage = this.selectedImage;
-      this.provider.avatar = this.selectedImage;
+        // تحديث الصورة المعروضة والصورة في provider.avatar
+        if (this.selectedImage) {
+          this.userImage = this.selectedImage;
+          this.provider.avatar = this.selectedImage;
 
-      // تحديث بيانات المستخدم في التخزين المحلي
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      user.image = this.selectedImage;
-      localStorage.setItem('user', JSON.stringify(user));
+          // تحديث بيانات المستخدم في التخزين المحلي
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.image = this.selectedImage;
+          localStorage.setItem('user', JSON.stringify(user));
 
-      this.selectedImage = null;
-    }
-  },
-  error: (err) => {
-    this.errorMessage = '❌ حدث خطأ أثناء تحديث الملف الشخصي';
-    this.successMessage = '';
-    console.error('❌ خطأ في حفظ البيانات:', err);
-  }
-});
-
+          this.selectedImage = null;
+        }
+      },
+      error: (err) => {
+        this.errorMessage = '❌ حدث خطأ أثناء تحديث الملف الشخصي';
+        this.successMessage = '';
+        console.error('❌ خطأ في حفظ البيانات:', err);
+      }
+    });
   }
 
   logout(): void {

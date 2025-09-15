@@ -7,7 +7,7 @@ import { Rating } from '../DTOS/rating.dto'; // تأكد من مسار المل�
   providedIn: 'root'
 })
 export class RatingService {
-  private apiUrl = 'http://on-demand-service-backend.runasp.net/api/Rating';
+  private apiUrl = '/api/Rating';  // خلي الرابط نسبي
 
   constructor(private http: HttpClient) {}
 

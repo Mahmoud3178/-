@@ -6,7 +6,7 @@ import { UpdatePasswordUser } from '../DTOS/update-password-user.dto';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileUserService {
-  private baseUrl = 'http://on-demand-service-backend.runasp.net/api';
+  private baseUrl = '/api'; // خلي الرابط نسبي
 
   constructor(private http: HttpClient) {}
 
@@ -16,31 +16,31 @@ export class ProfileUserService {
     });
   }
 
-changePassword(data: UpdatePasswordUser): Observable<any> {
-  const token = localStorage.getItem('token');
+  changePassword(data: UpdatePasswordUser): Observable<any> {
+    const token = localStorage.getItem('token');
 
-  const headers = new HttpHeaders({
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`
-  });
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    });
 
-  console.log('📤 headers:', headers);
-  console.log('📤 body:', data);
+    console.log('📤 headers:', headers);
+    console.log('📤 body:', data);
 
-  return this.http.patch(`${this.baseUrl}/Account/change-password`, data, {
-    headers,
-    responseType: 'text' // ✅ مهم عشان الـ backend بيرجع نص مش JSON
-  });
-}
+    return this.http.patch(`${this.baseUrl}/Account/change-password`, data, {
+      headers,
+      responseType: 'text' // مهم عشان الـ backend بيرجع نص مش JSON
+    });
+  }
 
-getNotifications(userId: string): Observable<any[]> {
-  return this.http.get<any[]>(`${this.baseUrl}/notifications/GetNotifications?userId=${userId}`);
-}
+  getNotifications(userId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/notifications/GetNotifications?userId=${userId}`);
+  }
 
-deleteNotification(id: number) {
-  return this.http.delete(
-    `${this.baseUrl}/notifications/DeleteNotification?id=${id}`,
-    { responseType: 'text' }  // <-- هنا تخبر Angular بأن الاستجابة نص
-  );}
-
+  deleteNotification(id: number) {
+    return this.http.delete(
+      `${this.baseUrl}/notifications/DeleteNotification?id=${id}`,
+      { responseType: 'text' }  // مهم عشان الاستجابة نص
+    );
+  }
 }

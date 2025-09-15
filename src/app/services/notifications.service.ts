@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class NotificationsService {
-  private baseUrl = 'http://on-demand-service-backend.runasp.net/api/notifications';
+  private baseUrl = '/api/notifications';  // خلي الرابط نسبي
 
   constructor(private http: HttpClient) {}
 
@@ -17,5 +17,4 @@ export class NotificationsService {
   deleteNotification(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/DeleteNotification`, { params: { id: id.toString() } });
   }
-
 }

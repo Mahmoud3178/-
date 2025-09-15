@@ -108,14 +108,15 @@ submitRating(order: any): void {
     comment: order.tempComment || ''
   };
 
+  // الرابط نسبي
   this.http.post(
-    'http://on-demand-service-backend.runasp.net/api/Rating/Create',
+    `/api/Rating/Create`,   // <<< هنا الرابط النسبي
     JSON.stringify(ratingData),
     {
       headers: {
         'Content-Type': 'application/json'
       },
-      responseType: 'text' as 'json'   // ✅ أضفناها هنا زي ما طلبت
+      responseType: 'text' as 'json'   // الرد نصي
     }
   ).subscribe({
     next: (res: any) => {
@@ -127,7 +128,6 @@ submitRating(order: any): void {
     }
   });
 }
-
 
 changeStatusFilter(status: number, label?: string): void {
   this.selectedStatus = status;

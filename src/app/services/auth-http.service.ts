@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthHttpService {
-  private readonly baseUrl = 'http://on-demand-service-backend.runasp.net/api/Account';
-  private readonly authBase = 'http://on-demand-service-backend.runasp.net/api/Auth';
+  // خلي العناوين نسبيّة عشان تستخدم البروكسي في فيرسل
+  private readonly baseUrl = '/api/Account';
+  private readonly authBase = '/api/Auth';
 
   constructor(private http: HttpClient) {}
 
@@ -14,30 +16,30 @@ export class AuthHttpService {
     return this.http.post(`${this.baseUrl}/loginUser`, dto);
   }
 
-    logintechnical(dto: any): Observable<any> {
+  logintechnical(dto: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/loginTechnician`, dto);
   }
-registerUser(formData: FormData): Observable<any> {
-  return this.http.post(`${this.baseUrl}/registerUser`, formData, {
-    responseType: 'text'  // ✅ أهم سطر
-  });
-}
 
-registerTechnician(formData: FormData): Observable<any> {
-  return this.http.post(`${this.baseUrl}/registerTechnician`, formData, {
-    responseType: 'text'  // ✅ أهم سطر
-  });
-}
+  registerUser(formData: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/registerUser`, formData, {
+      responseType: 'text'  // مهم
+    });
+  }
 
-sendOtp(email: string): Observable<any> {
-  return this.http.post(
-    `http://on-demand-service-backend.runasp.net/api/Auth/SendOTP?Email=${email}`,
-    {},
-    { responseType: 'text' } // <-- أضف ده مؤقتاً لمراقبة الرد
-  );
-}
+  registerTechnician(formData: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/registerTechnician`, formData, {
+      responseType: 'text'  // مهم
+    });
+  }
 
-  // ✅ 2. Verify OTP
+  sendOtp(email: string): Observable<any> {
+    return this.http.post(
+      `/api/Auth/SendOTP?Email=${email}`,
+      {},
+      { responseType: 'text' }
+    );
+  }
+
   verifyOtp(email: string, otp: string): Observable<any> {
     return this.http.post(`${this.authBase}/VerifyOTP`, {
       email,
@@ -45,7 +47,6 @@ sendOtp(email: string): Observable<any> {
     });
   }
 
-  // ✅ 3. Reset Password
   resetPassword(email: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.authBase}/ResetPassword`, {
       email,

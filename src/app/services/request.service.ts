@@ -9,7 +9,7 @@ import { CreateRequestDto } from '../DTOS/create-request.dto';
   providedIn: 'root'
 })
 export class RequestService {
-  private readonly baseUrl = 'http://on-demand-service-backend.runasp.net/api';
+  private readonly baseUrl = '/api';  // خلي الرابط نسبي
 
   constructor(private http: HttpClient) {}
 
@@ -42,47 +42,45 @@ export class RequestService {
   updateStatus(orderId: number, status: number): Observable<any> {
     return this.http.put(`${this.baseUrl}/Requests/UpdateStatus?orderId=${orderId}&status=${status}`, {});
   }
-updateOrderState(orderId: number, newState: number): Observable<any> {
-  const params = new HttpParams()
-    .set('id', orderId)
-    .set('newState', newState);
 
-  return this.http.patch(`${this.baseUrl}/Requests/UpdateState`, null, {
-    params,
-    responseType: 'text' as 'json' // لو الـ API بيرجع نص
-  });
-}
+  updateOrderState(orderId: number, newState: number): Observable<any> {
+    const params = new HttpParams()
+      .set('id', orderId)
+      .set('newState', newState);
+
+    return this.http.patch(`${this.baseUrl}/Requests/UpdateState`, null, {
+      params,
+      responseType: 'text' as 'json' // لو الـ API بيرجع نص
+    });
+  }
 
   confirmUserRequest(orderId: number): Observable<any> {
     return this.http.post(`${this.baseUrl}/Requests/technicianConfairmUserRequest`, { orderId });
   }
 
-cancelRequest(orderId: number): Observable<any> {
-  return this.http.post(
-    `${this.baseUrl}/Requests/CancelRequest?RequestId=${orderId}`,
-    {},
-    { responseType: 'text' as 'json' } // 👈 نفس الشيء هنا
-  );
-}
-
+  cancelRequest(orderId: number): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/Requests/CancelRequest?RequestId=${orderId}`,
+      {},
+      { responseType: 'text' as 'json' } // 👈 نفس الشيء هنا
+    );
+  }
 
   endService(orderId: number): Observable<any> {
     return this.http.post(`${this.baseUrl}/Requests/EndServices`, { orderId });
   }
 
-acceptRequest(requestId: number): Observable<any> {
-  return this.http.post(`${this.baseUrl}/Services/technicianAccepteRequest?requestId=${requestId}`, {}, {
-    responseType: 'text' as 'json'  // 👈 الحل هنا
-  });
-}
+  acceptRequest(requestId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/Services/technicianAccepteRequest?requestId=${requestId}`, {}, {
+      responseType: 'text' as 'json'  // 👈 الحل هنا
+    });
+  }
 
-rejectRequest(requestId: number): Observable<any> {
-  return this.http.post(`${this.baseUrl}/Services/technicianRejectedRequest?requestId=${requestId}`, {}, {
-    responseType: 'text' as 'json'  // 👈 نفس الشيء هنا
-  });
-}
-
-
+  rejectRequest(requestId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/Services/technicianRejectedRequest?requestId=${requestId}`, {}, {
+      responseType: 'text' as 'json'  // 👈 نفس الشيء هنا
+    });
+  }
 
   updateTechnicianLatLong(technicianId: string, lat: number, lng: number) {
     let params = new HttpParams()

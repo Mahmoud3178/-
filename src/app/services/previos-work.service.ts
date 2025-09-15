@@ -7,7 +7,7 @@ import { PreviosWork } from '../DTOS/previos-work.dto';
   providedIn: 'root'
 })
 export class PreviosWorkService {
-  private apiUrl = 'http://on-demand-service-backend.runasp.net/api/PreviousWorks';
+  private apiUrl = '/api/PreviousWorks'; // خلي الرابط نسبي
 
   constructor(private http: HttpClient) {}
 
@@ -15,10 +15,9 @@ export class PreviosWorkService {
     return this.http.get<PreviosWork[]>(`${this.apiUrl}/GetPreviousWorksforTechnician?technicianId=${technicianId}`);
   }
 
-createPreviousWork(formData: FormData): Observable<any> {
-  return this.http.post(`${this.apiUrl}/Creat`, formData, {
-    responseType: 'text' // 🛠️ المفتاح هنا
-  });
-}
-
+  createPreviousWork(formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/Creat`, formData, {
+      responseType: 'text' // مهم لاستقبال نص
+    });
+  }
 }

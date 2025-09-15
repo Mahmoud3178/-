@@ -6,14 +6,14 @@ import { Complaint } from '../DTOS/complaint.dto';
 
 @Injectable({ providedIn: 'root' })
 export class ComplaintService {
-  private baseUrl = 'http://on-demand-service-backend.runasp.net/api/Services';
+  // خلي الرابط نسبي عشان البروكسي في فيرسل يتعامل معاه
+  private baseUrl = '/api/Services';
 
   constructor(private http: HttpClient) {}
 
-createComplaint(data: Complaint): Observable<any> {
-  return this.http.post(`${this.baseUrl}/CreateComplaints`, data, {
-    responseType: 'text'  // ✅ هنا التعديل
-  });
-}
-
+  createComplaint(data: Complaint): Observable<any> {
+    return this.http.post(`${this.baseUrl}/CreateComplaints`, data, {
+      responseType: 'text'  // مهم عشان تستقبل نص مش JSON
+    });
+  }
 }

@@ -171,23 +171,23 @@ departmentsOptions: { id: number, name: string }[] = [];
     return formData;
   }
 
-  loadServiceAreas(): void {
-    const url = `http://on-demand-service-backend.runasp.net/api/Places/GetAllPlaces`;
-    this.http.get<{ id: number, name: string }[]>(url).subscribe({
-      next: (places) => {
-        this.serviceAreasOptions = places;
-      },
-      error: (err) => {
-        console.error('خطأ في تحميل مناطق الخدمة', err);
-        this.serviceAreasOptions = [];
-      }
-    });
-  }
-  loadDepartments(): void {
-  const url = 'http://on-demand-service-backend.runasp.net/api/Category/GetAll';
+ loadServiceAreas(): void {
+  const url = `/api/Places/GetAllPlaces`;
+  this.http.get<{ id: number, name: string }[]>(url).subscribe({
+    next: (places) => {
+      this.serviceAreasOptions = places;
+    },
+    error: (err) => {
+      console.error('خطأ في تحميل مناطق الخدمة', err);
+      this.serviceAreasOptions = [];
+    }
+  });
+}
+
+loadDepartments(): void {
+  const url = '/api/Category/GetAll';
   this.http.get<any[]>(url).subscribe({
     next: (categories) => {
-      // تأكد إن الـ name موجود داخل كل عنصر
       this.departmentsOptions = categories.map(cat => ({
         id: cat.id,
         name: cat.name
@@ -199,5 +199,6 @@ departmentsOptions: { id: number, name: string }[] = [];
     }
   });
 }
+
 
 }

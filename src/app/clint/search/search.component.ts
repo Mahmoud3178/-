@@ -54,7 +54,7 @@ export class SearchComponent implements AfterViewInit {
   }
 
   loadRequestData(requestId: string) {
-    const url = `http://on-demand-service-backend.runasp.net/api/Requests/GetById?id=${requestId}`;
+    const url = `/api/Requests/GetById?id=${requestId}`;  // نسبي
     this.http.get<any>(url).subscribe({
       next: (data) => {
         this.formData.serviceType = data.servicesType === 0 ? 'سباكة' : 'كهرباء';
@@ -69,7 +69,7 @@ export class SearchComponent implements AfterViewInit {
   }
 
   getNearbyTechnicians(lat: number, lng: number, range: number) {
-    const url = `http://on-demand-service-backend.runasp.net/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;
+    const url = `/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;  // نسبي
     this.http.get<any[]>(url).subscribe({
       next: (res) => {
         if (Array.isArray(res) && res.length > 0) {
@@ -103,7 +103,7 @@ export class SearchComponent implements AfterViewInit {
       return;
     }
 
-    const url = `http://on-demand-service-backend.runasp.net/api/Requests/reservationTechnician?Technicianid=${technicianId}&RequestId=${requestId}`;
+    const url = `/api/Requests/reservationTechnician?Technicianid=${technicianId}&RequestId=${requestId}`;  // نسبي
 
     this.http.post(url, null, { responseType: 'text' }).subscribe({
       next: (res) => {
