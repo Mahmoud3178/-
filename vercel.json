@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "http://on-demand-service-backend.runasp.net/api/:path*"
+    },
+    {
+      "source": "/Uploads/:path*",
+      "destination": "http://on-demand-service-backend.runasp.net/Uploads/:path*"
     }
   ]
 }

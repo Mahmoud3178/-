@@ -26,15 +26,15 @@ export class ServicesComponent implements OnInit {
 this.http.get<Category[]>('/api/Category/GetAll')
       .subscribe({
         next: (data) => {
-this.services = data.map(service => {
+
+       this.services = data.map(service => {
   let imageUrl = '';
 
   try {
     const parsed = JSON.parse(service.imageBase64);
-if (parsed && Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-  imageUrl = parsed[0].replace(/^http:\/\//i, 'https://');
-}
-
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      imageUrl = parsed[0]; // استعمله زي ما هو
+    }
   } catch (e) {
     console.error('❌ خطأ في قراءة الصورة:', e);
   }
@@ -44,7 +44,6 @@ if (parsed && Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] ===
     imageUrl
   };
 });
-
 
         },
         error: (err) => {
