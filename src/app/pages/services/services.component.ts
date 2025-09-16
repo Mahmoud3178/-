@@ -33,7 +33,7 @@ this.http.get<Category[]>('/api/Category/GetAll')
   try {
     const parsed = JSON.parse(service.imageBase64);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      imageUrl = parsed[0]; // استعمله زي ما هو
+      imageUrl = `http://on-demand-service-backend.runasp.net/Uploads/${parsed[0]}`;
     }
   } catch (e) {
     console.error('❌ خطأ في قراءة الصورة:', e);
