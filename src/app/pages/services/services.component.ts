@@ -23,7 +23,7 @@ export class ServicesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.http.get<Category[]>('http://on-demand-service-backend.runasp.net/api/Category/GetAll')
+this.http.get<Category[]>('/api/Category/GetAll')
       .subscribe({
         next: (data) => {
 
