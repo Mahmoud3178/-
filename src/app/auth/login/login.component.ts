@@ -26,8 +26,10 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   selectedRole: 'client' | 'provider' = 'client';
 
-successMessage: string | null = null;
-errorMessage: string | null = null;
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+
+  private backendBaseUrl = 'http://on-demand-service-backend.runasp.net'; // ضع هنا رابط السيرفر الأساسي الخاص بك
 
   constructor(
     private fb: FormBuilder,
@@ -76,10 +78,16 @@ errorMessage: string | null = null;
             return;
           }
 
+          // تنظيف رابط الصورة لجعله رابط نسبي فقط
+          let imageUrl = res.photo || res.image || null;
+          if (imageUrl && imageUrl.startsWith(this.backendBaseUrl)) {
+            imageUrl = imageUrl.replace(this.backendBaseUrl, '');
+          }
+
           const user = {
             email: dto.email,
             role: this.selectedRole,
-            image: res.photo || res.image || null,
+            image: imageUrl,
             name: res.name || '',
             id: userId
           };
