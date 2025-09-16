@@ -38,7 +38,17 @@ export class NavbarComponent implements OnInit {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         const name = user?.email?.split('@')[0] || 'العميل';
         const role: 'client' | 'provider' | null = user?.role || null;
-        const image: string = user?.image || '';
+let image = 'assets/images/default-avatar.png';
+
+if (user?.image) {
+  if (user.image.startsWith('data:image')) {
+    image = user.image;
+  } else if (user.image.startsWith('/Uploads')) {
+    image = user.image;
+  } else if (user.image.startsWith('http')) {
+    image = user.image;
+  }
+}
         return { name, role, image };
       })
     );

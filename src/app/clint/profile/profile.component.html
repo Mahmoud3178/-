@@ -16,11 +16,13 @@
     </div>
 
   <div class="position-relative d-inline-block profile-pic-wrapper">
-    <img
-      [src]="userImage"
-      class="rounded-circle profile-img"
-      alt="User Image"
-    />
+<img
+  [src]="userImage"
+  (error)="userImage = 'assets/images/default-avatar.png'"
+  class="rounded-circle profile-img"
+  alt="User Image"
+/>
+
     <span
       class="delete-icon bg-primary-custom text-white rounded-circle d-flex align-items-center justify-content-center"
       (click)="onDeleteImage()">

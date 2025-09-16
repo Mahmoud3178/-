@@ -71,7 +71,13 @@
               </a>
               <ng-container *ngIf="(userData$ | async) as user">
                 <div routerLink="/profile" class="text-center d-flex flex-column align-items-center">
-                  <img [src]="user.image" alt="User" class="rounded-circle" style="width: 36px; height: 36px;" />
+<img
+  [src]="user.image"
+  (error)="user.image = 'assets/images/default-avatar.png'"
+  alt="User"
+  class="rounded-circle"
+  style="width: 36px; height: 36px;"
+/>
                   <small>{{ user.name }}</small>
                 </div>
               </ng-container>

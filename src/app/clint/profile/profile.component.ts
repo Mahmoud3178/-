@@ -51,7 +51,26 @@ errorMessage: string | null = null;
 ngOnInit(): void {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   this.userId = user.id || '';
-  this.userImage = user.image || 'assets/images/default-avatar.png';
+if (user.image) {
+  // لو الصورة Base64
+  if (user.image.startsWith('data:image')) {
+    this.userImage = user.image;
+  }
+  // لو الصورة جاية من الباك إند نسبية
+  else if (user.image.startsWith('/Uploads')) {
+    this.userImage = user.image;
+  }
+  // لو الصورة رابط كامل (http)
+  else if (user.image.startsWith('http')) {
+    this.userImage = user.image;
+  }
+  // لو أي حالة غريبة، حط الصورة الافتراضية
+  else {
+    this.userImage = 'assets/images/default-avatar.png';
+  }
+} else {
+  this.userImage = 'assets/images/default-avatar.png';
+}
 
   // ✅ إنشاء نموذج تعديل البيانات
   this.profileForm = this.fb.group({

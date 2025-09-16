@@ -5,11 +5,12 @@
     <div class="col-12 col-sm-6 col-md-4 mb-4" *ngFor="let service of services">
       <div class="card service-card shadow border-0">
         <div class="position-relative overflow-hidden service-img-wrapper">
-          <img
-            [src]="service.imageUrl"
-            class="service-img w-100"
-            alt="{{ service.name }}"
-          />
+<img
+  [src]="service.imageUrl"
+  class="service-img w-100"
+  alt="{{ service.name }}"
+  (error)="service.imageUrl = 'assets/default.jpg'">
+
         </div>
         <div class="card-body bg-light-subtle">
           <h5 class="card-title fw-bold">{{ service.name }}</h5>
