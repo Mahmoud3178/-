@@ -26,15 +26,15 @@ export class ServicesComponent implements OnInit {
 this.http.get<Category[]>('/api/Category/GetAll')
       .subscribe({
         next: (data) => {
-
-       this.services = data.map(service => {
+this.services = data.map(service => {
   let imageUrl = '';
 
   try {
     const parsed = JSON.parse(service.imageBase64);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      imageUrl = `http://on-demand-service-backend.runasp.net/Uploads/${parsed[0]}`;
-    }
+if (parsed && Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+  imageUrl = parsed[0].replace(/^http:\/\//i, 'https://');
+}
+
   } catch (e) {
     console.error('❌ خطأ في قراءة الصورة:', e);
   }
@@ -44,6 +44,7 @@ this.http.get<Category[]>('/api/Category/GetAll')
     imageUrl
   };
 });
+
 
         },
         error: (err) => {
