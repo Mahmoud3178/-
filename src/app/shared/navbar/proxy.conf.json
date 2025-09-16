@@ -1,0 +1,7 @@
+{
+  "/Uploads": {
+    "target": "http://on-demand-service-backend.runasp.net",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
