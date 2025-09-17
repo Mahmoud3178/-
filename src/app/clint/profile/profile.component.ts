@@ -8,6 +8,8 @@ import { UpdateProfileUser } from '../../DTOS/update-profile-user.dto';
 import { UpdatePasswordUser } from '../../DTOS/update-password-user.dto';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../DTOS/chatmessage.dto';
+import { HttpClient } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-profile',
@@ -45,41 +47,26 @@ errorMessage: string | null = null;
     private authService: AuthService,
     private chatService: ChatService,
     private router: Router,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+      private http: HttpClient // ✅ أضفنا دا
 
+  ) {}
 ngOnInit(): void {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   this.userId = user.id || '';
-if (user.image) {
-  // لو الصورة Base64
-  if (user.image.startsWith('data:image')) {
-    this.userImage = user.image;
-  }
-  // لو الصورة جاية من الباك إند نسبية
-  else if (user.image.startsWith('/Uploads')) {
-    this.userImage = user.image;
-  }
-  // لو الصورة رابط كامل (http)
-  else if (user.image.startsWith('http')) {
-    this.userImage = user.image;
-  }
-  // لو أي حالة غريبة، حط الصورة الافتراضية
-  else {
-    this.userImage = 'assets/images/default-avatar.png';
-  }
-} else {
-  this.userImage = 'assets/images/default-avatar.png';
-}
 
-  // ✅ إنشاء نموذج تعديل البيانات
+  if (!this.userId) {
+    console.error('❌ لا يوجد userId');
+    return;
+  }
+
+  // 1. أنشئ الفورم فاضي مؤقتًا
   this.profileForm = this.fb.group({
-    name: [user.name || '', Validators.required],
-    phoneNumber: [user.phoneNumber || '', Validators.required],
-    email: [user.email || '', [Validators.required, Validators.email]]
+    name: ['', Validators.required],
+    phoneNumber: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]]
   });
 
-  // ✅ إنشاء نموذج تغيير كلمة المرور
   this.passwordForm = this.fb.group({
     currentPassword: ['', Validators.required],
     newPassword: ['', [Validators.required, Validators.minLength(6)]]
@@ -90,6 +77,34 @@ if (user.image) {
   });
 
   this.loadMessages();
+
+  // 2. نجيب البيانات من API
+  this.http.get<any>(`/api/Profile/GetbyIduserprfile?id=${this.userId}`).subscribe({
+    next: (res) => {
+      // ✅ اربط البيانات في النموذج
+      this.profileForm.patchValue({
+        name: res.name,
+        phoneNumber: res.phoneNumber,
+        email: res.email
+      });
+
+      // ✅ الصورة
+      if (res.imageUrl) {
+        if (res.imageUrl.startsWith('/Uploads')) {
+          this.userImage = res.imageUrl;
+        } else if (res.imageUrl.startsWith('http')) {
+          this.userImage = res.imageUrl;
+        }
+      }
+
+      // ✅ احفظ البيانات المحدثة في localStorage (اختياري)
+      const updatedUser = { ...user, ...res };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    },
+    error: (err) => {
+      console.error('❌ فشل في تحميل بيانات المستخدم:', err);
+    }
+  });
 }
 
 
