@@ -64,18 +64,42 @@ ngOnInit(): void {
 }
 
 
-  loadWorks() {
-    this.previosWorkService.getPreviousWorks(this.technicianId).subscribe({
-      next: (res) => {
-        this.works = res.map(item => ({
+loadWorks() {
+  this.previosWorkService.getPreviousWorks(this.technicianId).subscribe({
+    next: (res) => {
+      this.works = res.map(item => {
+        let imageBeforeUrl = '';
+        let imageAfterUrl = '';
+
+        try {
+          const beforeParsed = JSON.parse(item.imageBeforeUrl);
+          if (Array.isArray(beforeParsed) && beforeParsed.length > 0) {
+            imageBeforeUrl = `/Uploads/${beforeParsed[0].split('/').pop()}`;
+          }
+        } catch {
+          imageBeforeUrl = item.imageBeforeUrl || 'assets/images/default-before.jpg';
+        }
+
+        try {
+          const afterParsed = JSON.parse(item.imageAfterUrl);
+          if (Array.isArray(afterParsed) && afterParsed.length > 0) {
+            imageAfterUrl = `/Uploads/${afterParsed[0].split('/').pop()}`;
+          }
+        } catch {
+          imageAfterUrl = item.imageAfterUrl || 'assets/images/default-after.jpg';
+        }
+
+        return {
           ...item,
-          imageBeforeUrl: item.imageBeforeUrl || 'assets/images/default-before.jpg',
-          imageAfterUrl: item.imageAfterUrl || 'assets/images/default-after.jpg'
-        }));
-      },
-      error: (err) => console.error('❌ خطأ في تحميل الأعمال السابقة:', err)
-    });
-  }
+          imageBeforeUrl,
+          imageAfterUrl
+        };
+      });
+    },
+    error: (err) => console.error('❌ خطأ في تحميل الأعمال السابقة:', err)
+  });
+}
+
 
   onImageSelected(event: any, type: 'before' | 'after') {
     const file = event.target.files[0];
