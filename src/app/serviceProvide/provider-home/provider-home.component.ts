@@ -34,25 +34,28 @@ errorMessage: string | null = null;
     private requestService: RequestService
   ) {}
 
-  ngOnInit() {
-    const userJson = localStorage.getItem('user');
-    if (userJson) {
-      const user = JSON.parse(userJson);
+ ngOnInit() {
+  const userJson = localStorage.getItem('user');
+  if (userJson) {
+    const user = JSON.parse(userJson);
 
-      this.provider = {
-        id: user.id,
-        name: user.name,
-        avatar: user.image,
-        rating: 0,
-        reviews: 0,
-        orders: 0
-      };
+    this.provider = {
+      id: user.id,
+      name: user.name,
+      avatar: user.image,
+      rating: 0,
+      reviews: 0,
+      orders: 0
+    };
 
-      this.loadOrders(this.selectedStatus, this.selectedStatusLabel);
-    } else {
-      console.error('⚠️ لا يوجد بيانات تسجيل دخول');
-    }
+    this.loadOrders(this.selectedStatus, this.selectedStatusLabel);
+
+    // 🆕 استدعاء عدد الطلبات المكتملة
+    this.loadCompletedOrdersCount();
+  } else {
+    console.error('⚠️ لا يوجد بيانات تسجيل دخول');
   }
+}
 
 loadOrders(status: number, label: string) {
   this.selectedStatus = status;

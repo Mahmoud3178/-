@@ -1,7 +1,7 @@
 // src/app/services/request.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { RequestQueryDTO } from '../DTOS/request-query.dto';
 import { CreateRequestDto } from '../DTOS/create-request.dto';
 
@@ -90,17 +90,12 @@ export class RequestService {
 
     return this.http.post(`${this.baseUrl}/UpdateLatLong`, null, { params });
   }
-getCompletedRequestsCount(technicianId: string): Observable<number> {
+  getCompletedRequestsCount(technicianId: string): Observable<number> {
   const headers = this.getAuthHeaders();
-  return this.http.get(`${this.baseUrl}/Rating/GetCompletedRequestsCount`, {
-    params: new HttpParams().set('TechnicianId', technicianId),
-    headers,
-    responseType: 'text' as 'json'  // 👈 هنا نجبر Angular يعاملها كنص
-  }).pipe(
-    // نحول النص لرقم قبل ما يرجع للمكوّن
-    map((res: any) => Number(res))
+  return this.http.get<number>(
+    `${this.baseUrl}/Rating/GetCompletedRequestsCount`,
+    { params: new HttpParams().set('TechnicianId', technicianId), headers }
   );
 }
-
 
 }
