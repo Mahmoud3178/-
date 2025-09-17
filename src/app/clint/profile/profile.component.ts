@@ -167,10 +167,11 @@ onSaveProfile() {
     this.resetMessages();
 
     const data = {
-      id: this.userId, // ← أضف الـ id هنا
+      id: this.userId,
       name: this.profileForm.value.name,
       phoneNumber: this.profileForm.value.phoneNumber,
-      email: this.profileForm.value.email
+      email: this.profileForm.value.email,
+      imageUrl: this.userImage  // ✅ الصورة مطلوبة للـ API
     };
 
     this.profileService.updateProfile(this.userId, data).subscribe({
