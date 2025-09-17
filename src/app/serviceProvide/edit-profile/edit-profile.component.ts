@@ -134,17 +134,16 @@ onSave(): void {
   this.successMessage = '';
   this.errorMessage = '';
 
-  if (!this.technicianId) {
-    this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
-    return;
-  }
-
-  // تأكد من وجود صورة حقيقية
   const fileInput = document.getElementById('imageInput') as HTMLInputElement;
   const file = fileInput?.files?.[0];
 
   if (!file) {
     this.errorMessage = '❌ يجب رفع صورة شخصية قبل الحفظ.';
+    return;
+  }
+
+  if (!this.technicianId) {
+    this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
     return;
   }
 
@@ -161,7 +160,7 @@ onSave(): void {
   formData.append('bankName', this.profileData.bankName);
   formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
   formData.append('nameServices', this.profileData.nameServices);
-  formData.append('personalPhoto', file); // ✅ هذا هو المهم
+  formData.append('imageUrl', file); // 👈 لازم نفس اسم الحقل في API
 
   const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
 
@@ -170,7 +169,6 @@ onSave(): void {
       this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
       this.errorMessage = '';
 
-      // تحديث الصورة في الواجهة
       const reader = new FileReader();
       reader.onload = () => {
         this.userImage = reader.result as string;
@@ -183,14 +181,20 @@ onSave(): void {
       reader.readAsDataURL(file);
     },
     error: (err) => {
-      this.errorMessage = '❌ حدث خطأ أثناء تحديث الملف الشخصي';
-      this.successMessage = '';
       console.error('❌ خطأ في حفظ البيانات:', err);
+      if (err.error) {
+        try {
+          const parsed = JSON.parse(err.error);
+          this.errorMessage = parsed.message || '❌ حدث خطأ أثناء حفظ البيانات.';
+        } catch {
+          this.errorMessage = err.error || '❌ حدث خطأ أثناء حفظ البيانات.';
+        }
+      } else {
+        this.errorMessage = '❌ حدث خطأ غير معروف.';
+      }
     }
   });
 }
-
-
 
   logout(): void {
     this.authService.logout();
