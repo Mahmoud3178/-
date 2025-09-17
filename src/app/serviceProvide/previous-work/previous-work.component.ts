@@ -82,31 +82,36 @@ loadWorks() {
   });
 }
 
-
 getValidImageUrl(rawUrl: string, type: 'before' | 'after'): string {
   if (!rawUrl) {
-    return type === 'before' ? 'assets/images/default-before.jpg' : 'assets/images/default-after.jpg';
+    return type === 'before'
+      ? 'assets/images/default-before.jpg'
+      : 'assets/images/default-after.jpg';
   }
 
+  // لو جاي كـ array (stringified أو مباشرة)
   try {
-    const parsed = JSON.parse(rawUrl);
+    const parsed = typeof rawUrl === 'string' ? JSON.parse(rawUrl) : rawUrl;
     if (Array.isArray(parsed) && parsed.length > 0) {
-      const fileName = parsed[0].split('/').pop();
-      return `/Uploads/${fileName}`;
+      const first = parsed[0];
+      if (first.startsWith('data:image')) return first;
+      if (first.startsWith('/Uploads')) return first;
+      if (first.startsWith('http')) return first;
+      return `/Uploads/${first}`; // لو اسم ملف فقط
     }
   } catch (_) {
-    // Not JSON, use raw string
-    if (rawUrl.startsWith('data:image')) {
-      return rawUrl;
-    } else if (rawUrl.startsWith('/Uploads')) {
-      return rawUrl;
-    } else if (rawUrl.startsWith('http')) {
-      return rawUrl;
-    }
+    // مش JSON، عالجها كـ نص عادي
+    if (rawUrl.startsWith('data:image')) return rawUrl;
+    if (rawUrl.startsWith('/Uploads')) return rawUrl;
+    if (rawUrl.startsWith('http')) return rawUrl;
+    return `/Uploads/${rawUrl}`; // لو مجرد اسم ملف
   }
 
-  return type === 'before' ? 'assets/images/default-before.jpg' : 'assets/images/default-after.jpg';
+  return type === 'before'
+    ? 'assets/images/default-before.jpg'
+    : 'assets/images/default-after.jpg';
 }
+
 
   onImageSelected(event: any, type: 'before' | 'after') {
     const file = event.target.files[0];
