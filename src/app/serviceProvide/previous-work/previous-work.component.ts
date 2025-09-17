@@ -89,28 +89,33 @@ getValidImageUrl(rawUrl: string, type: 'before' | 'after'): string {
       : 'assets/images/default-after.jpg';
   }
 
-  // لو جاي كـ array (stringified أو مباشرة)
   try {
-    const parsed = typeof rawUrl === 'string' ? JSON.parse(rawUrl) : rawUrl;
+    // حاول نعمل JSON.parse زي اللي في ServicesComponent
+    const parsed = JSON.parse(rawUrl);
+
+    // لو parsed هو array ونفس طريقة فك الاسم والملف
     if (Array.isArray(parsed) && parsed.length > 0) {
-      const first = parsed[0];
-      if (first.startsWith('data:image')) return first;
-      if (first.startsWith('/Uploads')) return first;
-      if (first.startsWith('http')) return first;
-      return `/Uploads/${first}`; // لو اسم ملف فقط
+      // في servicescomponent بتاخد اسم الملف الأخير من المسار وتخليه في /Uploads/
+      const fileName = parsed[0].split('/').pop();
+      return `/Uploads/${fileName}`;
     }
-  } catch (_) {
-    // مش JSON، عالجها كـ نص عادي
+  } catch (e) {
+    // لو مش JSON، نجرب نعالج النص كنص عادي
+
     if (rawUrl.startsWith('data:image')) return rawUrl;
     if (rawUrl.startsWith('/Uploads')) return rawUrl;
     if (rawUrl.startsWith('http')) return rawUrl;
-    return `/Uploads/${rawUrl}`; // لو مجرد اسم ملف
+
+    // لو مجرد اسم ملف، نضيف له /Uploads/
+    return `/Uploads/${rawUrl}`;
   }
 
+  // لو مفيش حاجة تناسب نرجع الصورة الافتراضية
   return type === 'before'
     ? 'assets/images/default-before.jpg'
     : 'assets/images/default-after.jpg';
 }
+
 
 
   onImageSelected(event: any, type: 'before' | 'after') {
