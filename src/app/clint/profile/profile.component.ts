@@ -79,32 +79,34 @@ ngOnInit(): void {
   this.loadMessages();
 
   // 2. نجيب البيانات من API
-  this.http.get<any>(`/api/Profile/GetbyIduserprfile?id=${this.userId}`).subscribe({
-    next: (res) => {
-      // ✅ اربط البيانات في النموذج
-      this.profileForm.patchValue({
-        name: res.name,
-        phoneNumber: res.phoneNumber,
-        email: res.email
-      });
-
-      // ✅ الصورة
-      if (res.imageUrl) {
-        if (res.imageUrl.startsWith('/Uploads')) {
-          this.userImage = res.imageUrl;
-        } else if (res.imageUrl.startsWith('http')) {
-          this.userImage = res.imageUrl;
-        }
-      }
-
-      // ✅ احفظ البيانات المحدثة في localStorage (اختياري)
-      const updatedUser = { ...user, ...res };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    },
-    error: (err) => {
-      console.error('❌ فشل في تحميل بيانات المستخدم:', err);
+ this.http.get<any>(`/api/Profile/GetbyIduserprfile?id=${this.userId}`).subscribe({
+  next: (res) => {
+    // تأكد من وجود id
+    if (!res.id) {
+      console.error('❌ البيانات المستلمة لا تحتوي على id');
+      return;
     }
-  });
+    // تحديث النموذج
+    this.profileForm.patchValue({
+      name: res.name,
+      phoneNumber: res.phoneNumber,
+      email: res.email
+    });
+    // تحديث الصورة
+    if (res.imageUrl) {
+      this.userImage = res.imageUrl.startsWith('/Uploads') || res.imageUrl.startsWith('http') ? res.imageUrl : this.userImage;
+    }
+    // تحديث userId من البيانات الجديدة
+    this.userId = res.id.toString();
+    // تحديث localStorage
+    const updatedUser = { ...user, ...res };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  },
+  error: (err) => {
+    console.error('❌ فشل في تحميل بيانات المستخدم:', err);
+  }
+});
+
 }
 
 
