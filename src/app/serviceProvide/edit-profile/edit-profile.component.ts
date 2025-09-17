@@ -129,17 +129,16 @@ export class EditProfileComponent implements OnInit {
     this.userImage = this.provider.avatar || 'assets/images/default-avatar.png';
   }
 
-  onSave(): void {
+  // دالة لتحويل رابط الصورة إلى ملف File
+  async urlToFile(url: string, filename: string, mimeType: string): Promise<File> {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: mimeType });
+  }
+
+  async onSave(): Promise<void> {
     this.successMessage = '';
     this.errorMessage = '';
-
-    const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
-    const file = fileInput?.files?.[0];
-
-    if (!this.technicianId) {
-      this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
-      return;
-    }
 
     const formData = new FormData();
 
@@ -155,8 +154,31 @@ export class EditProfileComponent implements OnInit {
     formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
     formData.append('nameServices', this.profileData.nameServices);
 
-    if (file) {
-      formData.append('imageUrl', file); // اسم الحقل لازم يطابق الـ API
+    if (!this.technicianId) {
+      this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
+      return;
+    }
+
+    // التعامل مع الصورة
+    if (this.selectedImage) {
+      if (this.selectedImage.startsWith('http')) {
+        // إذا كانت صورة رابط، نحولها إلى ملف
+        try {
+          const file = await this.urlToFile(this.selectedImage, 'uploadedImage.jpg', 'image/jpeg');
+          formData.append('imageUrl', file);
+        } catch (error) {
+          console.error('❌ خطأ في تحميل الصورة من الرابط:', error);
+          this.errorMessage = '❌ فشل في تحميل الصورة.';
+          return;
+        }
+      } else {
+        // إذا كانت صورة من اختيار المستخدم (Data URL)
+        const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
+        const file = fileInput?.files?.[0];
+        if (file) {
+          formData.append('imageUrl', file);
+        }
+      }
     }
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -166,31 +188,29 @@ export class EditProfileComponent implements OnInit {
         this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
         this.errorMessage = '';
 
-        // تحديث الصورة النهائية فقط إذا كانت الصورة تم رفعها
-        if (file) {
+        // تحديث الصورة النهائية بعد الحفظ
+        if (this.selectedImage && !this.selectedImage.startsWith('http')) {
+          const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
           const reader = new FileReader();
           reader.onload = () => {
             this.userImage = reader.result as string;
             this.provider.avatar = this.userImage;
 
-            // تحديث بيانات المستخدم في localStorage
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             user.image = this.userImage;
             localStorage.setItem('user', JSON.stringify(user));
           };
-          reader.readAsDataURL(file);
-        } else {
-          // لو مفيش صورة جديدة، حدث الصورة من الـ API response لو متوفر
-          if (res.imageUrl) {
-            this.provider.avatar = res.imageUrl;
-            this.userImage = res.imageUrl;
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            user.image = res.imageUrl;
-            localStorage.setItem('user', JSON.stringify(user));
+          if (fileInput.files && fileInput.files[0]) {
+            reader.readAsDataURL(fileInput.files[0]);
           }
+        } else if (res.imageUrl) {
+          this.provider.avatar = res.imageUrl;
+          this.userImage = res.imageUrl;
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.image = res.imageUrl;
+          localStorage.setItem('user', JSON.stringify(user));
         }
 
-        // امسح الصورة المؤقتة بعد الحفظ
         this.selectedImage = null;
       },
       error: (err) => {
