@@ -98,11 +98,11 @@
         <div class="d-flex gap-2 flex-wrap">
           <div class="work-image-wrapper">
             <div class="badge bg-warning text-white position-absolute">قبل</div>
-            <img [src]="work.imageBeforeUrl" class="work-image" alt="قبل">
+<img [src]="work.imageBeforeUrl" alt="قبل" (error)="work.imageBeforeUrl = 'assets/images/default-before.jpg'" class="work-image" />
           </div>
           <div class="work-image-wrapper">
             <div class="badge bg-warning text-white position-absolute">بعد</div>
-            <img [src]="work.imageAfterUrl" class="work-image" alt="بعد">
+<img [src]="work.imageAfterUrl" alt="بعد" (error)="work.imageAfterUrl = 'assets/images/default-after.jpg'" class="work-image" />
           </div>
         </div>
       </div>

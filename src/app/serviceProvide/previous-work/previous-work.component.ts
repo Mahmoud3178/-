@@ -77,7 +77,7 @@ loadWorks() {
             imageBeforeUrl = `/Uploads/${beforeParsed[0].split('/').pop()}`;
           }
         } catch {
-          imageBeforeUrl = item.imageBeforeUrl || 'assets/images/default-before.jpg';
+          imageBeforeUrl = item.imageBeforeUrl || 'images/default-before.jpg';
         }
 
         try {
@@ -86,7 +86,7 @@ loadWorks() {
             imageAfterUrl = `/Uploads/${afterParsed[0].split('/').pop()}`;
           }
         } catch {
-          imageAfterUrl = item.imageAfterUrl || 'assets/images/default-after.jpg';
+          imageAfterUrl = item.imageAfterUrl || 'images/default-after.jpg';
         }
 
         return {
