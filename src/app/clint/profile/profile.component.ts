@@ -166,8 +166,8 @@ onSaveProfile() {
   if (this.profileForm.valid) {
     this.resetMessages();
 
-    const data: UpdateProfileUser = {
-      id: this.userId,
+    const data = {
+      id: this.userId, // ← أضف الـ id هنا
       name: this.profileForm.value.name,
       phoneNumber: this.profileForm.value.phoneNumber,
       email: this.profileForm.value.email
@@ -177,12 +177,14 @@ onSaveProfile() {
       next: () => {
         this.successMessage = '@ تم تحديث الملف بنجاح.';
       },
-      error: () => {
+      error: (err) => {
+        console.error('❌ فشل التحديث:', err);
         this.errorMessage = '@ حدث خطأ أثناء تحديث البيانات.';
       }
     });
   }
 }
+
 
 onChangePassword() {
   if (this.passwordForm.valid) {

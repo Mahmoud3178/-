@@ -130,54 +130,59 @@ export class EditProfileComponent implements OnInit {
     this.userImage = this.provider.avatar || 'assets/images/default-avatar.png';
   }
 
-  onSave(): void {
-    // تحديث صورة الملف الشخصي بالـ selectedImage لو موجودة
-    if (this.selectedImage) {
-      this.profileData.imageUrl = this.selectedImage;
-    }
-
-    const data = {
-      name: this.profileData.name,
-      categoryName: this.profileData.categoryName,
-      email: this.profileData.email,
-      phoneNumber: this.profileData.phoneNumber,
-      nationalId: this.profileData.nationalId,
-      serviceAreas: this.profileData.serviceAreas,
-      workingHours: this.profileData.workingHours,
-      yearsOfExperience: this.profileData.yearsOfExperience,
-      bankName: this.profileData.bankName,
-      bankAccountNumber: this.profileData.bankAccountNumber,
-      nameServices: this.profileData.nameServices,
-      imageUrl: this.profileData.imageUrl
-    };
-
-    const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`; // نسبي
-
-    this.http.patch(url, data, { responseType: 'text' }).subscribe({
-      next: (res) => {
-        this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
-        this.errorMessage = '';
-
-        // تحديث الصورة المعروضة والصورة في provider.avatar
-        if (this.selectedImage) {
-          this.userImage = this.selectedImage;
-          this.provider.avatar = this.selectedImage;
-
-          // تحديث بيانات المستخدم في التخزين المحلي
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          user.image = this.selectedImage;
-          localStorage.setItem('user', JSON.stringify(user));
-
-          this.selectedImage = null;
-        }
-      },
-      error: (err) => {
-        this.errorMessage = '❌ حدث خطأ أثناء تحديث الملف الشخصي';
-        this.successMessage = '';
-        console.error('❌ خطأ في حفظ البيانات:', err);
-      }
-    });
+onSave(): void {
+  // لو المستخدم اختار صورة جديدة
+  if (this.selectedImage) {
+    this.profileData.imageUrl = this.selectedImage;
   }
+
+  // ✅ تحقق إن الصورة موجودة فعلاً
+  if (!this.profileData.imageUrl || this.profileData.imageUrl.trim() === '') {
+    this.errorMessage = '❌ يجب رفع صورة شخصية قبل الحفظ.';
+    return;
+  }
+
+  const data = {
+    name: this.profileData.name,
+    categoryName: this.profileData.categoryName,
+    email: this.profileData.email,
+    phoneNumber: this.profileData.phoneNumber,
+    nationalId: this.profileData.nationalId,
+    serviceAreas: this.profileData.serviceAreas,
+    workingHours: this.profileData.workingHours,
+    yearsOfExperience: this.profileData.yearsOfExperience,
+    bankName: this.profileData.bankName,
+    bankAccountNumber: this.profileData.bankAccountNumber,
+    nameServices: this.profileData.nameServices,
+    imageUrl: this.profileData.imageUrl   // ✅ لازم تكون قيمة صحيحة
+  };
+
+  const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
+
+  this.http.patch(url, data, { responseType: 'text' }).subscribe({
+    next: (res) => {
+      this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+      this.errorMessage = '';
+
+      if (this.selectedImage) {
+        this.userImage = this.selectedImage;
+        this.provider.avatar = this.selectedImage;
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        user.image = this.selectedImage;
+        localStorage.setItem('user', JSON.stringify(user));
+
+        this.selectedImage = null;
+      }
+    },
+    error: (err) => {
+      this.errorMessage = '❌ حدث خطأ أثناء تحديث الملف الشخصي';
+      this.successMessage = '';
+      console.error('❌ خطأ في حفظ البيانات:', err);
+    }
+  });
+}
+
 
   logout(): void {
     this.authService.logout();
