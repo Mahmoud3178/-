@@ -134,78 +134,62 @@ onSave(): void {
   this.successMessage = '';
   this.errorMessage = '';
 
-  // تحقق من وجود صورة
-  if (this.selectedImage) {
-    this.profileData.imageUrl = this.selectedImage;
-  }
-
-  if (!this.profileData.imageUrl || this.profileData.imageUrl.trim() === '') {
-    this.errorMessage = '❌ يجب رفع صورة شخصية قبل الحفظ.';
-    return;
-  }
-
-  // ✅ تأكد أن technicianId موجود
   if (!this.technicianId) {
     this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
     return;
   }
 
-  // ✅ أنشئ جسم البيانات بشكل صريح
-  const data: any = {
-    name: this.profileData.name,
-    categoryName: this.profileData.categoryName,
-    email: this.profileData.email,
-    phoneNumber: this.profileData.phoneNumber,
-    nationalId: this.profileData.nationalId,
-    serviceAreas: this.profileData.serviceAreas,
-    workingHours: Number(this.profileData.workingHours),
-    yearsOfExperience: Number(this.profileData.yearsOfExperience),
-    bankName: this.profileData.bankName,
-    bankAccountNumber: this.profileData.bankAccountNumber,
-    nameServices: this.profileData.nameServices,
-    imageUrl: this.profileData.imageUrl
-  };
+  // تأكد من وجود صورة حقيقية
+  const fileInput = document.getElementById('imageInput') as HTMLInputElement;
+  const file = fileInput?.files?.[0];
 
-  console.log('🚀 Data being sent:', data);
+  if (!file) {
+    this.errorMessage = '❌ يجب رفع صورة شخصية قبل الحفظ.';
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append('name', this.profileData.name);
+  formData.append('categoryName', this.profileData.categoryName);
+  formData.append('email', this.profileData.email);
+  formData.append('phoneNumber', this.profileData.phoneNumber);
+  formData.append('nationalId', this.profileData.nationalId);
+  formData.append('serviceAreas', this.profileData.serviceAreas);
+  formData.append('workingHours', this.profileData.workingHours.toString());
+  formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
+  formData.append('bankName', this.profileData.bankName);
+  formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
+  formData.append('nameServices', this.profileData.nameServices);
+  formData.append('personalPhoto', file); // ✅ هذا هو المهم
 
   const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
 
-  this.http.patch(url, JSON.stringify(data), {
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    responseType: 'text'
-  }).subscribe({
+  this.http.patch(url, formData).subscribe({
     next: () => {
       this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
       this.errorMessage = '';
 
-      if (this.selectedImage) {
-        this.userImage = this.selectedImage;
-        this.provider.avatar = this.selectedImage;
+      // تحديث الصورة في الواجهة
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.userImage = reader.result as string;
+        this.provider.avatar = this.userImage;
 
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        user.image = this.selectedImage;
+        user.image = this.userImage;
         localStorage.setItem('user', JSON.stringify(user));
-
-        this.selectedImage = null;
-      }
+      };
+      reader.readAsDataURL(file);
     },
     error: (err) => {
+      this.errorMessage = '❌ حدث خطأ أثناء تحديث الملف الشخصي';
+      this.successMessage = '';
       console.error('❌ خطأ في حفظ البيانات:', err);
-      if (err.error) {
-        try {
-          const parsed = JSON.parse(err.error);
-          this.errorMessage = parsed.message || '❌ حدث خطأ أثناء حفظ البيانات.';
-        } catch {
-          this.errorMessage = err.error || '❌ حدث خطأ أثناء حفظ البيانات.';
-        }
-      } else {
-        this.errorMessage = '❌ حدث خطأ غير معروف.';
-      }
     }
   });
 }
+
 
 
   logout(): void {
