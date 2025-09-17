@@ -228,6 +228,10 @@ export class EditProfileComponent implements OnInit {
       }
     });
   }
+getSafeImageUrl(url: string): string {
+  if (!url) return 'assets/images/default-avatar.png';
+  return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+}
 
   logout(): void {
     this.authService.logout();
