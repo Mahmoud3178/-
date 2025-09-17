@@ -22,9 +22,9 @@
       <div class="col-md-6">
         <div class="mb-2 position-relative">
           <select class="form-select text-end pe-5" formControlName="serviceType">
-            <option disabled selected>نوع الخدمة</option>
-            <option>سباكة</option>
-            <option>كهرباء</option>
+            <option value="" disabled selected>نوع الخدمة</option>
+            <option>منزلي</option>
+            <option>منزلي</option>
           </select>
           <i class="bi bi-person position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%)"></i>
         </div>
@@ -44,15 +44,16 @@
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="mb-2 position-relative">
-          <select class="form-select text-end pe-5" formControlName="category">
-            <option disabled selected>القسم</option>
-            <option>منزلي</option>
-            <option>مكتبي</option>
-          </select>
-          <i class="bi bi-diagram-3 position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%)"></i>
-        </div>
+<div class="col-md-6">
+  <div class="mb-2 position-relative">
+    <select class="form-select text-end pe-5" formControlName="category">
+      <option value="" disabled selected>القسم</option>
+      <option *ngFor="let dept of departmentsOptions" [value]="dept.name">
+        {{ dept.name }}
+      </option>
+    </select>
+    <i class="bi bi-diagram-3 position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%)"></i>
+  </div>
 
         <div class="mb-2">
           <textarea rows="5" class="form-control text-end" formControlName="description" placeholder="وصف الخدمة المطلوبة"></textarea>
