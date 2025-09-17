@@ -10,11 +10,17 @@ export class ProfileUserService {
 
   constructor(private http: HttpClient) {}
 
-  updateProfile(userId: string, data: UpdateProfileUser): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/Services/UpdateUserProfile?userId=${userId}`, data, {
-      responseType: 'text'
-    });
-  }
+updateProfile(userId: string, data: any): Observable<any> {
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.patch(`${this.baseUrl}/Services/UpdateUserProfile?userId=${userId}`, data, {
+    headers,
+    responseType: 'text'
+  });
+}
+
 
   changePassword(data: UpdatePasswordUser): Observable<any> {
     const token = localStorage.getItem('token');

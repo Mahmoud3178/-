@@ -131,36 +131,52 @@ export class EditProfileComponent implements OnInit {
   }
 
 onSave(): void {
-  // لو المستخدم اختار صورة جديدة
+  this.successMessage = '';
+  this.errorMessage = '';
+
+  // تحقق من وجود صورة
   if (this.selectedImage) {
     this.profileData.imageUrl = this.selectedImage;
   }
 
-  // ✅ تحقق إن الصورة موجودة فعلاً
   if (!this.profileData.imageUrl || this.profileData.imageUrl.trim() === '') {
     this.errorMessage = '❌ يجب رفع صورة شخصية قبل الحفظ.';
     return;
   }
 
-  const data = {
+  // ✅ تأكد أن technicianId موجود
+  if (!this.technicianId) {
+    this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
+    return;
+  }
+
+  // ✅ أنشئ جسم البيانات بشكل صريح
+  const data: any = {
     name: this.profileData.name,
     categoryName: this.profileData.categoryName,
     email: this.profileData.email,
     phoneNumber: this.profileData.phoneNumber,
     nationalId: this.profileData.nationalId,
     serviceAreas: this.profileData.serviceAreas,
-    workingHours: this.profileData.workingHours,
-    yearsOfExperience: this.profileData.yearsOfExperience,
+    workingHours: Number(this.profileData.workingHours),
+    yearsOfExperience: Number(this.profileData.yearsOfExperience),
     bankName: this.profileData.bankName,
     bankAccountNumber: this.profileData.bankAccountNumber,
     nameServices: this.profileData.nameServices,
-    imageUrl: this.profileData.imageUrl   // ✅ لازم تكون قيمة صحيحة
+    imageUrl: this.profileData.imageUrl
   };
+
+  console.log('🚀 Data being sent:', data);
 
   const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
 
-  this.http.patch(url, data, { responseType: 'text' }).subscribe({
-    next: (res) => {
+  this.http.patch(url, JSON.stringify(data), {
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    responseType: 'text'
+  }).subscribe({
+    next: () => {
       this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
       this.errorMessage = '';
 
@@ -176,9 +192,17 @@ onSave(): void {
       }
     },
     error: (err) => {
-      this.errorMessage = '❌ حدث خطأ أثناء تحديث الملف الشخصي';
-      this.successMessage = '';
       console.error('❌ خطأ في حفظ البيانات:', err);
+      if (err.error) {
+        try {
+          const parsed = JSON.parse(err.error);
+          this.errorMessage = parsed.message || '❌ حدث خطأ أثناء حفظ البيانات.';
+        } catch {
+          this.errorMessage = err.error || '❌ حدث خطأ أثناء حفظ البيانات.';
+        }
+      } else {
+        this.errorMessage = '❌ حدث خطأ غير معروف.';
+      }
     }
   });
 }
