@@ -165,14 +165,18 @@ resetMessages() {
 onSaveProfile() {
   if (this.profileForm.valid) {
     this.resetMessages();
+const data = {
+  userDto: {
+    id: parseInt(this.userId, 10),  // يحول الـ userId لـ integer
+    name: this.profileForm.value.name,
+    phoneNumber: this.profileForm.value.phoneNumber,
+    email: this.profileForm.value.email,
+          imageUrl: this.userImage  // ✅ الصورة مطلوبة للـ API
 
-    const data = {
-      id: this.userId,
-      name: this.profileForm.value.name,
-      phoneNumber: this.profileForm.value.phoneNumber,
-      email: this.profileForm.value.email,
-      imageUrl: this.userImage  // ✅ الصورة مطلوبة للـ API
-    };
+    // لو فيه imageUrl أو غيره، تبعته هنا
+  }
+};
+
 
     this.profileService.updateProfile(this.userId, data).subscribe({
       next: () => {
