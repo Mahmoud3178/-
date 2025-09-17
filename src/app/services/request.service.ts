@@ -90,4 +90,12 @@ export class RequestService {
 
     return this.http.post(`${this.baseUrl}/UpdateLatLong`, null, { params });
   }
+  getCompletedRequestsCount(technicianId: string): Observable<number> {
+  const headers = this.getAuthHeaders();
+  return this.http.get<number>(
+    `${this.baseUrl}/Rating/GetCompletedRequestsCount`,
+    { params: new HttpParams().set('TechnicianId', technicianId), headers }
+  );
+}
+
 }

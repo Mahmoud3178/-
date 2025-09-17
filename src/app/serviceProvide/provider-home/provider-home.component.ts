@@ -221,6 +221,19 @@ initMap(lat: number, lng: number) {
     this.updateLocationOnServer(newLat, newLng);
   });
 }
+loadCompletedOrdersCount() {
+  if (!this.provider.id) return;
+
+  this.requestService.getCompletedRequestsCount(this.provider.id).subscribe({
+    next: (count) => {
+      this.provider.orders = count;
+      console.log('✅ عدد الطلبات المكتملة:', count);
+    },
+    error: (err) => {
+      console.error('❌ فشل في تحميل عدد الطلبات المكتملة:', err);
+    }
+  });
+}
 
 
 }

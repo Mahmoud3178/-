@@ -4,7 +4,10 @@
     <div class="d-flex align-items-center gap-3">
       <img [src]="provider.avatar || 'assets/images/provider1.jpg'" class="rounded-circle" width="70" height="70" alt="Avatar">
       <div>
-        <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
+<h5 class="mb-0 fw-bold">
+  {{ provider.name }}
+  <small class="text-muted">({{ provider.orders }} طلب مكتمل)</small>
+</h5>
         <!-- <small class="text-muted">(التقييمات: {{ provider.reviews || 0 }}) {{ provider.rating || 0 }} ⭐</small> -->
       </div>
     </div>
