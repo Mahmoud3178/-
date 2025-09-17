@@ -25,9 +25,15 @@
         <!-- ✅ جرس الإشعارات -->
         <ng-container *ngIf="(userData$ | async)?.role === 'provider'">
           <div class="position-absolute bell-left">
-            <a routerLink="/provider-notifications" class="btn btn-outline-secondary">
-              <i class="bi bi-bell fs-5"></i>
-            </a>
+<a routerLink="/provider-notifications" class="btn btn-outline-secondary position-relative">
+  <i class="bi bi-bell fs-5"></i>
+  <span *ngIf="notificationCount > 0"
+        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+        style="font-size: 0.6rem;">
+    {{ notificationCount }}
+  </span>
+</a>
+
           </div>
         </ng-container>
 
@@ -66,9 +72,18 @@
               <a routerLink="/order" class="text-center d-flex flex-column align-items-center text-decoration-none">
                 <i class="bi bi-basket fs-5 text-primary"></i><small class="text-dark">الطلبات</small>
               </a>
-              <a routerLink="/notifications" class="text-center d-flex flex-column align-items-center text-decoration-none">
-                <i class="bi bi-bell fs-5 text-primary"></i><small class="text-dark">الإشعارات</small>
-              </a>
+<a routerLink="/notifications" class="text-center d-flex flex-column align-items-center text-decoration-none">
+  <span class="position-relative">
+    <i class="bi bi-bell fs-5 text-primary"></i>
+    <span *ngIf="notificationCount > 0"
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+          style="font-size: 0.6rem;">
+      {{ notificationCount }}
+    </span>
+  </span>
+  <small class="text-dark">الإشعارات</small>
+</a>
+
               <ng-container *ngIf="(userData$ | async) as user">
                 <div routerLink="/profile" class="text-center d-flex flex-column align-items-center">
 <img

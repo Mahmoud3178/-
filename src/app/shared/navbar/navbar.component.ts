@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Observable, map } from 'rxjs';
 import { NotificationStateService } from '../../services/notification-state.service';
+import { HttpClient } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-navbar',
@@ -19,6 +21,7 @@ export class NavbarComponent implements OnInit {
   userData$: Observable<{ name: string; role: 'client' | 'provider' | null; image: string }>;
 
   hasNewNotifications = false;
+notificationCount: number = 0;
 
   ready = false;
   isNavbarCollapsed = true;
@@ -26,7 +29,9 @@ export class NavbarComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private notificationState: NotificationStateService
+    private notificationState: NotificationStateService,
+      private http: HttpClient
+
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
@@ -58,11 +63,31 @@ if (user?.image) {
     });
   }
 
-  ngOnInit() {
-    this.notificationState.hasNewNotifications$.subscribe(value => {
-      this.hasNewNotifications = value;
+ ngOnInit() {
+  this.notificationState.hasNewNotifications$.subscribe(value => {
+    this.hasNewNotifications = value;
+  });
+
+  this.fetchNotificationCount(); // ✅ استدعاء جديد
+}
+fetchNotificationCount() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = user?.id;
+
+  if (!userId) return;
+
+this.http.get<number>(`/api/notifications/GetNotificationCount?id=${userId}`)
+    .subscribe({
+      next: (count) => {
+        this.notificationCount = count;
+      },
+      error: (err) => {
+        console.error('❌ فشل في جلب عدد الإشعارات:', err);
+        this.notificationCount = 0;
+      }
     });
-  }
+}
+
 
   toggleNavbar(): void {
     this.isNavbarCollapsed = !this.isNavbarCollapsed;
