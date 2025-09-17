@@ -60,19 +60,19 @@
     <!-- Main Content -->
     <div class="col-lg-9 col-md-8 p-4">
       <!-- الصورة الشخصية -->
-      <div class="text-center mb-4 d-flex">
+      <div class="text-center mb-4 d-flex justify-content-center align-items-center gap-3">
         <div class="position-relative d-inline-block">
-          <!-- نفس هنا -->
-          <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'" width="100" height="100" class="rounded-circle border"  id="imageInput">
+          <!-- هنا عرض الصورة بدون id -->
+          <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'" width="100" height="100" class="rounded-circle border" alt="User Avatar">
           <button class="delete-avatar-btn" (click)="onDeleteImage()">
             <i class="bi bi-trash3-fill"></i>
           </button>
         </div>
         <div class="text-primary mt-2 fw-bold cursor-pointer">
-          <label>
+          <label for="imageInput">
             تغيير الصورة الشخصية
-<!-- ✅ اضف id هنا -->
-<input type="file" id="imageInput" accept="image/*" (change)="onChangeImage($event)">
+            <!-- استخدم id فريد input -->
+            <input type="file" id="imageInput" accept="image/*" (change)="onChangeImage($event)" hidden>
           </label>
         </div>
       </div>
@@ -92,18 +92,18 @@
         <div class="col-12"><input type="text" class="form-control" placeholder="الخدمات المقدمة" [(ngModel)]="profileData.nameServices"></div>
       </div>
 
-  <!-- Toast-style Alert -->
-<div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
-  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-    {{ successMessage }}
-    <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
-  </div>
+      <!-- Toast-style Alert -->
+      <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+          {{ successMessage }}
+          <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
+        </div>
 
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-    {{ errorMessage }}
-    <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
-  </div>
-</div>
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+          {{ errorMessage }}
+          <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
+        </div>
+      </div>
 
       <!-- زر الحفظ -->
       <div class="text-center">
