@@ -223,16 +223,13 @@ initMap(lat: number, lng: number) {
 }
 loadCompletedOrdersCount() {
   if (!this.provider.id) return;
+this.requestService.getCompletedRequestsCount(this.provider.id).subscribe({
+  next: (res) => {
+    console.log('📡 Response:', res, typeof res);
+    this.provider.orders = Number(res); // نحوله لرقم
+  }
+});
 
-  this.requestService.getCompletedRequestsCount(this.provider.id).subscribe({
-    next: (count) => {
-      this.provider.orders = count;
-      console.log('✅ عدد الطلبات المكتملة:', count);
-    },
-    error: (err) => {
-      console.error('❌ فشل في تحميل عدد الطلبات المكتملة:', err);
-    }
-  });
 }
 
 
