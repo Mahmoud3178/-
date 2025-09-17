@@ -68,26 +68,8 @@ loadWorks() {
   this.previosWorkService.getPreviousWorks(this.technicianId).subscribe({
     next: (res) => {
       this.works = res.map(item => {
-        let imageBeforeUrl = '';
-        let imageAfterUrl = '';
-
-        try {
-          const beforeParsed = JSON.parse(item.imageBeforeUrl);
-          if (Array.isArray(beforeParsed) && beforeParsed.length > 0) {
-            imageBeforeUrl = `/Uploads/${beforeParsed[0].split('/').pop()}`;
-          }
-        } catch {
-          imageBeforeUrl = item.imageBeforeUrl || 'images/default-before.jpg';
-        }
-
-        try {
-          const afterParsed = JSON.parse(item.imageAfterUrl);
-          if (Array.isArray(afterParsed) && afterParsed.length > 0) {
-            imageAfterUrl = `/Uploads/${afterParsed[0].split('/').pop()}`;
-          }
-        } catch {
-          imageAfterUrl = item.imageAfterUrl || 'images/default-after.jpg';
-        }
+        let imageBeforeUrl = this.getValidImageUrl(item.imageBeforeUrl, 'before');
+        let imageAfterUrl = this.getValidImageUrl(item.imageAfterUrl, 'after');
 
         return {
           ...item,
@@ -100,6 +82,31 @@ loadWorks() {
   });
 }
 
+
+getValidImageUrl(rawUrl: string, type: 'before' | 'after'): string {
+  if (!rawUrl) {
+    return type === 'before' ? 'assets/images/default-before.jpg' : 'assets/images/default-after.jpg';
+  }
+
+  try {
+    const parsed = JSON.parse(rawUrl);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const fileName = parsed[0].split('/').pop();
+      return `/Uploads/${fileName}`;
+    }
+  } catch (_) {
+    // Not JSON, use raw string
+    if (rawUrl.startsWith('data:image')) {
+      return rawUrl;
+    } else if (rawUrl.startsWith('/Uploads')) {
+      return rawUrl;
+    } else if (rawUrl.startsWith('http')) {
+      return rawUrl;
+    }
+  }
+
+  return type === 'before' ? 'assets/images/default-before.jpg' : 'assets/images/default-after.jpg';
+}
 
   onImageSelected(event: any, type: 'before' | 'after') {
     const file = event.target.files[0];
