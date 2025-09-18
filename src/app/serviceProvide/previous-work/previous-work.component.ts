@@ -78,6 +78,7 @@ export class PreviousWorkComponent implements OnInit {
     });
   }
 
+  // ✅ التعديل هنا
   getValidImageUrl(rawUrl: string, type: 'before' | 'after'): string {
     if (!rawUrl) {
       return type === 'before'
@@ -87,17 +88,17 @@ export class PreviousWorkComponent implements OnInit {
 
     try {
       const parsed = JSON.parse(rawUrl);
-
       if (Array.isArray(parsed) && parsed.length > 0) {
-        const fileName = parsed[0].split('/').pop();
-        return `/Uploads/${fileName}`;
+        // رجع اللينك زي ما هو (absolute URL)
+        return parsed[0];
       }
     } catch (e) {
       if (rawUrl.startsWith('data:image')) return rawUrl;
-      if (rawUrl.startsWith('/Uploads')) return rawUrl;
-      if (rawUrl.startsWith('http')) return rawUrl;
-
-      return `/Uploads/${rawUrl}`;
+      if (rawUrl.startsWith('http')) return rawUrl;   // 🔥 أهم سطر
+      if (rawUrl.startsWith('/Uploads')) {
+        return `https://on-demand-service-backend.runasp.net${rawUrl}`;
+      }
+      return rawUrl;
     }
 
     return type === 'before'
