@@ -16,8 +16,8 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class EditProfileComponent implements OnInit {
   toggleStatus = true;
-  userImage: string = 'assets/images/default-avatar.png'; // الصورة المعروضة النهائية
-  selectedImage: string | null = null; // الصورة المؤقتة قبل الحفظ
+  userImage: string = 'assets/images/default-avatar.png';
+  selectedImage: string | null = null;
 
   provider: any = {};
   orders: any[] = [];
@@ -118,7 +118,7 @@ export class EditProfileComponent implements OnInit {
 
     reader.onload = () => {
       this.selectedImage = reader.result as string;
-      this.userImage = this.selectedImage; // عرض مؤقت للصورة الجديدة
+      this.userImage = this.selectedImage;
     };
 
     reader.readAsDataURL(file);
@@ -129,7 +129,6 @@ export class EditProfileComponent implements OnInit {
     this.userImage = this.provider.avatar || 'assets/images/default-avatar.png';
   }
 
-  // دالة لتحويل رابط الصورة إلى ملف File
   async urlToFile(url: string, filename: string, mimeType: string): Promise<File> {
     const response = await fetch(url);
     const blob = await response.blob();
@@ -159,10 +158,8 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
-    // التعامل مع الصورة
     if (this.selectedImage) {
       if (this.selectedImage.startsWith('http')) {
-        // إذا كانت صورة رابط، نحولها إلى ملف
         try {
           const file = await this.urlToFile(this.selectedImage, 'uploadedImage.jpg', 'image/jpeg');
           formData.append('imageUrl', file);
@@ -172,7 +169,6 @@ export class EditProfileComponent implements OnInit {
           return;
         }
       } else {
-        // إذا كانت صورة من اختيار المستخدم (Data URL)
         const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
         const file = fileInput?.files?.[0];
         if (file) {
@@ -183,12 +179,11 @@ export class EditProfileComponent implements OnInit {
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
 
-    this.http.patch<any>(url, formData).subscribe({
+    this.http.patch(url, formData, { responseType: 'text' }).subscribe({
       next: (res) => {
-        this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+        this.successMessage = res || '✅ تم تحديث الملف الشخصي بنجاح';
         this.errorMessage = '';
 
-        // تحديث الصورة النهائية بعد الحفظ
         if (this.selectedImage && !this.selectedImage.startsWith('http')) {
           const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
           const reader = new FileReader();
@@ -203,35 +198,21 @@ export class EditProfileComponent implements OnInit {
           if (fileInput.files && fileInput.files[0]) {
             reader.readAsDataURL(fileInput.files[0]);
           }
-        } else if (res.imageUrl) {
-          this.provider.avatar = res.imageUrl;
-          this.userImage = res.imageUrl;
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          user.image = res.imageUrl;
-          localStorage.setItem('user', JSON.stringify(user));
         }
 
         this.selectedImage = null;
       },
       error: (err) => {
         console.error('❌ خطأ في حفظ البيانات:', err);
-        if (err.error) {
-          try {
-            const parsed = JSON.parse(err.error);
-            this.errorMessage = parsed.message || '❌ حدث خطأ أثناء حفظ البيانات.';
-          } catch {
-            this.errorMessage = err.error || '❌ حدث خطأ أثناء حفظ البيانات.';
-          }
-        } else {
-          this.errorMessage = '❌ حدث خطأ غير معروف.';
-        }
+        this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
       }
     });
   }
-getSafeImageUrl(url: string): string {
-  if (!url) return 'assets/images/default-avatar.png';
-  return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
-}
+
+  getSafeImageUrl(url: string): string {
+    if (!url) return 'assets/images/default-avatar.png';
+    return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+  }
 
   logout(): void {
     this.authService.logout();
