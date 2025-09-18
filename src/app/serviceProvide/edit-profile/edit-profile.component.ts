@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 
 @Component({
@@ -59,9 +58,17 @@ export class EditProfileComponent implements OnInit {
       }
     }
 
-    this.userImage = user.image || 'assets/images/default-avatar.png';
-    this.provider.avatar = this.userImage;
-    this.provider.name = user.name || '';
+    // ✅ تحميل الصورة من localStorage زي change-password
+    this.provider = {
+      id: user.id,
+      name: user.name || '',
+      avatar: user.image || 'assets/images/default-avatar.png',
+      rating: 0,
+      reviews: 0,
+      orders: 0
+    };
+
+    this.userImage = this.provider.avatar;
   }
 
   ngOnInit(): void {
@@ -91,9 +98,14 @@ export class EditProfileComponent implements OnInit {
           imageUrl: res.imageUrl || ''
         };
 
-        if (!this.selectedImage) {
-          this.provider.avatar = res.imageUrl || 'assets/images/default-avatar.png';
+        // ✅ تحديث الصورة من السيرفر لو موجودة
+        if (res.imageUrl) {
+          this.provider.avatar = this.getSafeImageUrl(res.imageUrl);
           this.userImage = this.provider.avatar;
+
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.image = this.provider.avatar;
+          localStorage.setItem('user', JSON.stringify(user));
         }
 
         this.provider.name = res.name || this.provider.name;

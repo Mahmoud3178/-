@@ -81,30 +81,26 @@ export class ProfileComponent implements OnInit {
       next: (res) => {
         console.log('📦 response from API:', res);
 
-        // ✅ تشيك على undefined/null فقط
         if (res.id === undefined || res.id === null) {
           console.error('❌ البيانات المستلمة لا تحتوي على id');
           return;
         }
 
-        // تحديث النموذج
         this.profileForm.patchValue({
           name: res.name,
           phoneNumber: res.phoneNumber,
           email: res.email
         });
 
-        // تحديث الصورة (الحقل اسمه imagUUrl في الـ backend)
+        // ✅ تحديث الصورة من الـ API
         if (res.imagUUrl) {
-          this.userImage = res.imagUUrl.startsWith('/Uploads') || res.imagUUrl.startsWith('http')
+          this.userImage = res.imagUUrl.startsWith('http')
             ? res.imagUUrl
-            : this.userImage;
+            : `${window.location.origin}${res.imagUUrl}`;
         }
 
-        // تحديث userId (في حالة backend مرجع 0 يفضل نخلي اللي في localStorage)
         this.userId = res.id ? res.id.toString() : this.userId;
 
-        // تحديث localStorage
         const updatedUser = { ...user, ...res };
         localStorage.setItem('user', JSON.stringify(updatedUser));
       },
@@ -176,17 +172,17 @@ export class ProfileComponent implements OnInit {
           name: this.profileForm.value.name,
           phoneNumber: this.profileForm.value.phoneNumber,
           email: this.profileForm.value.email,
-          imagUUrl: this.userImage // ✅ نفس اسم الحقل بتاع الـ backend
+          imagUUrl: this.userImage // ✅ نفس اسم الحقل في الـ backend
         }
       };
 
       this.profileService.updateProfile(this.userId, data).subscribe({
         next: () => {
-          this.successMessage = '@ تم تحديث الملف بنجاح.';
+          this.successMessage = '✅ تم تحديث الملف بنجاح.';
         },
         error: (err) => {
           console.error('❌ فشل التحديث:', err);
-          this.errorMessage = '@ حدث خطأ أثناء تحديث البيانات.';
+          this.errorMessage = '❌ حدث خطأ أثناء تحديث البيانات.';
         }
       });
     }
@@ -204,7 +200,7 @@ export class ProfileComponent implements OnInit {
 
       this.profileService.changePassword(data).subscribe({
         next: () => {
-          this.successMessage = '@ تم تغيير كلمة المرور بنجاح.';
+          this.successMessage = '✅ تم تغيير كلمة المرور بنجاح.';
           this.passwordForm.reset();
         },
         error: (err) => {
@@ -212,9 +208,9 @@ export class ProfileComponent implements OnInit {
             const errors = Object.entries(err.error.errors)
               .map(([k, v]) => `${(v as string[]).join(', ')}`)
               .join(' ');
-            this.errorMessage = `@ ${errors}`;
+            this.errorMessage = `❌ ${errors}`;
           } else {
-            this.errorMessage = '@ فشل في تغيير كلمة المرور.';
+            this.errorMessage = '❌ فشل في تغيير كلمة المرور.';
           }
         }
       });
@@ -227,6 +223,7 @@ export class ProfileComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = () => {
         this.userImage = reader.result as string;
+
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         user.imagUUrl = this.userImage;
         localStorage.setItem('user', JSON.stringify(user));
