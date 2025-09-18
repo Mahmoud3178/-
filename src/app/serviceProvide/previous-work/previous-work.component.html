@@ -5,6 +5,8 @@
       <img [src]="provider.avatar" class="rounded-circle" width="70" height="70" alt="Avatar">
       <div>
         <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
+        <!-- <small class="text-muted">(التقييمات: {{ provider.reviews }}) {{ provider.rating }} ⭐</small>
+        <div class="badge bg-light text-primary mt-1">{{ provider.orders }} طلب منفذ</div> -->
       </div>
     </div>
     <div>
@@ -17,34 +19,40 @@
     </div>
   </div>
 
+  <!-- Layout -->
   <div class="row g-0">
     <!-- Sidebar -->
     <div class="col-lg-3 col-md-4 bg-light p-3 provider-sidebar">
       <div class="d-flex flex-column gap-2">
-        <button class="sidebar-btn" routerLink="/provider-home"><i class="bi bi-person-badge icon-circle"></i> المهام</button>
+       <button class="sidebar-btn" routerLink="/provider-home"><i class="bi bi-person-badge icon-circle"></i> المهام</button>
+        <!-- <button routerLink="/wallet" class="sidebar-btn"><i class="bi bi-briefcase icon-circle"></i> المحفظة</button>
+        <button routerLink="/appointments" class="sidebar-btn"><i class="bi bi-calendar icon-circle"></i> المواعيد المتاحة</button>
+        <button routerLink="/chats" class="sidebar-btn"><i class="bi bi-chat-left-text icon-circle"></i> المحادثات</button> -->
         <button routerLink="/ratings" class="sidebar-btn"><i class="bi bi-star icon-circle"></i> التقييمات</button>
         <button routerLink="/previos-work" class="sidebar-btn active"><i class="bi bi-tools icon-circle"></i> الأعمال السابقة</button>
         <button routerLink="/overview" class="sidebar-btn"><i class="bi bi-eye icon-circle"></i> نظرة عامة</button>
         <button routerLink="/edit-profile" class="sidebar-btn"><i class="bi bi-pencil icon-circle"></i> تعديل البيانات</button>
         <button routerLink="/service-provider-change-pass" class="sidebar-btn"><i class="bi bi-lock icon-circle"></i> تعديل كلمة المرور</button>
-        <button class="sidebar-btn" (click)="logout()">
-          <i class="bi bi-box-arrow-right icon-circle"></i> تسجيل الخروج
-        </button>
+                 <button class="sidebar-btn" (click)="logout()">
+  <i class="bi bi-box-arrow-right icon-circle"></i> تسجيل الخروج
+</button>
       </div>
     </div>
 
-    <!-- Toast-style Alert -->
-    <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
-      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-        {{ successMessage }}
-        <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
-      </div>
 
-      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-        {{ errorMessage }}
-        <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
-      </div>
-    </div>
+
+<!-- Toast-style Alert -->
+<div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+    {{ successMessage }}
+    <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
+  </div>
+</div>
 
     <!-- Main Content -->
     <div class="col-lg-9 col-md-8 p-4">
@@ -85,19 +93,27 @@
       </div>
 
       <!-- Works List -->
-      <div *ngFor="let work of works" class="mb-4 p-3 border rounded shadow-sm">
-        <h6 class="fw-bold mb-1">{{ work.Title }}</h6>
-        <div class="text-muted mb-2">{{ work.description }}</div>
-
+      <div *ngFor="let work of works" class="mb-4">
+        <div class="fw-bold">{{ work.description }}</div>
         <div class="d-flex gap-2 flex-wrap">
-          <div class="work-image-wrapper position-relative">
+          <div class="work-image-wrapper">
             <div class="badge bg-warning text-white position-absolute">قبل</div>
-            <img [src]="work.imageBeforeUrl" alt="قبل" class="work-image" />
-          </div>
-          <div class="work-image-wrapper position-relative">
-            <div class="badge bg-success text-white position-absolute">بعد</div>
-            <img [src]="work.imageAfterUrl" alt="بعد" class="work-image" />
-          </div>
+<img
+  [src]="work.imageBeforeUrl"
+  alt="قبل"
+  (error)="onImageError($event, 'before')"
+  class="work-image"
+/>
+      </div>
+          <div class="work-image-wrapper">
+            <div class="badge bg-warning text-white position-absolute">بعد</div>
+<img
+  [src]="work.imageAfterUrl"
+  alt="بعد"
+  (error)="onImageError($event, 'after')"
+  class="work-image"
+/>
+     </div>
         </div>
       </div>
     </div>
