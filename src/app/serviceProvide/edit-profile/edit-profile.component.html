@@ -66,29 +66,27 @@
 
     <!-- Main Content -->
     <div class="col-lg-9 col-md-8 p-4">
-      <!-- الصورة الشخصية -->
-      <div class="text-center mb-4 d-flex justify-content-center align-items-center gap-3">
-        <div class="position-relative d-inline-block">
-          <!-- عرض الصورة -->
-          <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'"
-               width="100" height="100" class="rounded-circle border" alt="User Avatar">
+  <!-- الصورة الشخصية -->
+<div class="text-center mb-4">
+  <div class="position-relative d-inline-block">
+    <!-- عرض الصورة -->
+    <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'"
+         width="100" height="100" class="rounded-circle border" alt="User Avatar">
 
-          <!-- زر حذف الصورة -->
-          <button class="delete-avatar-btn" (click)="onDeleteImage()" type="button" aria-label="حذف الصورة">
-            <i class="bi bi-trash3-fill"></i>
-          </button>
-        </div>
+    <!-- زر حذف الصورة -->
+    <button class="delete-avatar-btn" (click)="onDeleteImage()" type="button" aria-label="حذف الصورة">
+      <i class="bi bi-trash3-fill"></i>
+    </button>
+  </div>
 
-        <div class="text-primary mt-2 fw-bold cursor-pointer">
-          <!-- ربط الليبل مع input لسهولة التفاعل -->
-          <label for="imageFileInput" class="mb-0" style="cursor: pointer;">
-            تغيير الصورة الشخصية
-          </label>
-
-          <!-- input رفع الصورة مخفي (display:none) عشان يظهر الليبل فقط -->
-          <input type="file" id="imageFileInput" accept="image/*" (change)="onChangeImage($event)" style="display:none;">
-        </div>
-      </div>
+  <!-- 🔽 تم نقل النص تحت الصورة -->
+  <div class="text-primary mt-2 fw-bold">
+    <label for="imageFileInput" class="mb-0" style="cursor: pointer;">
+      تغيير الصورة الشخصية
+    </label>
+    <input type="file" id="imageFileInput" accept="image/*" (change)="onChangeImage($event)" style="display:none;">
+  </div>
+</div>
 
       <!-- حقول البيانات -->
       <div class="row g-2 mb-4">

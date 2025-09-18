@@ -4,12 +4,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProfileUserService } from '../../services/profile-user.service';
 import { AuthService } from '../../services/auth.service';
-import { UpdateProfileUser } from '../../DTOS/update-profile-user.dto';
 import { UpdatePasswordUser } from '../../DTOS/update-password-user.dto';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../DTOS/chatmessage.dto';
 import { HttpClient } from '@angular/common/http';
-
 
 @Component({
   selector: 'app-profile',
@@ -23,10 +21,10 @@ export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
 
-  userId: string = ''; // ✅ هيتجاب من localStorage بعدين
+  userId: string = '';
   userImage: string = 'assets/images/default-avatar.png';
-successMessage: string | null = null;
-errorMessage: string | null = null;
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
 
   favorites = [
     { name: 'محمد علي', rating: 5, orders: 28, image: 'assets/images/provider1.jpg' },
@@ -48,73 +46,78 @@ errorMessage: string | null = null;
     private chatService: ChatService,
     private router: Router,
     private route: ActivatedRoute,
-      private http: HttpClient // ✅ أضفنا دا
-
+    private http: HttpClient
   ) {}
-ngOnInit(): void {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  this.userId = user.id || '';
 
-  if (!this.userId) {
-    console.error('❌ لا يوجد userId');
-    return;
-  }
+  ngOnInit(): void {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    this.userId = user.id || '';
 
-  // 1. أنشئ الفورم فاضي مؤقتًا
-  this.profileForm = this.fb.group({
-    name: ['', Validators.required],
-    phoneNumber: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]]
-  });
-
-  this.passwordForm = this.fb.group({
-    currentPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]]
-  });
-
-  this.route.queryParams.subscribe(params => {
-    this.selectedTab = params['tab'] || 'info';
-  });
-
-  this.loadMessages();
-
-  // 2. نجيب البيانات من API
- this.http.get<any>(`/api/Profile/GetbyIduserprfile?id=${this.userId}`).subscribe({
-  next: (res) => {
-    // تأكد من وجود id
-    if (!res.id) {
-      console.error('❌ البيانات المستلمة لا تحتوي على id');
+    if (!this.userId) {
+      console.error('❌ لا يوجد userId');
       return;
     }
-    // تحديث النموذج
-    this.profileForm.patchValue({
-      name: res.name,
-      phoneNumber: res.phoneNumber,
-      email: res.email
+
+    // إنشاء الفورم
+    this.profileForm = this.fb.group({
+      name: ['', Validators.required],
+      phoneNumber: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]]
     });
-    // تحديث الصورة
-    if (res.imageUrl) {
-      this.userImage = res.imageUrl.startsWith('/Uploads') || res.imageUrl.startsWith('http') ? res.imageUrl : this.userImage;
-    }
-    // تحديث userId من البيانات الجديدة
-    this.userId = res.id.toString();
-    // تحديث localStorage
-    const updatedUser = { ...user, ...res };
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-  },
-  error: (err) => {
-    console.error('❌ فشل في تحميل بيانات المستخدم:', err);
+
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]]
+    });
+
+    this.route.queryParams.subscribe(params => {
+      this.selectedTab = params['tab'] || 'info';
+    });
+
+    this.loadMessages();
+
+    // طلب بيانات المستخدم من الـ API
+    this.http.get<any>(`/api/Profile/GetbyIduserprfile?id=${this.userId}`).subscribe({
+      next: (res) => {
+        console.log('📦 response from API:', res);
+
+        // ✅ تشيك على undefined/null فقط
+        if (res.id === undefined || res.id === null) {
+          console.error('❌ البيانات المستلمة لا تحتوي على id');
+          return;
+        }
+
+        // تحديث النموذج
+        this.profileForm.patchValue({
+          name: res.name,
+          phoneNumber: res.phoneNumber,
+          email: res.email
+        });
+
+        // تحديث الصورة (الحقل اسمه imagUUrl في الـ backend)
+        if (res.imagUUrl) {
+          this.userImage = res.imagUUrl.startsWith('/Uploads') || res.imagUUrl.startsWith('http')
+            ? res.imagUUrl
+            : this.userImage;
+        }
+
+        // تحديث userId (في حالة backend مرجع 0 يفضل نخلي اللي في localStorage)
+        this.userId = res.id ? res.id.toString() : this.userId;
+
+        // تحديث localStorage
+        const updatedUser = { ...user, ...res };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      },
+      error: (err) => {
+        console.error('❌ فشل في تحميل بيانات المستخدم:', err);
+      }
+    });
   }
-});
 
-}
-
-
-
-resetMessages() {
-  this.successMessage = '';
-  this.errorMessage = '';
-}
+  resetMessages() {
+    this.successMessage = '';
+    this.errorMessage = '';
+  }
 
   loadMessages(): void {
     this.chatService.getUserMessages(this.userId).subscribe({
@@ -164,94 +167,87 @@ resetMessages() {
     this.selectedTab = tab;
   }
 
-onSaveProfile() {
-  if (this.profileForm.valid) {
-    this.resetMessages();
-const data = {
-  userDto: {
-    id: parseInt(this.userId, 10),  // يحول الـ userId لـ integer
-    name: this.profileForm.value.name,
-    phoneNumber: this.profileForm.value.phoneNumber,
-    email: this.profileForm.value.email,
-          imageUrl: this.userImage  // ✅ الصورة مطلوبة للـ API
-
-    // لو فيه imageUrl أو غيره، تبعته هنا
-  }
-};
-
-
-    this.profileService.updateProfile(this.userId, data).subscribe({
-      next: () => {
-        this.successMessage = '@ تم تحديث الملف بنجاح.';
-      },
-      error: (err) => {
-        console.error('❌ فشل التحديث:', err);
-        this.errorMessage = '@ حدث خطأ أثناء تحديث البيانات.';
-      }
-    });
-  }
-}
-
-
-onChangePassword() {
-  if (this.passwordForm.valid) {
-    this.resetMessages();
-
-    const data: UpdatePasswordUser = {
-      userId: this.userId,
-      currentPassword: this.passwordForm.value.currentPassword,
-      newPassword: this.passwordForm.value.newPassword
-    };
-
-    this.profileService.changePassword(data).subscribe({
-      next: () => {
-        this.successMessage = '@ تم تغيير كلمة المرور بنجاح.';
-        this.passwordForm.reset();
-      },
-      error: (err) => {
-        if (err.error?.errors) {
-          const errors = Object.entries(err.error.errors)
-            .map(([k, v]) => `${(v as string[]).join(', ')}`)
-            .join(' ');
-          this.errorMessage = `@ ${errors}`;
-        } else {
-          this.errorMessage = '@ فشل في تغيير كلمة المرور.';
+  onSaveProfile() {
+    if (this.profileForm.valid) {
+      this.resetMessages();
+      const data = {
+        userDto: {
+          id: parseInt(this.userId, 10),
+          name: this.profileForm.value.name,
+          phoneNumber: this.profileForm.value.phoneNumber,
+          email: this.profileForm.value.email,
+          imagUUrl: this.userImage // ✅ نفس اسم الحقل بتاع الـ backend
         }
-      }
-    });
+      };
+
+      this.profileService.updateProfile(this.userId, data).subscribe({
+        next: () => {
+          this.successMessage = '@ تم تحديث الملف بنجاح.';
+        },
+        error: (err) => {
+          console.error('❌ فشل التحديث:', err);
+          this.errorMessage = '@ حدث خطأ أثناء تحديث البيانات.';
+        }
+      });
+    }
   }
-}
+
+  onChangePassword() {
+    if (this.passwordForm.valid) {
+      this.resetMessages();
+
+      const data: UpdatePasswordUser = {
+        userId: this.userId,
+        currentPassword: this.passwordForm.value.currentPassword,
+        newPassword: this.passwordForm.value.newPassword
+      };
+
+      this.profileService.changePassword(data).subscribe({
+        next: () => {
+          this.successMessage = '@ تم تغيير كلمة المرور بنجاح.';
+          this.passwordForm.reset();
+        },
+        error: (err) => {
+          if (err.error?.errors) {
+            const errors = Object.entries(err.error.errors)
+              .map(([k, v]) => `${(v as string[]).join(', ')}`)
+              .join(' ');
+            this.errorMessage = `@ ${errors}`;
+          } else {
+            this.errorMessage = '@ فشل في تغيير كلمة المرور.';
+          }
+        }
+      });
+    }
+  }
 
   onChangeImage(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.userImage = reader.result as string;
-
-      // 🔁 تحدث نسخة اليوزر المحفوظة في localStorage
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      user.image = this.userImage;
-      localStorage.setItem('user', JSON.stringify(user));
-    };
-    reader.readAsDataURL(file);
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.userImage = reader.result as string;
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        user.imagUUrl = this.userImage;
+        localStorage.setItem('user', JSON.stringify(user));
+      };
+      reader.readAsDataURL(file);
+    }
   }
-}
-onDeleteImage() {
-  this.userImage = 'assets/images/default-avatar.png';
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  user.image = '';
-  localStorage.setItem('user', JSON.stringify(user));
-}
 
-
-logout() {
-  const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
-  if (confirmed) {
-    localStorage.removeItem('user');
-    this.authService.logout();
-    this.router.navigate(['/']);
+  onDeleteImage() {
+    this.userImage = 'assets/images/default-avatar.png';
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    user.imagUUrl = '';
+    localStorage.setItem('user', JSON.stringify(user));
   }
-}
 
+  logout() {
+    const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
+    if (confirmed) {
+      localStorage.removeItem('user');
+      this.authService.logout();
+      this.router.navigate(['/']);
+    }
+  }
 }
