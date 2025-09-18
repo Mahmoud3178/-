@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 
 @Component({
@@ -108,7 +109,9 @@ export class EditProfileComponent implements OnInit {
 
   onChangeImage(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
 
     const file = input.files[0];
     const reader = new FileReader();
@@ -126,11 +129,18 @@ export class EditProfileComponent implements OnInit {
     this.userImage = this.provider.avatar || 'assets/images/default-avatar.png';
   }
 
+  async urlToFile(url: string, filename: string, mimeType: string): Promise<File> {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: mimeType });
+  }
+
   async onSave(): Promise<void> {
     this.successMessage = '';
     this.errorMessage = '';
 
     const formData = new FormData();
+
     formData.append('name', this.profileData.name);
     formData.append('categoryName', this.profileData.categoryName);
     formData.append('email', this.profileData.email);
@@ -149,36 +159,45 @@ export class EditProfileComponent implements OnInit {
     }
 
     if (this.selectedImage) {
-      const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
-      const file = fileInput?.files?.[0];
-      if (file) {
-        formData.append('imageUrl', file);
+      if (this.selectedImage.startsWith('http')) {
+        try {
+          const file = await this.urlToFile(this.selectedImage, 'uploadedImage.jpg', 'image/jpeg');
+          formData.append('imageUrl', file);
+        } catch (error) {
+          console.error('❌ خطأ في تحميل الصورة من الرابط:', error);
+          this.errorMessage = '❌ فشل في تحميل الصورة.';
+          return;
+        }
+      } else {
+        const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
+        const file = fileInput?.files?.[0];
+        if (file) {
+          formData.append('imageUrl', file);
+        }
       }
     }
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
 
-    this.http.patch(url, formData, { responseType: 'json' }).subscribe({
-      next: (res: any) => {
-        this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+    this.http.patch(url, formData, { responseType: 'text' }).subscribe({
+      next: (res) => {
+        this.successMessage = res || '✅ تم تحديث الملف الشخصي بنجاح';
         this.errorMessage = '';
 
-        let newImageUrl = '';
-        if (res && res.imageUrl) {
-          newImageUrl = res.imageUrl.startsWith('/Uploads')
-            ? res.imageUrl
-            : `/Uploads/${res.imageUrl}`;
-        } else if (this.selectedImage) {
-          newImageUrl = this.selectedImage;
-        }
+        if (this.selectedImage && !this.selectedImage.startsWith('http')) {
+          const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.userImage = reader.result as string;
+            this.provider.avatar = this.userImage;
 
-        if (newImageUrl) {
-          this.userImage = newImageUrl;
-          this.provider.avatar = newImageUrl;
-
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          user.image = newImageUrl;
-          localStorage.setItem('user', JSON.stringify(user));
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            user.image = this.userImage;
+            localStorage.setItem('user', JSON.stringify(user));
+          };
+          if (fileInput.files && fileInput.files[0]) {
+            reader.readAsDataURL(fileInput.files[0]);
+          }
         }
 
         this.selectedImage = null;
@@ -190,9 +209,9 @@ export class EditProfileComponent implements OnInit {
     });
   }
 
-  onImageError(event: Event) {
-    const target = event.target as HTMLImageElement;
-    target.src = 'assets/images/default-avatar.png';
+  getSafeImageUrl(url: string): string {
+    if (!url) return 'assets/images/default-avatar.png';
+    return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
   }
 
   logout(): void {
