@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 
 @Component({
@@ -109,9 +108,7 @@ export class EditProfileComponent implements OnInit {
 
   onChangeImage(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) {
-      return;
-    }
+    if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
     const reader = new FileReader();
@@ -129,91 +126,73 @@ export class EditProfileComponent implements OnInit {
     this.userImage = this.provider.avatar || 'assets/images/default-avatar.png';
   }
 
-  async urlToFile(url: string, filename: string, mimeType: string): Promise<File> {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new File([blob], filename, { type: mimeType });
-  }
+  async onSave(): Promise<void> {
+    this.successMessage = '';
+    this.errorMessage = '';
 
-async onSave(): Promise<void> {
-  this.successMessage = '';
-  this.errorMessage = '';
+    const formData = new FormData();
+    formData.append('name', this.profileData.name);
+    formData.append('categoryName', this.profileData.categoryName);
+    formData.append('email', this.profileData.email);
+    formData.append('phoneNumber', this.profileData.phoneNumber);
+    formData.append('nationalId', this.profileData.nationalId);
+    formData.append('serviceAreas', this.profileData.serviceAreas);
+    formData.append('workingHours', this.profileData.workingHours.toString());
+    formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
+    formData.append('bankName', this.profileData.bankName);
+    formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
+    formData.append('nameServices', this.profileData.nameServices);
 
-  const formData = new FormData();
-
-  formData.append('name', this.profileData.name);
-  formData.append('categoryName', this.profileData.categoryName);
-  formData.append('email', this.profileData.email);
-  formData.append('phoneNumber', this.profileData.phoneNumber);
-  formData.append('nationalId', this.profileData.nationalId);
-  formData.append('serviceAreas', this.profileData.serviceAreas);
-  formData.append('workingHours', this.profileData.workingHours.toString());
-  formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
-  formData.append('bankName', this.profileData.bankName);
-  formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
-  formData.append('nameServices', this.profileData.nameServices);
-
-  if (!this.technicianId) {
-    this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
-    return;
-  }
-
-  // ✅ إضافة الصورة الجديدة لو فيه واحدة مختارة
-  if (this.selectedImage) {
-    const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
-    const file = fileInput?.files?.[0];
-    if (file) {
-      formData.append('imageUrl', file);
+    if (!this.technicianId) {
+      this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
+      return;
     }
+
+    if (this.selectedImage) {
+      const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
+      const file = fileInput?.files?.[0];
+      if (file) {
+        formData.append('imageUrl', file);
+      }
+    }
+
+    const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
+
+    this.http.patch(url, formData, { responseType: 'json' }).subscribe({
+      next: (res: any) => {
+        this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+        this.errorMessage = '';
+
+        let newImageUrl = '';
+        if (res && res.imageUrl) {
+          newImageUrl = res.imageUrl.startsWith('/Uploads')
+            ? res.imageUrl
+            : `/Uploads/${res.imageUrl}`;
+        } else if (this.selectedImage) {
+          newImageUrl = this.selectedImage;
+        }
+
+        if (newImageUrl) {
+          this.userImage = newImageUrl;
+          this.provider.avatar = newImageUrl;
+
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.image = newImageUrl;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        this.selectedImage = null;
+      },
+      error: (err) => {
+        console.error('❌ خطأ في حفظ البيانات:', err);
+        this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
+      }
+    });
   }
 
-  const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
-
-  this.http.patch(url, formData, { responseType: 'json' }).subscribe({
-    next: (res: any) => {
-      this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
-      this.errorMessage = '';
-
-      // 🔽 تحديث الصورة والرابط
-      let newImageUrl = '';
-
-      if (res && res.imageUrl) {
-        // لو السيرفر رجع رابط جديد
-        newImageUrl = res.imageUrl.startsWith('/Uploads')
-          ? res.imageUrl
-          : `/Uploads/${res.imageUrl}`;
-      } else if (this.selectedImage) {
-        // fallback: لو السيرفر مرجعش رابط
-        newImageUrl = this.selectedImage;
-      }
-
-      if (newImageUrl) {
-        this.userImage = newImageUrl;
-        this.provider.avatar = newImageUrl;
-
-        // 🔽 تحديث نسخة localStorage
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        user.image = newImageUrl;
-        localStorage.setItem('user', JSON.stringify(user));
-      }
-
-      this.selectedImage = null;
-    },
-    error: (err) => {
-      console.error('❌ خطأ في حفظ البيانات:', err);
-      this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
-    }
-  });
-}
-onImageError(event: Event) {
-  const target = event.target as HTMLImageElement;
-  target.src = 'assets/images/default-avatar.png';
-}
-
-
-  getSafeImageUrl(url: string): string {
-    if (!url) return 'assets/images/default-avatar.png';
-    return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+  onImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    target.src = 'assets/images/default-avatar.png';
   }
 
   logout(): void {
