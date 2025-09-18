@@ -20,7 +20,6 @@ export class RatingsComponent implements OnInit {
   showCount = 4;
 
   provider: any = {};
-  orderInfo: any = {};
   successMessage = '';
   errorMessage = '';
 
@@ -37,7 +36,7 @@ export class RatingsComponent implements OnInit {
       this.provider = {
         id: user.id,
         name: user.name,
-        avatar: user.image || 'assets/images/provider1.jpg',
+        avatar: this.ratingService.fixImageUrl(user.image) || 'assets/images/provider1.jpg',
         rating: 0,
         reviews: 0,
         orders: 0
@@ -49,7 +48,7 @@ export class RatingsComponent implements OnInit {
             clientName: r.userName && r.userName.trim() !== '' ? r.userName : 'اسم العميل غير متوفر',
             clientRole: 'عميل',
             clientRoleColor: 'bg-success',
-            clientAvatar: r.userImage && r.userImage.trim() !== '' ? r.userImage : 'assets/images/avatar1.jpg',
+            clientAvatar: this.ratingService.fixImageUrl(r.userImage),
             clientTime: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
             clientDate: new Date().toLocaleDateString('ar-EG'),
             stars: r.ratingValue,
@@ -74,10 +73,10 @@ export class RatingsComponent implements OnInit {
     const nextCount = this.visibleRatings.length + this.showCount;
     this.visibleRatings = this.ratings.slice(0, nextCount);
   }
-  showLess() {
-  this.visibleRatings = this.ratings.slice(0, this.showCount);
-}
 
+  showLess() {
+    this.visibleRatings = this.ratings.slice(0, this.showCount);
+  }
 
   clearMessages() {
     setTimeout(() => {

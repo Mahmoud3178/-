@@ -6,7 +6,7 @@
     },
     {
       "source": "/Uploads/:path*",
-      "destination": "https://on-demand-service-backend.runasp.net/Uploads/:path*"
+      "destination": "http://on-demand-service-backend.runasp.net/Uploads/:path*"
     }
   ]
 }

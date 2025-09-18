@@ -7,6 +7,9 @@ import { Rating } from '../DTOS/rating.dto'; // تأكد من مسار المل�
   providedIn: 'root'
 })
 export class RatingService {
+  fixImageUrl(userImage: string | undefined): any {
+    throw new Error('Method not implemented.');
+  }
   private apiUrl = '/api/Rating';  // خلي الرابط نسبي
 
   constructor(private http: HttpClient) {}
