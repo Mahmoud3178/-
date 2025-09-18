@@ -33,27 +33,56 @@ export class RatingsComponent implements OnInit {
     const userJson = localStorage.getItem('user');
     if (userJson) {
       const user = JSON.parse(userJson);
+
+      // ✅ معالجة صورة المزود
+      let avatar = 'assets/images/provider1.jpg';
+      if (user.image) {
+        try {
+          const fileName = user.image.split('/').pop();
+          if (fileName) {
+            avatar = `/Uploads/${fileName}`;
+          }
+        } catch (e) {
+          console.error('❌ خطأ في معالجة صورة المزود:', e);
+        }
+      }
+
       this.provider = {
         id: user.id,
         name: user.name,
-        avatar: this.ratingService.fixImageUrl(user.image) || 'assets/images/provider1.jpg',
+        avatar: avatar,
         rating: 0,
         reviews: 0,
         orders: 0
       };
 
+      // ✅ جلب التقييمات
       this.ratingService.getRatingsByTechnician(this.provider.id).subscribe({
         next: (data) => {
-          this.ratings = data.map(r => ({
-            clientName: r.userName && r.userName.trim() !== '' ? r.userName : 'اسم العميل غير متوفر',
-            clientRole: 'عميل',
-            clientRoleColor: 'bg-success',
-            clientAvatar: this.ratingService.fixImageUrl(r.userImage),
-            clientTime: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
-            clientDate: new Date().toLocaleDateString('ar-EG'),
-            stars: r.ratingValue,
-            comment: r.comment
-          }));
+          this.ratings = data.map(r => {
+            let clientAvatar = 'assets/images/avatar1.jpg';
+            if (r.userImage) {
+              try {
+                const fileName = r.userImage.split('/').pop();
+                if (fileName) {
+                  clientAvatar = `/Uploads/${fileName}`;
+                }
+              } catch (e) {
+                console.error('❌ خطأ في معالجة صورة العميل:', e);
+              }
+            }
+
+            return {
+              clientName: r.userName && r.userName.trim() !== '' ? r.userName : 'اسم العميل غير متوفر',
+              clientRole: 'عميل',
+              clientRoleColor: 'bg-success',
+              clientAvatar: clientAvatar,
+              clientTime: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+              clientDate: new Date().toLocaleDateString('ar-EG'),
+              stars: r.ratingValue,
+              comment: r.comment
+            };
+          });
 
           this.visibleRatings = this.ratings.slice(0, this.showCount);
 
