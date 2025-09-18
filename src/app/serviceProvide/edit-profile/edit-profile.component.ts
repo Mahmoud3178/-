@@ -135,79 +135,77 @@ export class EditProfileComponent implements OnInit {
     return new File([blob], filename, { type: mimeType });
   }
 
-  async onSave(): Promise<void> {
-    this.successMessage = '';
-    this.errorMessage = '';
+async onSave(): Promise<void> {
+  this.successMessage = '';
+  this.errorMessage = '';
 
-    const formData = new FormData();
+  const formData = new FormData();
 
-    formData.append('name', this.profileData.name);
-    formData.append('categoryName', this.profileData.categoryName);
-    formData.append('email', this.profileData.email);
-    formData.append('phoneNumber', this.profileData.phoneNumber);
-    formData.append('nationalId', this.profileData.nationalId);
-    formData.append('serviceAreas', this.profileData.serviceAreas);
-    formData.append('workingHours', this.profileData.workingHours.toString());
-    formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
-    formData.append('bankName', this.profileData.bankName);
-    formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
-    formData.append('nameServices', this.profileData.nameServices);
+  formData.append('name', this.profileData.name);
+  formData.append('categoryName', this.profileData.categoryName);
+  formData.append('email', this.profileData.email);
+  formData.append('phoneNumber', this.profileData.phoneNumber);
+  formData.append('nationalId', this.profileData.nationalId);
+  formData.append('serviceAreas', this.profileData.serviceAreas);
+  formData.append('workingHours', this.profileData.workingHours.toString());
+  formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
+  formData.append('bankName', this.profileData.bankName);
+  formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
+  formData.append('nameServices', this.profileData.nameServices);
 
-    if (!this.technicianId) {
-      this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
-      return;
-    }
-
-    if (this.selectedImage) {
-      if (this.selectedImage.startsWith('http')) {
-        try {
-          const file = await this.urlToFile(this.selectedImage, 'uploadedImage.jpg', 'image/jpeg');
-          formData.append('imageUrl', file);
-        } catch (error) {
-          console.error('❌ خطأ في تحميل الصورة من الرابط:', error);
-          this.errorMessage = '❌ فشل في تحميل الصورة.';
-          return;
-        }
-      } else {
-        const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
-        const file = fileInput?.files?.[0];
-        if (file) {
-          formData.append('imageUrl', file);
-        }
-      }
-    }
-
-    const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
-
-    this.http.patch(url, formData, { responseType: 'text' }).subscribe({
-      next: (res) => {
-        this.successMessage = res || '✅ تم تحديث الملف الشخصي بنجاح';
-        this.errorMessage = '';
-
-        if (this.selectedImage && !this.selectedImage.startsWith('http')) {
-          const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
-          const reader = new FileReader();
-          reader.onload = () => {
-            this.userImage = reader.result as string;
-            this.provider.avatar = this.userImage;
-
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            user.image = this.userImage;
-            localStorage.setItem('user', JSON.stringify(user));
-          };
-          if (fileInput.files && fileInput.files[0]) {
-            reader.readAsDataURL(fileInput.files[0]);
-          }
-        }
-
-        this.selectedImage = null;
-      },
-      error: (err) => {
-        console.error('❌ خطأ في حفظ البيانات:', err);
-        this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
-      }
-    });
+  if (!this.technicianId) {
+    this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
+    return;
   }
+
+  // ✅ إضافة الصورة الجديدة لو فيه واحدة مختارة
+  if (this.selectedImage) {
+    const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
+    const file = fileInput?.files?.[0];
+    if (file) {
+      formData.append('imageUrl', file);
+    }
+  }
+
+  const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
+
+  this.http.patch(url, formData, { responseType: 'json' }).subscribe({
+    next: (res: any) => {
+      this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+      this.errorMessage = '';
+
+      // 🔽 تحديث الصورة والرابط
+      let newImageUrl = '';
+
+      if (res && res.imageUrl) {
+        // لو السيرفر رجع رابط جديد
+        newImageUrl = res.imageUrl.startsWith('/Uploads')
+          ? res.imageUrl
+          : `/Uploads/${res.imageUrl}`;
+      } else if (this.selectedImage) {
+        // fallback: لو السيرفر مرجعش رابط
+        newImageUrl = this.selectedImage;
+      }
+
+      if (newImageUrl) {
+        this.userImage = newImageUrl;
+        this.provider.avatar = newImageUrl;
+
+        // 🔽 تحديث نسخة localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        user.image = newImageUrl;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+
+      this.selectedImage = null;
+    },
+    error: (err) => {
+      console.error('❌ خطأ في حفظ البيانات:', err);
+      this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
+    }
+  });
+}
+
 
   getSafeImageUrl(url: string): string {
     if (!url) return 'assets/images/default-avatar.png';
