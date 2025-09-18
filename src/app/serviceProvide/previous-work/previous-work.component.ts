@@ -84,8 +84,8 @@ loadWorks() {
 getValidImageUrl(rawUrl: string, type: 'before' | 'after'): string {
   if (!rawUrl) {
     return type === 'before'
-      ? 'assets/images/default-before.jpg'
-      : 'assets/images/default-after.jpg';
+      ? 'images/default-before.jpg'
+      : 'images/default-after.jpg';
   }
 
   try {
@@ -102,15 +102,15 @@ getValidImageUrl(rawUrl: string, type: 'before' | 'after'): string {
   }
 
   return type === 'before'
-    ? 'assets/images/default-before.jpg'
-    : 'assets/images/default-after.jpg';
+    ? 'images/default-before.jpg'
+    : 'images/default-after.jpg';
 }
 
 onImageError(event: Event, type: 'before' | 'after') {
   const element = event.target as HTMLImageElement;
   element.src = type === 'before'
-    ? 'assets/images/default-before.jpg'
-    : 'assets/images/default-after.jpg';
+    ? 'images/default-before.jpg'
+    : 'images/default-after.jpg';
 }
 
 
