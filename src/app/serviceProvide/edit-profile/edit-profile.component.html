@@ -3,8 +3,12 @@
   <div class="provider-header d-flex justify-content-between align-items-center px-4 py-3">
     <div class="d-flex align-items-center gap-3">
       <!-- عرض الصورة: إما الصورة المؤقتة المختارة أو صورة البروفايل أو الافتراضية -->
-      <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'"
-           class="rounded-circle" width="70" height="70" alt="Avatar">
+ <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'"
+     class="rounded-circle"
+     width="70" height="70"
+     alt="Avatar"
+     (error)="onImageError($event)" />
+
       <div>
         <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
         <!-- إذا حبيت تضيف تقييمات أو طلبات، افتح التعليقات -->
@@ -70,8 +74,12 @@
 <div class="text-center mb-4">
   <div class="position-relative d-inline-block">
     <!-- عرض الصورة -->
-    <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'"
-         width="100" height="100" class="rounded-circle border" alt="User Avatar">
+<img [src]="selectedImage || provider.avatar || 'images/default-avatar.png'"
+     width="100" height="100"
+     class="rounded-circle border"
+     alt="User Avatar"
+     (error)="onImageError($event)" />
+
 
     <!-- زر حذف الصورة -->
     <button class="delete-avatar-btn" (click)="onDeleteImage()" type="button" aria-label="حذف الصورة">

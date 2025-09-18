@@ -205,6 +205,10 @@ async onSave(): Promise<void> {
     }
   });
 }
+onImageError(event: Event) {
+  const target = event.target as HTMLImageElement;
+  target.src = 'assets/images/default-avatar.png';
+}
 
 
   getSafeImageUrl(url: string): string {
