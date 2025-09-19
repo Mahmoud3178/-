@@ -7,7 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { UpdatePasswordUser } from '../../DTOS/update-password-user.dto';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../DTOS/chatmessage.dto';
-import { HttpClient } from '@angular/common/http';
+import { UpdateProfileUser } from '../../DTOS/update-profile-user.dto';
 
 @Component({
   selector: 'app-profile',
@@ -26,11 +26,6 @@ export class ProfileComponent implements OnInit {
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  favorites = [
-    { name: 'محمد علي', rating: 5, orders: 28, image: 'assets/images/provider1.jpg' },
-    { name: 'مصطفى علي', rating: 4, orders: 18, image: 'assets/images/provider2.jpg' }
-  ];
-
   conversations: {
     name: string;
     message: string;
@@ -45,20 +40,13 @@ export class ProfileComponent implements OnInit {
     private authService: AuthService,
     private chatService: ChatService,
     private router: Router,
-    private route: ActivatedRoute,
-    private http: HttpClient
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.userId = user.id || '';
 
-    if (!this.userId) {
-      console.error('❌ لا يوجد userId');
-      return;
-    }
-
-    // إنشاء الفورم
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
       phoneNumber: ['', Validators.required],
@@ -70,116 +58,46 @@ export class ProfileComponent implements OnInit {
       newPassword: ['', [Validators.required, Validators.minLength(6)]]
     });
 
+    // تحديد التبويب من الـ query params
     this.route.queryParams.subscribe(params => {
       this.selectedTab = params['tab'] || 'info';
     });
 
+    this.loadProfile();
     this.loadMessages();
+  }
 
-    // طلب بيانات المستخدم من الـ API
-    this.http.get<any>(`/api/Profile/GetbyIduserprfile?id=${this.userId}`).subscribe({
+  // ✅ تحميل بيانات البروفايل
+  loadProfile() {
+    this.profileService.getUserProfile(this.userId).subscribe({
       next: (res) => {
-        console.log('📦 response from API:', res);
-
-        if (res.id === undefined || res.id === null) {
-          console.error('❌ البيانات المستلمة لا تحتوي على id');
-          return;
-        }
-
         this.profileForm.patchValue({
           name: res.name,
           phoneNumber: res.phoneNumber,
           email: res.email
         });
 
-        // ✅ تحديث الصورة من الـ API
-        if (res.imagUUrl) {
-          this.userImage = res.imagUUrl.startsWith('http')
-            ? res.imagUUrl
-            : `${window.location.origin}${res.imagUUrl}`;
+        if (res.imageUrl) {
+          this.userImage = res.imageUrl;
         }
-
-        this.userId = res.id ? res.id.toString() : this.userId;
-
-        const updatedUser = { ...user, ...res };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
       },
-      error: (err) => {
-        console.error('❌ فشل في تحميل بيانات المستخدم:', err);
-      }
+      error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
     });
   }
 
-  resetMessages() {
-    this.successMessage = '';
-    this.errorMessage = '';
-  }
-
-  loadMessages(): void {
-    this.chatService.getUserMessages(this.userId).subscribe({
-      next: (res: ChatMessage[][]) => {
-        const allMessages = res.flat();
-        console.log('✅ كل الرسائل بعد الفك:', allMessages);
-
-        const grouped = new Map<number, ChatMessage[]>();
-        allMessages.forEach(msg => {
-          if (!grouped.has(msg.orderId)) {
-            grouped.set(msg.orderId, []);
-          }
-          grouped.get(msg.orderId)!.push(msg);
-        });
-
-        this.conversations = Array.from(grouped.entries()).map(([orderId, messages]) => {
-          const last = messages[messages.length - 1];
-          return {
-            name: 'اسم الفني غير متوفر',
-            message: last.text,
-            time: new Date(last.timestamp).toLocaleString('ar-EG'),
-            techId: last.technicianId,
-            orderId: last.orderId
-          };
-        });
-
-        const latest = localStorage.getItem('lastUserMessage');
-        if (latest) {
-          const msg: ChatMessage = JSON.parse(latest);
-          const idx = this.conversations.findIndex(c => c.orderId === msg.orderId);
-
-          if (idx !== -1) {
-            this.conversations[idx].message = msg.text;
-            this.conversations[idx].time = new Date(msg.timestamp).toLocaleString('ar-EG');
-          }
-
-          localStorage.removeItem('lastUserMessage');
-        }
-
-        console.log('📦 المحادثات النهائية:', this.conversations);
-      },
-      error: (err) => console.error('❌ فشل في تحميل المحادثات:', err)
-    });
-  }
-
-  setTab(tab: string) {
-    this.selectedTab = tab;
-  }
-
+  // ✅ تحديث بيانات البروفايل
   onSaveProfile() {
     if (this.profileForm.valid) {
-      this.resetMessages();
-      const data = {
-        userDto: {
-          id: parseInt(this.userId, 10),
-          name: this.profileForm.value.name,
-          phoneNumber: this.profileForm.value.phoneNumber,
-          email: this.profileForm.value.email,
-          imagUUrl: this.userImage // ✅ نفس اسم الحقل في الـ backend
-        }
+      const data: UpdateProfileUser = {
+        id: this.userId,
+        name: this.profileForm.value.name,
+        phoneNumber: this.profileForm.value.phoneNumber,
+        email: this.profileForm.value.email,
+        imageUrl: this.userImage
       };
 
       this.profileService.updateProfile(this.userId, data).subscribe({
-        next: () => {
-          this.successMessage = '✅ تم تحديث الملف بنجاح.';
-        },
+        next: () => this.successMessage = '✅ تم تحديث الملف بنجاح.',
         error: (err) => {
           console.error('❌ فشل التحديث:', err);
           this.errorMessage = '❌ حدث خطأ أثناء تحديث البيانات.';
@@ -188,6 +106,7 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  // ✅ تغيير كلمة المرور
   onChangePassword() {
     if (this.passwordForm.valid) {
       this.resetMessages();
@@ -217,34 +136,67 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  // ✅ تحميل المحادثات
+  loadMessages(): void {
+    this.chatService.getUserMessages(this.userId).subscribe({
+      next: (res: ChatMessage[][]) => {
+        const allMessages = res.flat();
+        const grouped = new Map<number, ChatMessage[]>();
+
+        allMessages.forEach(msg => {
+          if (!grouped.has(msg.orderId)) {
+            grouped.set(msg.orderId, []);
+          }
+          grouped.get(msg.orderId)!.push(msg);
+        });
+
+        this.conversations = Array.from(grouped.entries()).map(([orderId, messages]) => {
+          const last = messages[messages.length - 1];
+          return {
+            name: 'اسم الفني غير متوفر',
+            message: last.text,
+            time: new Date(last.timestamp).toLocaleString('ar-EG'),
+            techId: last.technicianId,
+            orderId: last.orderId
+          };
+        });
+      },
+      error: (err) => console.error('❌ فشل في تحميل المحادثات:', err)
+    });
+  }
+
+  // ✅ Reset للـ Toast Messages
+  resetMessages() {
+    this.successMessage = null;
+    this.errorMessage = null;
+  }
+
+  // ✅ تغيير التبويب
+  setTab(tab: string) {
+    this.selectedTab = tab;
+  }
+
+  // ✅ تغيير صورة البروفايل
   onChangeImage(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         this.userImage = reader.result as string;
-
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        user.imagUUrl = this.userImage;
-        localStorage.setItem('user', JSON.stringify(user));
       };
       reader.readAsDataURL(file);
     }
   }
 
+  // ✅ حذف صورة البروفايل
   onDeleteImage() {
     this.userImage = 'assets/images/default-avatar.png';
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    user.imagUUrl = '';
-    localStorage.setItem('user', JSON.stringify(user));
   }
 
+  // ✅ تسجيل الخروج
   logout() {
-    const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
-    if (confirmed) {
-      localStorage.removeItem('user');
-      this.authService.logout();
-      this.router.navigate(['/']);
-    }
+    localStorage.removeItem('user');
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 }

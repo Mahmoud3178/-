@@ -3,5 +3,5 @@ export interface UpdateProfileUser {
   name: string;
   phoneNumber: string;
   email: string;
-  imageUrl?: string;  // ← لو عايزها، أضفها هنا
+  imageUrl?: string;  // ← خليها زي الـ backend
 }
