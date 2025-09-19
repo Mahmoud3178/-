@@ -70,22 +70,28 @@ export class SearchComponent implements AfterViewInit {
 
 getNearbyTechnicians(lat: number, lng: number, range: number) {
   const url = `/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;
+
   this.http.get<any[]>(url).subscribe({
     next: (res) => {
       if (Array.isArray(res) && res.length > 0) {
         this.providers = res.map(p => {
           let imageUrl = 'assets/images/default-avatar.png';
 
-          try {
-            // ✅ لو السيرفر بيرجع Base64 بنفس ستايل الكاتيجوري
-            if (p.imageUrl) {
+          if (p.imageUrl) {
+            try {
+              // ✅ لو السيرفر بيرجع Array Base64
               const parsed = JSON.parse(p.imageUrl);
               if (Array.isArray(parsed) && parsed.length > 0) {
                 imageUrl = `/Uploads/${parsed[0].split('/').pop()}`;
               }
+            } catch (e) {
+              // ✅ لو السيرفر بيرجع رابط مباشر (http/https)
+              if (p.imageUrl.startsWith('http')) {
+                imageUrl = p.imageUrl.replace('http://', 'https://'); // 🟢 تأمين الرابط
+              } else {
+                console.warn('⚠️ صيغة صورة غير متوقعة:', p.imageUrl);
+              }
             }
-          } catch (e) {
-            console.error('❌ خطأ في قراءة صورة الفني:', e);
           }
 
           return {
@@ -95,7 +101,7 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
             email: p.email,
             rating: p.rating,
             description: p.nameServices || p.categoryName || 'بدون وصف',
-            image: imageUrl, // ✅ استخدمنا الصورة بعد المعالجة
+            image: imageUrl, // ✅ الصورة بعد المعالجة
             x: (p.long - lng) * 1000,
             y: (p.lat - lat) * -1000
           };
@@ -110,7 +116,6 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
     }
   });
 }
-
 
   reserveService(technicianId: string) {
     const requestId = this.route.snapshot.queryParamMap.get('requestId');
