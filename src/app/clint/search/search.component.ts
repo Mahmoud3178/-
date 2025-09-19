@@ -98,31 +98,49 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
   });
 }
 getSafeImage(imagePath: string | null | undefined): string {
-  if (!imagePath || imagePath.trim() === '') {
+  // 1️⃣ لو مفيش قيمة أصلاً → رجّع الصورة الافتراضية
+  if (!imagePath || typeof imagePath !== 'string' || imagePath.trim() === '') {
     return 'assets/images/default-avatar.png';
   }
 
   try {
-    // ✅ لو القيمة JSON Array
+    // 2️⃣ لو القيمة شكلها JSON (Array أو Object)
     const parsed = JSON.parse(imagePath);
+
+    // ✅ لو Array وفيه عناصر → ناخد أول عنصر
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // ناخد أول عنصر
       const first = parsed[0];
-      if (first.startsWith('http')) {
-        return first.replace('http://', 'https://');
+      if (typeof first === 'string' && first.trim() !== '') {
+        if (first.startsWith('http')) {
+          return first.replace('http://', 'https://');
+        }
+        const fileName = first.split('/').pop();
+        return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
       }
-      const fileName = first.split('/').pop();
+    }
+
+    // ✅ لو Object فيه property اسمه url أو imageUrll
+    if (!Array.isArray(parsed) && parsed.imageUrll) {
+      const url = parsed.imageUrll;
+      if (url.startsWith('http')) {
+        return url.replace('http://', 'https://');
+      }
+      const fileName = url.split('/').pop();
       return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
     }
   } catch {
-    // ✅ لو القيمة مش JSON (اسم ملف أو لينك كامل)
+    // 3️⃣ لو مش JSON → نعاملها كـ String عادية
     if (imagePath.startsWith('http')) {
+      // لو لينك كامل → بدّل http بـ https
       return imagePath.replace('http://', 'https://');
     }
+
+    // لو مجرد اسم ملف → بنبني لينك كامل
     const fileName = imagePath.split('/').pop();
     return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
   }
 
+  // 4️⃣ fallback لو مفيش حاجة من فوق اشتغلت
   return 'assets/images/default-avatar.png';
 }
 
