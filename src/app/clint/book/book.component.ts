@@ -41,6 +41,17 @@ export class BookComponent implements OnInit, AfterViewInit {
   errorMessage: string | null = null;
   departmentsOptions: { id: number; name: string }[] = [];
 
+  address: any = {
+    city: '',
+    area: '',
+    street: '',
+    buildingNumber: '',
+    floorNumber: '',
+    apartmentNumber: '',
+    lat: '',
+    lng: ''
+  };
+
   constructor(
     private fb: FormBuilder,
     private requestService: RequestService,
@@ -52,17 +63,7 @@ export class BookComponent implements OnInit, AfterViewInit {
       serviceType: ['', Validators.required],
       category: ['', Validators.required],
       date: ['', Validators.required],
-      description: ['', Validators.required],
-      address: this.fb.group({
-        city: ['', Validators.required],
-        area: ['', Validators.required],
-        street: ['', Validators.required],
-        buildingNumber: ['', Validators.required],
-        floorNumber: ['', Validators.required],
-        apartmentNumber: ['', Validators.required],
-        lat: ['', Validators.required],
-        lng: ['', Validators.required]
-      })
+      description: ['', Validators.required]
     });
   }
 
@@ -110,8 +111,8 @@ export class BookComponent implements OnInit, AfterViewInit {
       const userJson = localStorage.getItem('user');
       const user = userJson ? JSON.parse(userJson) : null;
 
-      const userLat = user?.lat || defaultLat;
-      const userLng = user?.lng || defaultLng;
+      const userLat = user?.lat || this.address.lat || defaultLat;
+      const userLng = user?.lng || this.address.lng || defaultLng;
 
       if (!this.map) {
         this.map = L.map('map').setView([userLat, userLng], 13);
@@ -124,15 +125,14 @@ export class BookComponent implements OnInit, AfterViewInit {
 
         this.marker.on('dragend', async () => {
           const latLng = this.marker!.getLatLng();
-
-          this.bookForm.get('address.lat')?.setValue(latLng.lat);
-          this.bookForm.get('address.lng')?.setValue(latLng.lng);
+          this.address.lat = latLng.lat;
+          this.address.lng = latLng.lng;
 
           const reverse = await this.reverseGeocode(latLng.lat, latLng.lng);
           if (reverse) {
-            this.bookForm.get('address.city')?.setValue(reverse.city || reverse.town || '');
-            this.bookForm.get('address.area')?.setValue(reverse.suburb || '');
-            this.bookForm.get('address.street')?.setValue(reverse.road || '');
+            this.address.city = reverse.city || reverse.town || '';
+            this.address.area = reverse.suburb || '';
+            this.address.street = reverse.road || '';
             this.cd.markForCheck();
           }
         });
@@ -144,9 +144,23 @@ export class BookComponent implements OnInit, AfterViewInit {
     }, 300);
   }
 
-  confirmAddress() {
-    // مجرد إغلاق المودال بعد ما يعبّي اليوزر البيانات
-    // القيم موجودة داخل الـ FormGroup بالفعل
+  confirmAddress(
+    city: string,
+    area: string,
+    street: string,
+    building: string,
+    floor: string,
+    apt: string
+  ) {
+    this.address = {
+      ...this.address,
+      city,
+      area,
+      street,
+      buildingNumber: building,
+      floorNumber: floor,
+      apartmentNumber: apt
+    };
   }
 
   onSubmit() {
@@ -162,20 +176,18 @@ export class BookComponent implements OnInit, AfterViewInit {
         return;
       }
 
-      const address = this.bookForm.value.address;
-
       const payload: CreateRequestDto = {
         visitingDate: this.bookForm.value.date,
         description: this.bookForm.value.description,
         categoryName: this.bookForm.value.category,
         serviceType: this.bookForm.value.serviceType,
         userId: user.id,
-        city: address.city,
-        area: address.area,
-        street: address.street,
-        buildingNumber: address.buildingNumber,
-        floorNumber: address.floorNumber,
-        distinctiveMark: `Lat: ${address.lat}, Lng: ${address.lng}`,
+        city: this.address.city,
+        area: this.address.area,
+        street: this.address.street,
+        buildingNumber: this.address.buildingNumber,
+        floorNumber: this.address.floorNumber,
+        distinctiveMark: `Lat: ${this.address.lat}, Lng: ${this.address.lng}`,
         status: 1
       };
 
@@ -187,8 +199,8 @@ export class BookComponent implements OnInit, AfterViewInit {
             this.router.navigate(['/search'], {
               queryParams: {
                 requestId: createdId,
-                lat: address.lat,
-                lng: address.lng,
+                lat: this.address.lat,
+                lng: this.address.lng,
                 range: 10000
               }
             });
