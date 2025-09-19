@@ -172,7 +172,7 @@ async onSave(): Promise<void> {
   // ✅ الصورة
   const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
   if (fileInput?.files?.[0]) {
-    formData.append('imageUrl', fileInput.files[0]); // ← اتأكد من اسم الحقل اللي الـ backend مستنيه
+    formData.append('imageUrll', fileInput.files[0]); // ← اتأكد من اسم الحقل اللي الـ backend مستنيه
   }
 
   const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -188,8 +188,8 @@ async onSave(): Promise<void> {
           console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
 
           // ✅ تحديث البيانات
-          this.profileData.imageUrl = res.imageUrl;
-          this.provider.avatar = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
+          this.profileData.imageUrl = res.imageUrll;
+          this.provider.avatar = this.getSafeImageUrl(res.imageUrll) + `?t=${Date.now()}`;
           this.userImage = this.provider.avatar;
 
           // ✅ تحديث localStorage
