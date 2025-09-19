@@ -75,25 +75,6 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
     next: (res) => {
       if (Array.isArray(res) && res.length > 0) {
         this.providers = res.map(p => {
-          let imageUrl = 'assets/images/default-avatar.png';
-
-          if (p.imageUrl) {
-            try {
-              // ✅ لو السيرفر بيرجع Array Base64
-              const parsed = JSON.parse(p.imageUrl);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                imageUrl = `/Uploads/${parsed[0].split('/').pop()}`;
-              }
-            } catch (e) {
-              // ✅ لو السيرفر بيرجع رابط مباشر (http/https)
-              if (p.imageUrl.startsWith('http')) {
-                imageUrl = p.imageUrl.replace('http://', 'https://'); // 🟢 تأمين الرابط
-              } else {
-                console.warn('⚠️ صيغة صورة غير متوقعة:', p.imageUrl);
-              }
-            }
-          }
-
           return {
             id: p.id,
             name: p.name,
@@ -101,7 +82,7 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
             email: p.email,
             rating: p.rating,
             description: p.nameServices || p.categoryName || 'بدون وصف',
-            image: imageUrl, // ✅ الصورة بعد المعالجة
+            image: this.getSafeImage(p.imageUrl), // ✅ زي الريتينج
             x: (p.long - lng) * 1000,
             y: (p.lat - lat) * -1000
           };
@@ -116,6 +97,30 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
     }
   });
 }
+getSafeImage(imagePath: string | null | undefined): string {
+  if (!imagePath || imagePath.trim() === '') {
+    return 'assets/images/default-avatar.png';
+  }
+
+  try {
+    // ✅ لو string عبارة عن Array JSON زي ["Uploads/..."]
+    const parsed = JSON.parse(imagePath);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return `/Uploads/${parsed[0].split('/').pop()}`;
+    }
+  } catch (e) {
+    // ✅ لو رابط مباشر http/https
+    if (imagePath.startsWith('http')) {
+      return imagePath.replace('http://', 'https://');
+    }
+
+    // ✅ fallback: مجرد اسم ملف (مثلاً "abc.png")
+    return `/Uploads/${imagePath.split('/').pop()}`;
+  }
+
+  return 'assets/images/default-avatar.png';
+}
+
 
   reserveService(technicianId: string) {
     const requestId = this.route.snapshot.queryParamMap.get('requestId');
