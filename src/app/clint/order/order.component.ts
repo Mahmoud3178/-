@@ -18,9 +18,9 @@ export class OrderComponent implements OnInit {
   orders: any[] = [];
   selectedStatus: number = 1;
   userId: number = 0;
-successMessage: string | null = null;
-errorMessage: string | null = null;
-selectedStatusLabel: string = 'الطلبات الجديدة'; // الافتراضي
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+  selectedStatusLabel: string = 'الطلبات الجديدة'; // الافتراضي
 
   constructor(private requestService: RequestService, private http: HttpClient) {}
 
@@ -34,8 +34,6 @@ selectedStatusLabel: string = 'الطلبات الجديدة'; // الافترا
     }
 
     this.fetchOrders(this.selectedStatus);
-
-
   }
 
   fetchOrders(status: number): void {
@@ -49,16 +47,18 @@ selectedStatusLabel: string = 'الطلبات الجديدة'; // الافترا
       next: (res) => {
         const result = Array.isArray(res) ? res : [res];
 
-        // تهيئة tempRating و tempComment لكل طلب
-        this.orders = result.map(order => ({
-          ...order,
-          visitDate: order.visitingDate,
-          departmentName: order.categoryName,
-          serviceType: order.servicesType,
-          tempRating: 0,      // 👈 تهيئة تقييم مؤقت صفر
-          tempComment: '',    // 👈 تهيئة تعليق مؤقت فارغ
-          isRated: order.isRated || false  // 👈 حالة التقييم (لو متوفرة)
-        }));
+        // ✅ تهيئة البيانات + الترتيب عكسي (آخر أوردر فوق)
+        this.orders = result
+          .map(order => ({
+            ...order,
+            visitDate: order.visitingDate,
+            departmentName: order.categoryName,
+            serviceType: order.servicesType,
+            tempRating: 0,
+            tempComment: '',
+            isRated: order.isRated || false
+          }))
+          .sort((a, b) => b.id - a.id); // 👈 الأحدث أولاً
 
         if (this.orders.length === 0) {
           this.errorMessage = '@ لا توجد طلبات في هذه الحالة.';
@@ -69,8 +69,6 @@ selectedStatusLabel: string = 'الطلبات الجديدة'; // الافترا
       }
     });
   }
-
-
 
   setStepFromOrderStatus(status: number): void {
     this.currentStep = Math.min(Math.max(status - 1, 0), this.statusSteps.length - 1);
@@ -93,50 +91,48 @@ selectedStatusLabel: string = 'الطلبات الجديدة'; // الافترا
     order.tempRating = stars;
   }
 
-submitRating(order: any): void {
-  if (!order.tempRating || order.tempRating === 0) {
-    alert('من فضلك اختر تقييمًا.');
-    return;
-  }
+  submitRating(order: any): void {
+    if (!order.tempRating || order.tempRating === 0) {
+      alert('من فضلك اختر تقييمًا.');
+      return;
+    }
 
-  const ratingData = {
-    id: 0,
-    requestId: order.id,
-    userId: this.userId,
-    technicianId: order.technicianId,
-    ratingValue: order.tempRating,
-    comment: order.tempComment || ''
-  };
+    const ratingData = {
+      id: 0,
+      requestId: order.id,
+      userId: this.userId,
+      technicianId: order.technicianId,
+      ratingValue: order.tempRating,
+      comment: order.tempComment || ''
+    };
 
-  // الرابط نسبي
-  this.http.post(
-    `/api/Rating/Create`,   // <<< هنا الرابط النسبي
-    JSON.stringify(ratingData),
-    {
-      headers: {
-        'Content-Type': 'application/json'
+    this.http.post(
+      `/api/Rating/Create`,
+      JSON.stringify(ratingData),
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        responseType: 'text' as 'json'
+      }
+    ).subscribe({
+      next: (res: any) => {
+        order.isRated = true;
+        alert(res);
       },
-      responseType: 'text' as 'json'   // الرد نصي
-    }
-  ).subscribe({
-    next: (res: any) => {
-      order.isRated = true;
-      alert(res);  // هيطبع الرسالة: "The rating was saved successfully."
-    },
-    error: () => {
-      alert('حدث خطأ أثناء إرسال التقييم.');
-    }
-  });
-}
-
-changeStatusFilter(status: number, label?: string): void {
-  this.selectedStatus = status;
-
-  if (label) {
-    this.selectedStatusLabel = label;
+      error: () => {
+        alert('حدث خطأ أثناء إرسال التقييم.');
+      }
+    });
   }
 
-  this.fetchOrders(status);
-}
+  changeStatusFilter(status: number, label?: string): void {
+    this.selectedStatus = status;
 
+    if (label) {
+      this.selectedStatusLabel = label;
+    }
+
+    this.fetchOrders(status);
+  }
 }

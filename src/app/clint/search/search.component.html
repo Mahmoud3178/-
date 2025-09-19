@@ -40,48 +40,35 @@
   <!-- الفنيين -->
   <div class="row gy-4" *ngIf="providers.length > 0; else noResults">
     <div class="col-md-6" *ngFor="let provider of providers">
-<div class="provider-card position-relative">
+      <div class="provider-card position-relative">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="text-end">
+            <h6 class="mb-0 fw-bold">{{ provider.name || 'بدون اسم' }}</h6>
+            <div class="text-warning">
+              <ng-container *ngFor="let star of [1,2,3,4,5]; let i = index">
+                <i class="bi" [ngClass]="i < provider.rating ? 'bi-star-fill' : 'bi-star'"></i>
+              </ng-container>
+              <span class="text-muted small ms-1">{{ provider.rating || 0 }} / 5</span>
+            </div>
+          </div>
+          <img [src]="provider.image" class="avatar" (error)="provider.image = 'images/default-avatar.png'" />
+        </div>
 
+        <p class="small text-muted text-end mb-1">{{ provider.description || 'بدون وصف' }}</p>
+        <p class="small text-muted text-end mb-1">
+          <i class="bi bi-telephone"></i> {{ provider.phoneNumber || 'رقم غير متوفر' }}
+        </p>
+        <p class="small text-muted text-end mb-3">
+          <i class="bi bi-envelope"></i> {{ provider.email || 'بريد غير متوفر' }}
+        </p>
 
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <div class="text-end">
-      <h6 class="mb-0 fw-bold">{{ provider.name || 'بدون اسم' }}</h6>
-      <div class="text-warning">
-        <ng-container *ngFor="let star of [1,2,3,4,5]; let i = index">
-          <i class="bi" [ngClass]="i < provider.rating ? 'bi-star-fill' : 'bi-star'"></i>
-        </ng-container>
-        <span class="text-muted small ms-1">{{ provider.rating || 0 }} / 5</span>
+        <button class="btn btn-primary w-100" (click)="reserveService(provider.id)">احجز الآن</button>
       </div>
-    </div>
-<img [src]="provider.image" class="avatar" (error)="provider.image = 'images/default-avatar.png'" />
-  </div>
-
-  <p class="small text-muted text-end mb-1">
-    {{ provider.description || 'بدون وصف' }}
-  </p>
-
-  <p class="small text-muted text-end mb-1">
-    <i class="bi bi-telephone"></i>
-    {{ provider.phoneNumber || 'رقم غير متوفر' }}
-  </p>
-
-  <p class="small text-muted text-end mb-3">
-    <i class="bi bi-envelope"></i>
-    {{ provider.email || 'بريد غير متوفر' }}
-  </p>
-
-  <button class="btn btn-primary w-100" (click)="reserveService(provider.id)">
-    احجز الآن
-  </button>
-</div>
-
     </div>
   </div>
 
   <ng-template #noResults>
-    <div class="alert alert-info text-center">
-      لا يوجد فنيين في نطاق البحث حاليًا
-    </div>
+    <div class="alert alert-info text-center">لا يوجد فنيين في نطاق البحث حاليًا</div>
   </ng-template>
 </div>
 
@@ -90,13 +77,9 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-header border-0">
-        <h5 class="modal-title w-100 text-success" id="successModalLabel">
-          ✅ تم الحجز بنجاح
-        </h5>
+        <h5 class="modal-title w-100 text-success" id="successModalLabel">✅ تم الحجز بنجاح</h5>
       </div>
-      <div class="modal-body">
-        سيتم التواصل معك قريبًا لتأكيد الطلب.
-      </div>
+      <div class="modal-body">سيتم التواصل معك قريبًا لتأكيد الطلب.</div>
       <div class="modal-footer border-0">
         <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">إغلاق</button>
       </div>

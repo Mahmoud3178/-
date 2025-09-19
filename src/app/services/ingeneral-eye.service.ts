@@ -6,7 +6,6 @@ import { IngeneralEye } from '../DTOS/ingeneral-eye.dto';
 
 @Injectable({ providedIn: 'root' })
 export class IngeneralEyeService {
-  // خلي الرابط نسبي للبروكسي
   private api = '/api/Services/technicianProfile';
 
   constructor(private http: HttpClient) {}

@@ -32,7 +32,6 @@ declare var bootstrap: any;
 })
 export class BookComponent implements OnInit, AfterViewInit {
   bookForm: FormGroup;
-  selectedImages: (string | null)[] = [null, null, null];
 
   @ViewChild('locationModal') locationModalRef!: ElementRef;
   map: L.Map | null = null;
@@ -41,17 +40,6 @@ export class BookComponent implements OnInit, AfterViewInit {
   successMessage: string | null = null;
   errorMessage: string | null = null;
   departmentsOptions: { id: number; name: string }[] = [];
-
-  address: any = {
-    city: '',
-    area: '',
-    street: '',
-    buildingNumber: '',
-    floorNumber: '',
-    apartmentNumber: '',
-    lat: '',
-    lng: ''
-  };
 
   constructor(
     private fb: FormBuilder,
@@ -64,48 +52,52 @@ export class BookComponent implements OnInit, AfterViewInit {
       serviceType: ['', Validators.required],
       category: ['', Validators.required],
       date: ['', Validators.required],
-      location: ['', Validators.required],
       description: ['', Validators.required],
-      images: [[]]
+      address: this.fb.group({
+        city: ['', Validators.required],
+        area: ['', Validators.required],
+        street: ['', Validators.required],
+        buildingNumber: ['', Validators.required],
+        floorNumber: ['', Validators.required],
+        apartmentNumber: ['', Validators.required],
+        lat: ['', Validators.required],
+        lng: ['', Validators.required]
+      })
     });
   }
 
   ngOnInit(): void {
-    this.loadDepartments();  // ✅ تحميل الأقسام من API
+    this.loadDepartments();
+
     const defaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  shadowSize: [41, 41],
-  popupAnchor: [1, -34]
-});
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      shadowSize: [41, 41],
+      popupAnchor: [1, -34]
+    });
 
-L.Marker.prototype.options.icon = defaultIcon;
-
+    L.Marker.prototype.options.icon = defaultIcon;
   }
 
-  ngAfterViewInit(): void {
-    // ممكن استخدامه لو في حاجة بعد عرض الـ view
+  ngAfterViewInit(): void {}
+
+  loadDepartments(): void {
+    const url = '/api/Category/GetAll';
+    this.http.get<any[]>(url).subscribe({
+      next: (categories) => {
+        this.departmentsOptions = categories.map(cat => ({
+          id: cat.id,
+          name: cat.name
+        }));
+      },
+      error: (err) => {
+        console.error('خطأ في تحميل الأقسام', err);
+        this.departmentsOptions = [];
+      }
+    });
   }
-
-  // دالة لجلب الأقسام من الـ API
-loadDepartments(): void {
-  const url = '/api/Category/GetAll';
-  this.http.get<any[]>(url).subscribe({
-    next: (categories) => {
-      this.departmentsOptions = categories.map(cat => ({
-        id: cat.id,
-        name: cat.name
-      }));
-    },
-    error: (err) => {
-      console.error('خطأ في تحميل الأقسام', err);
-      this.departmentsOptions = [];
-    }
-  });
-}
-
 
   openModal() {
     const modal = new bootstrap.Modal(this.locationModalRef.nativeElement);
@@ -118,8 +110,8 @@ loadDepartments(): void {
       const userJson = localStorage.getItem('user');
       const user = userJson ? JSON.parse(userJson) : null;
 
-      const userLat = user?.lat || this.address.lat || defaultLat;
-      const userLng = user?.lng || this.address.lng || defaultLng;
+      const userLat = user?.lat || defaultLat;
+      const userLng = user?.lng || defaultLng;
 
       if (!this.map) {
         this.map = L.map('map').setView([userLat, userLng], 13);
@@ -132,17 +124,15 @@ loadDepartments(): void {
 
         this.marker.on('dragend', async () => {
           const latLng = this.marker!.getLatLng();
-          this.address.lat = latLng.lat;
-          this.address.lng = latLng.lng;
+
+          this.bookForm.get('address.lat')?.setValue(latLng.lat);
+          this.bookForm.get('address.lng')?.setValue(latLng.lng);
 
           const reverse = await this.reverseGeocode(latLng.lat, latLng.lng);
           if (reverse) {
-            this.address.city = reverse.city || reverse.town || '';
-            this.address.area = reverse.suburb || '';
-            this.address.street = reverse.road || '';
-
-            const full = `${this.address.city}, ${this.address.area}, ${this.address.street}`;
-            this.bookForm.patchValue({ location: full });
+            this.bookForm.get('address.city')?.setValue(reverse.city || reverse.town || '');
+            this.bookForm.get('address.area')?.setValue(reverse.suburb || '');
+            this.bookForm.get('address.street')?.setValue(reverse.road || '');
             this.cd.markForCheck();
           }
         });
@@ -154,53 +144,9 @@ loadDepartments(): void {
     }, 300);
   }
 
-  async confirmAddress(
-    city: string,
-    area: string,
-    street: string,
-    building: string,
-    floor: string,
-    apt: string
-  ) {
-    const fullAddress = `${city}, ${area}, ${street}`;
-    const coords = await this.geocodeAddress(fullAddress);
-
-    if (coords) {
-      this.address.lat = coords.lat;
-      this.address.lng = coords.lng;
-
-      if (this.marker) this.marker.setLatLng([coords.lat, coords.lng]);
-      if (this.map) this.map.setView([coords.lat, coords.lng], 15);
-    }
-
-    this.address = {
-      ...this.address,
-      city,
-      area,
-      street,
-      buildingNumber: building,
-      floorNumber: floor,
-      apartmentNumber: apt
-    };
-
-    const full = `${city}, ${area}, ${street}, مبنى ${building}, دور ${floor}, شقة ${apt}`;
-    this.bookForm.patchValue({ location: full });
-  }
-
-  onImageUpload(event: any, index: number) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const currentImages = this.bookForm.value.images || [];
-    while (currentImages.length < 3) currentImages.push(null);
-    currentImages[index] = file;
-    this.bookForm.patchValue({ images: currentImages });
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.selectedImages[index] = reader.result as string;
-    };
-    reader.readAsDataURL(file);
+  confirmAddress() {
+    // مجرد إغلاق المودال بعد ما يعبّي اليوزر البيانات
+    // القيم موجودة داخل الـ FormGroup بالفعل
   }
 
   onSubmit() {
@@ -216,18 +162,20 @@ loadDepartments(): void {
         return;
       }
 
+      const address = this.bookForm.value.address;
+
       const payload: CreateRequestDto = {
         visitingDate: this.bookForm.value.date,
         description: this.bookForm.value.description,
-        categoryName: this.bookForm.value.category,  // لاحظ هنا تأخذ الـ id أو الاسم حسب API
+        categoryName: this.bookForm.value.category,
         serviceType: this.bookForm.value.serviceType,
         userId: user.id,
-        city: this.address.city,
-        area: this.address.area,
-        street: this.address.street,
-        buildingNumber: this.address.buildingNumber,
-        floorNumber: this.address.floorNumber,
-        distinctiveMark: `Lat: ${this.address.lat}, Lng: ${this.address.lng}`,
+        city: address.city,
+        area: address.area,
+        street: address.street,
+        buildingNumber: address.buildingNumber,
+        floorNumber: address.floorNumber,
+        distinctiveMark: `Lat: ${address.lat}, Lng: ${address.lng}`,
         status: 1
       };
 
@@ -235,14 +183,12 @@ loadDepartments(): void {
         next: (createdId: number) => {
           this.successMessage = '@ تم إرسال الطلب بنجاح';
           this.bookForm.reset();
-          // ممكن تمسح المعاينات أيضاً
-          this.selectedImages = [null, null, null];
           setTimeout(() => {
             this.router.navigate(['/search'], {
               queryParams: {
                 requestId: createdId,
-                lat: this.address.lat,
-                lng: this.address.lng,
+                lat: address.lat,
+                lng: address.lng,
                 range: 10000
               }
             });
@@ -256,22 +202,6 @@ loadDepartments(): void {
       this.bookForm.markAllAsTouched();
       this.errorMessage = '@ يرجى تعبئة جميع الحقول المطلوبة';
     }
-  }
-
-  async geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-    );
-    const data = await response.json();
-
-    if (data && data.length > 0) {
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon)
-      };
-    }
-
-    return null;
   }
 
   async reverseGeocode(lat: number, lng: number): Promise<any> {

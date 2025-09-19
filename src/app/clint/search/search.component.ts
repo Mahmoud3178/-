@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
 declare var bootstrap: any;
@@ -27,7 +26,7 @@ export class SearchComponent implements AfterViewInit {
     city: ''
   };
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {}
+  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) {}
 
   ngAfterViewInit() {
     const canvas = this.radarCanvas.nativeElement;
@@ -54,7 +53,7 @@ export class SearchComponent implements AfterViewInit {
   }
 
   loadRequestData(requestId: string) {
-    const url = `/api/Requests/GetById?id=${requestId}`;  // نسبي
+    const url = `/api/Requests/GetById?id=${requestId}`;
     this.http.get<any>(url).subscribe({
       next: (data) => {
         this.formData.serviceType = data.servicesType === 0 ? 'سباكة' : 'كهرباء';
@@ -68,103 +67,91 @@ export class SearchComponent implements AfterViewInit {
     });
   }
 
-getNearbyTechnicians(lat: number, lng: number, range: number) {
-  const url = `/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;
+  getNearbyTechnicians(lat: number, lng: number, range: number) {
+    const url = `/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;
 
-  this.http.get<any[]>(url).subscribe({
-    next: (res) => {
-      if (Array.isArray(res) && res.length > 0) {
-        this.providers = res.map(p => {
-          return {
-            id: p.id,
-            name: p.name,
-            phoneNumber: p.phoneNumber,
-            email: p.email,
-            rating: p.rating,
-            description: p.nameServices || p.categoryName || 'بدون وصف',
-            image: this.getImagePath(p.imageUrl), // ✅ هنا
-            x: (p.long - lng) * 1000,
-            y: (p.lat - lat) * -1000
-          };
-        });
-      } else {
+    this.http.get<any[]>(url).subscribe({
+      next: (res) => {
+        if (Array.isArray(res) && res.length > 0) {
+          this.providers = res.map(p => {
+            return {
+              id: p.id,
+              name: p.name,
+              phoneNumber: p.phoneNumber,
+              email: p.email,
+              rating: p.rating,
+              description: p.nameServices || p.categoryName || 'بدون وصف',
+              image: this.getImagePath(p.imageUrl),
+              x: (p.long - lng) * 1000,
+              y: (p.lat - lat) * -1000
+            };
+          });
+        } else {
+          this.providers = [];
+        }
+      },
+      error: (err) => {
+        console.error('❌ Error fetching technicians:', err);
         this.providers = [];
       }
-    },
-    error: (err) => {
-      console.error('❌ Error fetching technicians:', err);
-      this.providers = [];
+    });
+  }
+
+  getImagePath(imageValue: string | null | undefined): string {
+    if (!imageValue || typeof imageValue !== "string" || imageValue.trim() === "") {
+      return "assets/images/default-avatar.png";
     }
-  });
-}
-getImagePath(imageValue: string | null | undefined): string {
-  // 1️⃣ fallback
-  if (!imageValue || typeof imageValue !== "string" || imageValue.trim() === "") {
+
+    try {
+      const parsed = JSON.parse(imageValue);
+
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const first = parsed[0];
+        if (typeof first === "string" && first.trim() !== "") {
+          return this.normalizeImage(first);
+        }
+      }
+
+      if (!Array.isArray(parsed)) {
+        const url = parsed.imageUrl || parsed.imageUrll;
+        if (url && typeof url === "string") {
+          return this.normalizeImage(url);
+        }
+      }
+    } catch {
+      return this.normalizeImage(imageValue);
+    }
+
     return "assets/images/default-avatar.png";
   }
 
-  try {
-    // 2️⃣ لو JSON Array أو Object
-    const parsed = JSON.parse(imageValue);
-
-    // لو Array
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      const first = parsed[0];
-      if (typeof first === "string" && first.trim() !== "") {
-        return this.normalizeImage(first);
-      }
+  private normalizeImage(path: string): string {
+    if (!path || typeof path !== "string") {
+      return "assets/images/default-avatar.png";
     }
 
-    // لو Object فيه imageUrl أو imageUrll
-    if (!Array.isArray(parsed)) {
-      const url = parsed.imageUrl || parsed.imageUrll;
-      if (url && typeof url === "string") {
-        return this.normalizeImage(url);
-      }
+    if (path.startsWith("data:image")) {
+      return path;
     }
-  } catch {
-    // 3️⃣ مش JSON → string عادي
-    return this.normalizeImage(imageValue);
+
+    if (/^[A-Za-z0-9+/=]+$/.test(path) && path.length > 50) {
+      return "data:image/jpeg;base64," + path;
+    }
+
+    if (path.startsWith("http://on-demand-service-backend.runasp.net")) {
+      return path.replace("http://", "https://");
+    }
+    if (path.startsWith("https://on-demand-service-backend.runasp.net")) {
+      return path;
+    }
+
+    if (path.startsWith("http")) {
+      return path;
+    }
+
+    const fileName = path.split("/").pop();
+    return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
   }
-
-  return "assets/images/default-avatar.png";
-}
-
-// ✨ دالة مساعدة لتوحيد بناء اللينك
-private normalizeImage(path: string): string {
-  if (!path || typeof path !== "string") {
-    return "assets/images/default-avatar.png";
-  }
-
-  // Base64 (جاهز)
-  if (path.startsWith("data:image")) {
-    return path;
-  }
-
-  // Base64 خام (من غير prefix)
-  if (/^[A-Za-z0-9+/=]+$/.test(path) && path.length > 50) {
-    return "data:image/jpeg;base64," + path;
-  }
-
-  // لينك كامل من السيرفر
-  if (path.startsWith("http://on-demand-service-backend.runasp.net")) {
-    return path.replace("http://", "https://");
-  }
-  if (path.startsWith("https://on-demand-service-backend.runasp.net")) {
-    return path;
-  }
-
-  // لينك خارجي
-  if (path.startsWith("http")) {
-    return path;
-  }
-
-  // مجرد اسم ملف
-  const fileName = path.split("/").pop();
-  return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
-}
-
-
 
   reserveService(technicianId: string) {
     const requestId = this.route.snapshot.queryParamMap.get('requestId');
@@ -174,7 +161,7 @@ private normalizeImage(path: string): string {
       return;
     }
 
-    const url = `/api/Requests/reservationTechnician?Technicianid=${technicianId}&RequestId=${requestId}`;  // نسبي
+    const url = `/api/Requests/reservationTechnician?Technicianid=${technicianId}&RequestId=${requestId}`;
 
     this.http.post(url, null, { responseType: 'text' }).subscribe({
       next: (res) => {
@@ -183,6 +170,11 @@ private normalizeImage(path: string): string {
         if (modalElement) {
           const successModal = new bootstrap.Modal(modalElement);
           successModal.show();
+
+          // ✅ بعد إغلاق المودال يتم التوجيه إلى /order
+          modalElement.addEventListener('hidden.bs.modal', () => {
+            this.router.navigate(['/order']);
+          });
         }
       },
       error: (err) => {
