@@ -195,8 +195,11 @@ export class ProfileComponent implements OnInit {
 
   // ✅ تسجيل الخروج
   logout() {
-    localStorage.removeItem('user');
-    this.authService.logout();
-    this.router.navigate(['/']);
+    const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
+    if (confirmed) {
+      localStorage.removeItem('user');
+      this.authService.logout();
+      this.router.navigate(['/']);
+    }
   }
 }
