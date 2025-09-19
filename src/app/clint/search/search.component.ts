@@ -103,26 +103,28 @@ getSafeImage(imagePath: string | null | undefined): string {
   }
 
   try {
-    // ✅ لو القيمة Array في شكل JSON
+    // ✅ لو القيمة JSON Array
     const parsed = JSON.parse(imagePath);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      const fileName = parsed[0].split('/').pop();
+      // ناخد أول عنصر
+      const first = parsed[0];
+      if (first.startsWith('http')) {
+        return first.replace('http://', 'https://');
+      }
+      const fileName = first.split('/').pop();
       return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
     }
-  } catch (e) {
-    // ✅ لو الرابط كامل http/https
+  } catch {
+    // ✅ لو القيمة مش JSON (اسم ملف أو لينك كامل)
     if (imagePath.startsWith('http')) {
       return imagePath.replace('http://', 'https://');
     }
-
-    // ✅ fallback: مجرد اسم ملف
     const fileName = imagePath.split('/').pop();
     return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
   }
 
   return 'assets/images/default-avatar.png';
 }
-
 
 
   reserveService(technicianId: string) {

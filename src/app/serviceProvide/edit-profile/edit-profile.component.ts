@@ -216,8 +216,12 @@ async onSave(): Promise<void> {
     return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
   }
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+ logout() {
+    const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
+    if (confirmed) {
+      localStorage.removeItem('user');
+      this.authService.logout();
+      this.router.navigate(['/']);
+    }
   }
 }
