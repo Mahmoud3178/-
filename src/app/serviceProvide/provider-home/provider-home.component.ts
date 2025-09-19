@@ -53,80 +53,86 @@ export class ProviderHomeComponent implements OnInit {
     }
   }
 
-  // ✅ تحميل الطلبات مع ترتيب الأحدث أولاً
-  loadOrders(status: number, label: string) {
-    this.selectedStatus = status;
-    this.selectedStatusLabel = label;
+loadOrders(status: number, label: string) {
+  this.selectedStatus = status;
+  this.selectedStatusLabel = label;
 
-    const technicianId = this.provider.id;
+  const technicianId = this.provider.id;
 
-    this.requestService.getTechnicianRequests(technicianId, status).subscribe({
-      next: (data) => {
-        this.orders = (Array.isArray(data) ? data : [])
-          .map(order => ({ ...order, accepted: false }))
-          .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
-      },
-      error: (err) => {
-        console.error('❌ فشل في تحميل الطلبات:', err);
-      }
-    });
-  }
+  this.requestService.getTechnicianRequests(technicianId, status).subscribe({
+    next: (data) => {
+      this.orders = (Array.isArray(data) ? data : [])
+        .map(order => ({ ...order, accepted: false }))
+        // ✅ خلي الأحدث يظهر الأول
+        .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
+    },
+    error: (err) => {
+      console.error('❌ فشل في تحميل الطلبات:', err);
+    }
+  });
+}
 
-  // ✅ قبول الطلب مع ترتيب القائمة بعد الحذف
-  acceptOrder(order: any) {
-    this.requestService.acceptRequest(order.id).subscribe({
-      next: () => {
-        this.successMessage = '✅ تم قبول الطلب بنجاح';
-        this.clearMessagesAfterDelay();
-        this.orders = this.orders
-          .filter(o => o.id !== order.id)
-          .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
-      },
-      error: () => {
-        this.errorMessage = '❌ حدث خطأ أثناء قبول الطلب';
-        this.clearMessagesAfterDelay();
-      }
-    });
-  }
 
-  // ✅ رفض الطلب مع ترتيب القائمة بعد الحذف
-  rejectOrder(requestId: number) {
-    this.requestService.rejectRequest(requestId).subscribe({
-      next: () => {
-        this.successMessage = '✅ تم رفض الطلب بنجاح';
-        this.clearMessagesAfterDelay();
-        this.orders = this.orders
-          .filter(o => o.id !== requestId)
-          .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
-      },
-      error: () => {
-        this.errorMessage = '❌ حدث خطأ أثناء رفض الطلب';
-        this.clearMessagesAfterDelay();
-      }
-    });
-  }
+ acceptOrder(order: any) {
+  this.requestService.acceptRequest(order.id).subscribe({
+    next: () => {
+      this.successMessage = '✅ تم قبول الطلب بنجاح';
+      this.clearMessagesAfterDelay();
 
-  // ✅ تحديث حالة الطلب مع إعادة الترتيب
-  updateOrderStatus(orderId: number, newState: number) {
-    this.requestService.updateOrderState(orderId, newState).subscribe({
-      next: () => {
-        this.successMessage = '✅ تم تحديث حالة الطلب بنجاح';
-        this.clearMessagesAfterDelay();
+      // ✅ شيل الطلب من القائمة ورتب الباقي من الأحدث للأقدم
+      this.orders = this.orders
+        .filter(o => o.id !== order.id)
+        .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
+    },
+    error: () => {
+      this.errorMessage = '❌ حدث خطأ أثناء قبول الطلب';
+      this.clearMessagesAfterDelay();
+    }
+  });
+}
 
-        this.orders = this.orders.map(o =>
-          o.id === orderId ? { ...o, status: newState } : o
-        );
+rejectOrder(requestId: number) {
+  this.requestService.rejectRequest(requestId).subscribe({
+    next: () => {
+      this.successMessage = '✅ تم رفض الطلب بنجاح';
+      this.clearMessagesAfterDelay();
 
-        this.orders.sort((a, b) =>
-          new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime()
-        );
-      },
-      error: () => {
-        this.errorMessage = '❌ حدث خطأ أثناء تحديث حالة الطلب';
-        this.clearMessagesAfterDelay();
-      }
-    });
-  }
+      // ✅ شيل الطلب من القائمة ورتب الباقي من الأحدث للأقدم
+      this.orders = this.orders
+        .filter(o => o.id !== requestId)
+        .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
+    },
+    error: () => {
+      this.errorMessage = '❌ حدث خطأ أثناء رفض الطلب';
+      this.clearMessagesAfterDelay();
+    }
+  });
+}
+
+
+updateOrderStatus(orderId: number, newState: number) {
+  this.requestService.updateOrderState(orderId, newState).subscribe({
+    next: () => {
+      this.successMessage = '✅ تم تحديث حالة الطلب بنجاح';
+      this.clearMessagesAfterDelay();
+
+      // ✅ تحديث محلي
+      this.orders = this.orders.map(o =>
+        o.id === orderId ? { ...o, status: newState } : o
+      );
+
+      // ✅ إعادة ترتيب بعد التحديث
+      this.orders.sort((a, b) =>
+        new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime()
+      );
+    },
+    error: () => {
+      this.errorMessage = '❌ حدث خطأ أثناء تحديث حالة الطلب';
+      this.clearMessagesAfterDelay();
+    }
+  });
+}
+
 
   clearMessagesAfterDelay() {
     setTimeout(() => {
