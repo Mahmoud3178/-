@@ -107,56 +107,55 @@
           </span>
         </div>
       </div>
-<!-- الطلبات -->
-  <div class="col-12 p-4">
-    <ng-container *ngIf="orders.length > 0">
-      <div class="card shadow-sm mb-3" *ngFor="let order of orders">
-        <div class="card-body">
-          <p><strong>الاسم:</strong> {{ order.name || 'غير متوفر' }}</p>
-          <p><strong>رقم الهاتف:</strong> {{ order.phone || 'غير متوفر' }}</p>
-          <p><strong>العنوان:</strong> {{ order.city }} - {{ order.area }} - {{ order.street }}</p>
-          <p><strong>موعد الخدمة:</strong> {{ order.visitingDate | date: 'short' }}</p>
-          <p><strong>نوع الخدمة:</strong> {{ order.categoryName }}</p>
-          <p><strong>الوصف:</strong> {{ order.description }}</p>
+<div class="col-12 p-4">
+  <ng-container *ngIf="orders.length > 0">
+    <div class="card shadow-sm mb-3" *ngFor="let order of orders">
+      <div class="card-body">
+        <p><strong>الاسم:</strong> {{ order.name || 'غير متوفر' }}</p>
+        <p><strong>العنوان:</strong> {{ order.city }} - {{ order.area }} - {{ order.street }}</p>
+        <p><strong>موعد الخدمة:</strong> {{ order.visitingDate | date: 'short' }}</p>
+        <p><strong>نوع الخدمة:</strong> {{ order.categoryName }}</p>
+        <p><strong>الوصف:</strong> {{ order.description }}</p>
 
-          <!-- ✅ الطلبات الجديدة -->
-          <ng-container *ngIf="order.status === 1">
-            <button class="btn btn-success" (click)="acceptOrder(order)">
-              ✅ قبول الطلب
-            </button>
-            <button class="btn btn-danger" (click)="rejectOrder(order.id)">
-              ❌ رفض الطلب
+        <!-- ✅ الطلبات الجديدة -->
+        <ng-container *ngIf="order.status === 1">
+          <button class="btn btn-success" (click)="acceptOrder(order)">
+            ✅ قبول الطلب
+          </button>
+          <button class="btn btn-danger" (click)="rejectOrder(order.id)">
+            ❌ رفض الطلب
+          </button>
+        </ng-container>
+
+        <!-- ✅ باقي الحالات -->
+        <div class="mt-3 d-flex flex-column gap-2">
+          <ng-container *ngIf="order.status === 2">
+            <button class="btn btn-outline-secondary" (click)="updateOrderStatus(order.id, 3)">
+              📍 تم الوصول لموقع العميل
             </button>
           </ng-container>
 
-     <!-- ✅ الحالات الأخرى -->
-<div class="mt-3 d-flex flex-column gap-2">
-  <ng-container *ngIf="order.status === 2">
-    <button class="btn btn-outline-secondary" (click)="updateOrderStatus(order.id, 3)">
-      📍 تم الوصول لموقع العميل
-    </button>
+          <ng-container *ngIf="order.status === 3">
+            <button class="btn btn-outline-secondary" (click)="updateOrderStatus(order.id, 4)">
+              📦 الطلب قيد الاستلام
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="order.status === 4">
+            <button class="btn btn-success" (click)="updateOrderStatus(order.id, 5)">
+              ✅ تم اكتمال الطلب
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
   </ng-container>
 
-  <ng-container *ngIf="order.status === 3">
-    <button class="btn btn-outline-secondary" (click)="updateOrderStatus(order.id, 4)">
-      📦 الطلب قيد الاستلام
-    </button>
-  </ng-container>
-
-  <ng-container *ngIf="order.status === 4">
-    <button class="btn btn-success" (click)="updateOrderStatus(order.id, 5)">
-      ✅ تم اكتمال الطلب
-    </button>
-  </ng-container>
-
-  <!-- ✅ الحالة 5 (مكتمل): لا يظهر أي زر -->
+  <!-- لا يوجد طلبات -->
+  <div *ngIf="orders.length === 0" class="text-center text-muted my-5">
+    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+    <p class="fs-5">لا يوجد طلبات في هذه الحالة الآن.</p>
+  </div>
 </div>
 
-
-    <!-- لا يوجد طلبات -->
-    <div *ngIf="orders.length === 0" class="text-center text-muted my-5">
-      <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-      <p class="fs-5">لا يوجد طلبات في هذه الحالة الآن.</p>
-    </div>
-  </div>
 </div>
