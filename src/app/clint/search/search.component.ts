@@ -68,32 +68,49 @@ export class SearchComponent implements AfterViewInit {
     });
   }
 
-  getNearbyTechnicians(lat: number, lng: number, range: number) {
-    const url = `/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;  // نسبي
-    this.http.get<any[]>(url).subscribe({
-      next: (res) => {
-        if (Array.isArray(res) && res.length > 0) {
-          this.providers = res.map(p => ({
+getNearbyTechnicians(lat: number, lng: number, range: number) {
+  const url = `/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;
+  this.http.get<any[]>(url).subscribe({
+    next: (res) => {
+      if (Array.isArray(res) && res.length > 0) {
+        this.providers = res.map(p => {
+          let imageUrl = 'assets/images/default-avatar.png';
+
+          try {
+            // ✅ لو السيرفر بيرجع Base64 بنفس ستايل الكاتيجوري
+            if (p.imageUrl) {
+              const parsed = JSON.parse(p.imageUrl);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                imageUrl = `/Uploads/${parsed[0].split('/').pop()}`;
+              }
+            }
+          } catch (e) {
+            console.error('❌ خطأ في قراءة صورة الفني:', e);
+          }
+
+          return {
             id: p.id,
             name: p.name,
             phoneNumber: p.phoneNumber,
             email: p.email,
             rating: p.rating,
             description: p.nameServices || p.categoryName || 'بدون وصف',
-            image: p.imageUrl, // ✅ تم استخدام imageUrl هنا
+            image: imageUrl, // ✅ استخدمنا الصورة بعد المعالجة
             x: (p.long - lng) * 1000,
             y: (p.lat - lat) * -1000
-          }));
-        } else {
-          this.providers = [];
-        }
-      },
-      error: (err) => {
-        console.error('❌ Error fetching technicians:', err);
+          };
+        });
+      } else {
         this.providers = [];
       }
-    });
-  }
+    },
+    error: (err) => {
+      console.error('❌ Error fetching technicians:', err);
+      this.providers = [];
+    }
+  });
+}
+
 
   reserveService(technicianId: string) {
     const requestId = this.route.snapshot.queryParamMap.get('requestId');

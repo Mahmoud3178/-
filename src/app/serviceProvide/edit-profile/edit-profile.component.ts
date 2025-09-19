@@ -169,10 +169,10 @@ async onSave(): Promise<void> {
     return;
   }
 
-  // إضافة الصورة لو تم اختيارها
+  // ✅ الصورة
   const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
   if (fileInput?.files?.[0]) {
-    formData.append('imageUrl', fileInput.files[0]);
+    formData.append('imageUrl', fileInput.files[0]); // ← اتأكد من اسم الحقل اللي الـ backend مستنيه
   }
 
   const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -181,18 +181,18 @@ async onSave(): Promise<void> {
     next: () => {
       this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
 
-      // ⬅️ بعد التحديث اعمل إعادة جلب بيانات الفني
+      // ⬅️ إعادة تحميل البيانات
       const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
       this.http.get<any>(getUrl).subscribe({
         next: (res) => {
           console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
 
-          // تحديث البيانات والصورة
+          // ✅ تحديث البيانات
           this.profileData.imageUrl = res.imageUrl;
           this.provider.avatar = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
           this.userImage = this.provider.avatar;
 
-          // تخزين الصورة الجديدة في localStorage
+          // ✅ تحديث localStorage
           const user = JSON.parse(localStorage.getItem('user') || '{}');
           user.image = this.provider.avatar;
           localStorage.setItem('user', JSON.stringify(user));
@@ -208,6 +208,7 @@ async onSave(): Promise<void> {
     }
   });
 }
+
 
 
   getSafeImageUrl(url: string): string {
