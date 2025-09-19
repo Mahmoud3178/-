@@ -39,6 +39,8 @@ export class BookComponent implements OnInit, AfterViewInit {
 
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  addressError: string | null = null;
+
   departmentsOptions: { id: number; name: string }[] = [];
 
   address: any = {
@@ -152,6 +154,12 @@ export class BookComponent implements OnInit, AfterViewInit {
     floor: string,
     apt: string
   ) {
+    if (!city || !area || !street || !building || !floor || !apt) {
+      this.addressError = 'الرجاء إدخال جميع بيانات العنوان';
+      return;
+    }
+
+    this.addressError = null;
     this.address = {
       ...this.address,
       city,
@@ -161,13 +169,16 @@ export class BookComponent implements OnInit, AfterViewInit {
       floorNumber: floor,
       apartmentNumber: apt
     };
+
+    const modal = bootstrap.Modal.getInstance(this.locationModalRef.nativeElement);
+    modal.hide();
   }
 
   onSubmit() {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (this.bookForm.valid) {
+    if (this.bookForm.valid && this.address.city && this.address.area && this.address.street) {
       const userJson = localStorage.getItem('user');
       const user = userJson ? JSON.parse(userJson) : null;
 
@@ -212,7 +223,7 @@ export class BookComponent implements OnInit, AfterViewInit {
       });
     } else {
       this.bookForm.markAllAsTouched();
-      this.errorMessage = '@ يرجى تعبئة جميع الحقول المطلوبة';
+      this.errorMessage = '@ يرجى تعبئة جميع الحقول المطلوبة بما في ذلك العنوان';
     }
   }
 

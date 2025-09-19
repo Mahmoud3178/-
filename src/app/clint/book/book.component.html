@@ -6,37 +6,16 @@
     </p>
   </div>
 
-  <!-- Toast-style Alert -->
-  <div
-    class="alert-container position-fixed top-0 end-0 p-3"
-    style="z-index: 1055;"
-  >
-    <div
-      *ngIf="successMessage"
-      class="alert alert-success alert-dismissible fade show shadow-sm"
-      role="alert"
-    >
+  <!-- Toast Alerts -->
+  <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
       {{ successMessage }}
-      <button
-        type="button"
-        class="btn-close"
-        aria-label="Close"
-        (click)="successMessage = null"
-      ></button>
+      <button type="button" class="btn-close" (click)="successMessage = null"></button>
     </div>
 
-    <div
-      *ngIf="errorMessage"
-      class="alert alert-danger alert-dismissible fade show shadow-sm"
-      role="alert"
-    >
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
       {{ errorMessage }}
-      <button
-        type="button"
-        class="btn-close"
-        aria-label="Close"
-        (click)="errorMessage = null"
-      ></button>
+      <button type="button" class="btn-close" (click)="errorMessage = null"></button>
     </div>
   </div>
 
@@ -49,31 +28,15 @@
             <option>منزلي</option>
             <option>تجاري</option>
           </select>
-          <i
-            class="bi bi-person position-absolute"
-            style="left: 15px; top: 50%; transform: translateY(-50%)"
-          ></i>
         </div>
 
         <div class="mb-2 position-relative">
-          <input
-            type="datetime-local"
-            class="form-control text-end pe-5"
-            formControlName="date"
-          />
-          <i
-            class="bi bi-calendar position-absolute"
-            style="left: 15px; top: 50%; transform: translateY(-50%)"
-          ></i>
+          <input type="datetime-local" class="form-control text-end pe-5" formControlName="date" />
         </div>
 
         <!-- زر تحديد الموقع -->
         <div class="mb-2">
-          <button
-            type="button"
-            class="btn btn-outline-primary w-100"
-            (click)="openModal()"
-          >
+          <button type="button" class="btn btn-outline-primary w-100" (click)="openModal()">
             اضغط لتحديد موقعك
           </button>
         </div>
@@ -83,23 +46,12 @@
         <div class="mb-2 position-relative">
           <select class="form-select text-end pe-5" formControlName="category">
             <option value="" disabled selected>القسم</option>
-            <option *ngFor="let dept of departmentsOptions" [value]="dept.name">
-              {{ dept.name }}
-            </option>
+            <option *ngFor="let dept of departmentsOptions" [value]="dept.name">{{ dept.name }}</option>
           </select>
-          <i
-            class="bi bi-diagram-3 position-absolute"
-            style="left: 15px; top: 50%; transform: translateY(-50%)"
-          ></i>
         </div>
 
         <div class="mb-2">
-          <textarea
-            rows="5"
-            class="form-control text-end"
-            formControlName="description"
-            placeholder="وصف الخدمة المطلوبة"
-          ></textarea>
+          <textarea rows="5" class="form-control text-end" formControlName="description" placeholder="وصف الخدمة المطلوبة"></textarea>
         </div>
       </div>
     </div>
@@ -115,14 +67,11 @@
       <div class="modal-content p-3">
         <div class="modal-header">
           <h5 class="modal-title">إضافة عنوان</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <div id="map" style="height: 300px" class="mb-3 border rounded"></div>
+          <div *ngIf="addressError" class="alert alert-danger py-1">{{ addressError }}</div>
           <div class="row g-2">
             <div class="col-md-6">
               <input #cityInput class="form-control text-end" placeholder="المدينة" />
@@ -145,11 +94,8 @@
           </div>
         </div>
         <div class="modal-footer justify-content-center">
-          <button
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-            (click)="confirmAddress(cityInput.value, areaInput.value, streetInput.value, buildingInput.value, floorInput.value, aptInput.value)"
-          >
+          <button class="btn btn-primary"
+            (click)="confirmAddress(cityInput.value, areaInput.value, streetInput.value, buildingInput.value, floorInput.value, aptInput.value)">
             تأكيد
           </button>
         </div>
