@@ -82,7 +82,7 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
             email: p.email,
             rating: p.rating,
             description: p.nameServices || p.categoryName || 'بدون وصف',
-            image: this.getSafeImage(p.imageUrl), // ✅ زي الريتينج
+            image: this.getImagePath(p.imageUrl), // ✅ هنا
             x: (p.long - lng) * 1000,
             y: (p.lat - lat) * -1000
           };
@@ -97,52 +97,73 @@ getNearbyTechnicians(lat: number, lng: number, range: number) {
     }
   });
 }
-getSafeImage(imagePath: string | null | undefined): string {
-  // 1️⃣ لو مفيش قيمة أصلاً → رجّع الصورة الافتراضية
-  if (!imagePath || typeof imagePath !== 'string' || imagePath.trim() === '') {
-    return 'assets/images/default-avatar.png';
+getImagePath(imageValue: string | null | undefined): string {
+  // 1️⃣ fallback
+  if (!imageValue || typeof imageValue !== "string" || imageValue.trim() === "") {
+    return "assets/images/default-avatar.png";
   }
 
   try {
-    // 2️⃣ لو القيمة شكلها JSON (Array أو Object)
-    const parsed = JSON.parse(imagePath);
+    // 2️⃣ لو JSON Array أو Object
+    const parsed = JSON.parse(imageValue);
 
-    // ✅ لو Array وفيه عناصر → ناخد أول عنصر
+    // لو Array
     if (Array.isArray(parsed) && parsed.length > 0) {
       const first = parsed[0];
-      if (typeof first === 'string' && first.trim() !== '') {
-        if (first.startsWith('http')) {
-          return first.replace('http://', 'https://');
-        }
-        const fileName = first.split('/').pop();
-        return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
+      if (typeof first === "string" && first.trim() !== "") {
+        return this.normalizeImage(first);
       }
     }
 
-    // ✅ لو Object فيه property اسمه url أو imageUrll
-    if (!Array.isArray(parsed) && parsed.imageUrll) {
-      const url = parsed.imageUrll;
-      if (url.startsWith('http')) {
-        return url.replace('http://', 'https://');
+    // لو Object فيه imageUrl أو imageUrll
+    if (!Array.isArray(parsed)) {
+      const url = parsed.imageUrl || parsed.imageUrll;
+      if (url && typeof url === "string") {
+        return this.normalizeImage(url);
       }
-      const fileName = url.split('/').pop();
-      return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
     }
   } catch {
-    // 3️⃣ لو مش JSON → نعاملها كـ String عادية
-    if (imagePath.startsWith('http')) {
-      // لو لينك كامل → بدّل http بـ https
-      return imagePath.replace('http://', 'https://');
-    }
-
-    // لو مجرد اسم ملف → بنبني لينك كامل
-    const fileName = imagePath.split('/').pop();
-    return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
+    // 3️⃣ مش JSON → string عادي
+    return this.normalizeImage(imageValue);
   }
 
-  // 4️⃣ fallback لو مفيش حاجة من فوق اشتغلت
-  return 'assets/images/default-avatar.png';
+  return "assets/images/default-avatar.png";
 }
+
+// ✨ دالة مساعدة لتوحيد بناء اللينك
+private normalizeImage(path: string): string {
+  if (!path || typeof path !== "string") {
+    return "assets/images/default-avatar.png";
+  }
+
+  // Base64 (جاهز)
+  if (path.startsWith("data:image")) {
+    return path;
+  }
+
+  // Base64 خام (من غير prefix)
+  if (/^[A-Za-z0-9+/=]+$/.test(path) && path.length > 50) {
+    return "data:image/jpeg;base64," + path;
+  }
+
+  // لينك كامل من السيرفر
+  if (path.startsWith("http://on-demand-service-backend.runasp.net")) {
+    return path.replace("http://", "https://");
+  }
+  if (path.startsWith("https://on-demand-service-backend.runasp.net")) {
+    return path;
+  }
+
+  // لينك خارجي
+  if (path.startsWith("http")) {
+    return path;
+  }
+
+  // مجرد اسم ملف
+  const fileName = path.split("/").pop();
+  return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
+}
+
 
 
   reserveService(technicianId: string) {

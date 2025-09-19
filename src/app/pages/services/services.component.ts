@@ -23,58 +23,33 @@ export class ServicesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.http.get<Category[]>('/api/Category/GetAll').subscribe({
-      next: (data) => {
-        this.services = data.map(service => ({
-          ...service,
-          imageUrl: this.getSafeImage(service.imageBase64)
-        }));
-      },
-      error: (err) => {
-        console.error('❌ فشل تحميل الخدمات:', err);
-      }
-    });
+this.http.get<Category[]>('/api/Category/GetAll')
+      .subscribe({
+        next: (data) => {
+
+       this.services = data.map(service => {
+  let imageUrl = '';
+
+  try {
+    const parsed = JSON.parse(service.imageBase64);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+imageUrl = `/Uploads/${parsed[0].split('/').pop()}`;
+    }
+  } catch (e) {
+    console.error('❌ خطأ في قراءة الصورة:', e);
   }
 
-  /**
-   * ✅ دالة شاملة للتعامل مع الصور
-   */
-  getSafeImage(imagePath: string | null | undefined): string {
-    if (!imagePath || typeof imagePath !== 'string' || imagePath.trim() === '') {
-      return 'assets/images/default-avatar.png';
-    }
+  return {
+    ...service,
+    imageUrl
+  };
+});
 
-    try {
-      const parsed = JSON.parse(imagePath);
-
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const first = parsed[0];
-        if (typeof first === 'string' && first.trim() !== '') {
-          if (first.startsWith('http')) {
-            return first.replace('http://', 'https://');
-          }
-          const fileName = first.split('/').pop();
-          return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
+        },
+        error: (err) => {
+          console.error('❌ فشل تحميل الخدمات:', err);
         }
-      }
-
-      if (!Array.isArray(parsed) && parsed.imageUrll) {
-        const url = parsed.imageUrll;
-        if (url.startsWith('http')) {
-          return url.replace('http://', 'https://');
-        }
-        const fileName = url.split('/').pop();
-        return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
-      }
-    } catch {
-      if (imagePath.startsWith('http')) {
-        return imagePath.replace('http://', 'https://');
-      }
-      const fileName = imagePath.split('/').pop();
-      return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
-    }
-
-    return 'assets/images/default-avatar.png';
+      });
   }
 
   goToBook() {
