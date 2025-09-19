@@ -54,23 +54,23 @@ export class ProviderHomeComponent implements OnInit {
   }
 
   loadOrders(status: number, label: string) {
-    this.selectedStatus = status;
-    this.selectedStatusLabel = label;
+  this.selectedStatus = status;
+  this.selectedStatusLabel = label;
 
-    const technicianId = this.provider.id;
+  const technicianId = this.provider.id;
 
-    this.requestService.getTechnicianRequests(technicianId, status).subscribe({
-      next: (data) => {
-        this.orders = (Array.isArray(data) ? data : [])
-          .map(order => ({ ...order, accepted: false }))
-          // ✅ أحدث طلب فوق
-          .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
-      },
-      error: (err) => {
-        console.error('❌ فشل في تحميل الطلبات:', err);
-      }
-    });
-  }
+  this.requestService.getTechnicianRequests(technicianId, status).subscribe({
+    next: (data) => {
+      this.orders = (Array.isArray(data) ? data : [])
+        .map(order => ({ ...order, accepted: false }))
+        // ✅ أحدث طلب فوق
+        .sort((a, b) => new Date(a.visitingDate).getTime() - new Date(b.visitingDate).getTime());
+    },
+    error: (err) => {
+      console.error('❌ فشل في تحميل الطلبات:', err);
+    }
+  });
+}
 
   acceptOrder(order: any) {
     this.requestService.acceptRequest(order.id).subscribe({
