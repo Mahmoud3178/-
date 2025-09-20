@@ -67,8 +67,65 @@
         </div>
       </div>
 
-      <!-- باقي الحقول -->
-      <!-- ... زي ما عندك بدون تغيير -->
+
+      <!-- حقول البيانات -->
+      <div class="row g-2 mb-4">
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="الاسم الكامل" [(ngModel)]="profileData.name" />
+        </div>
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="القسم" [(ngModel)]="profileData.categoryName" />
+        </div>
+        <div class="col-md-6">
+          <input type="email" class="form-control" placeholder="البريد الإلكتروني" [(ngModel)]="profileData.email" />
+        </div>
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="رقم الهاتف" [(ngModel)]="profileData.phoneNumber" />
+        </div>
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="الرقم القومي" [(ngModel)]="profileData.nationalId" />
+        </div>
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="مناطق الخدمة" [(ngModel)]="profileData.serviceAreas" />
+        </div>
+        <div class="col-md-6">
+          <input type="number" class="form-control" placeholder="عدد ساعات العمل" [(ngModel)]="profileData.workingHours" />
+        </div>
+        <div class="col-md-6">
+          <input type="number" class="form-control" placeholder="سنوات الخبرة" [(ngModel)]="profileData.yearsOfExperience" />
+        </div>
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="اسم البنك" [(ngModel)]="profileData.bankName" />
+        </div>
+        <div class="col-md-6">
+          <input type="text" class="form-control" placeholder="رقم الحساب البنكي" [(ngModel)]="profileData.bankAccountNumber" />
+        </div>
+        <div class="col-12">
+          <input type="text" class="form-control" placeholder="الخدمات المقدمة" [(ngModel)]="profileData.nameServices" />
+        </div>
+      </div>
+
+      <!-- تنبيهات النجاح أو الخطأ -->
+      <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <div *ngIf="successMessage"
+             class="alert alert-success alert-dismissible fade show shadow-sm"
+             role="alert">
+          {{ successMessage }}
+          <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
+        </div>
+
+        <div *ngIf="errorMessage"
+             class="alert alert-danger alert-dismissible fade show shadow-sm"
+             role="alert">
+          {{ errorMessage }}
+          <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
+        </div>
+      </div>
+
+      <!-- زر الحفظ -->
+      <div class="text-center">
+        <button class="btn btn-primary px-5" (click)="onSave()">حفظ</button>
+      </div>
     </div>
   </div>
 </div>

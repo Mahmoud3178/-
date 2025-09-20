@@ -19,17 +19,19 @@ export class RegisterComponent implements OnInit {
   imagePreview: string | null = null;
   userPhotoFile: File | null = null;
 
-  departmentsOptions: { id: number, name: string }[] = [];
-  serviceAreasOptions: { id: number, name: string }[] = [];
+  departmentsOptions: { id: number; name: string }[] = [];
+  serviceAreasOptions: { id: number; name: string }[] = [];
 
-  rolePhotos: { [key in 'client' | 'provider']?: { file: File, preview: string } } = {};
+  rolePhotos: { [key in 'client' | 'provider']?: { file: File; preview: string } } = {};
+
+  errorMessage: string | null = null; // ✅ الرسالة الموحدة
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private authHttp: AuthHttpService,
     private http: HttpClient
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.createForm();
@@ -47,11 +49,13 @@ export class RegisterComponent implements OnInit {
           '',
           [
             Validators.required,
-            Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/)
-          ]
+            Validators.pattern(
+              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/
+            ),
+          ],
         ],
         confirmPassword: ['', Validators.required],
-        city: ['', Validators.required],   // ✅ بقت دروب داون
+        city: ['', Validators.required],
         department: [''],
         nationalId: [''],
         serviceAreas: [''],
@@ -59,7 +63,7 @@ export class RegisterComponent implements OnInit {
         experienceYears: [''],
         bankName: [''],
         bankAccountNumber: [''],
-        serviceName: ['']
+        serviceName: [''],
       },
       { validators: this.passwordsMatchValidator }
     );
@@ -75,6 +79,7 @@ export class RegisterComponent implements OnInit {
 
   setRole(role: 'client' | 'provider') {
     this.selectedRole = role;
+    this.errorMessage = null; // ✅ تفريغ رسالة الخطأ عند التبديل
 
     if (this.rolePhotos[role]) {
       this.userPhotoFile = this.rolePhotos[role]!.file;
@@ -113,7 +118,6 @@ export class RegisterComponent implements OnInit {
         this.imagePreview = preview;
 
         this.rolePhotos[this.selectedRole] = { file, preview };
-
         const otherRole = this.selectedRole === 'client' ? 'provider' : 'client';
         this.rolePhotos[otherRole] = { file, preview };
       };
@@ -136,10 +140,16 @@ export class RegisterComponent implements OnInit {
         : this.authHttp.registerTechnician(formData);
 
     request$.subscribe({
-      next: () => this.router.navigate(['/login']),
+      next: () => {
+        this.errorMessage = null;
+        this.router.navigate(['/login']);
+      },
       error: () => {
-        alert('حدث خطأ أثناء تسجيل الحساب، حاول مرة أخرى');
-      }
+        this.errorMessage =
+          this.selectedRole === 'client'
+            ? '❌ قد تكون كلمة المرور أو البريد الإلكتروني غير صحيحة'
+            : '❌ قد يكون لم يوافق الأدمن عليك، ستصلك رسالة تأكيد عند تفعيل الحساب على البريد الإلكتروني، أو البيانات غير صحيحة';
+      },
     });
   }
 
@@ -153,7 +163,7 @@ export class RegisterComponent implements OnInit {
         PhoneNumber: form.phone,
         Password: form.password,
         ConfirmPassword: form.confirmPassword,
-        City: form.city,   // ✅ ID من الدروب داون
+        City: form.city,
         Category: form.department,
         NationalId: form.nationalId,
         ServiceAreas: form.serviceAreas,
@@ -161,7 +171,7 @@ export class RegisterComponent implements OnInit {
         YearsOfExperience: form.experienceYears,
         BankName: form.bankName,
         BankAccountNumber: form.bankAccountNumber,
-        NameServices: form.serviceName
+        NameServices: form.serviceName,
       };
     }
 
@@ -171,53 +181,39 @@ export class RegisterComponent implements OnInit {
       PhoneNumber: form.phone,
       Password: form.password,
       ConfirmPassword: form.confirmPassword,
-      City: form.city   // ✅ ID من الدروب داون
+      City: form.city,
     };
   }
 
   private buildFormData(dto: any): FormData {
     const formData = new FormData();
-
     for (const key in dto) {
       if (dto[key] !== undefined && dto[key] !== null) {
         formData.append(key, dto[key]);
       }
     }
-
     if (this.userPhotoFile) {
       const fieldName = this.selectedRole === 'client' ? 'UserPhoto' : 'PersonalPhoto';
       formData.append(fieldName, this.userPhotoFile);
     }
-
     return formData;
   }
 
   loadServiceAreas(): void {
-    const url = `/api/Places/GetAllPlaces`;
-    this.http.get<{ id: number, name: string }[]>(url).subscribe({
-      next: (places) => {
-        this.serviceAreasOptions = places;
-      },
-      error: (err) => {
-        console.error('خطأ في تحميل مناطق الخدمة / المدن', err);
-        this.serviceAreasOptions = [];
-      }
+    this.http.get<{ id: number; name: string }[]>('/api/Places/GetAllPlaces').subscribe({
+      next: (places) => (this.serviceAreasOptions = places),
+      error: () => (this.serviceAreasOptions = []),
     });
   }
 
   loadDepartments(): void {
-    const url = '/api/Category/GetAll';
-    this.http.get<any[]>(url).subscribe({
-      next: (categories) => {
-        this.departmentsOptions = categories.map(cat => ({
+    this.http.get<any[]>('/api/Category/GetAll').subscribe({
+      next: (categories) =>
+        (this.departmentsOptions = categories.map((cat) => ({
           id: cat.id,
-          name: cat.name
-        }));
-      },
-      error: (err) => {
-        console.error('خطأ في تحميل الأقسام', err);
-        this.departmentsOptions = [];
-      }
+          name: cat.name,
+        }))),
+      error: () => (this.departmentsOptions = []),
     });
   }
 }

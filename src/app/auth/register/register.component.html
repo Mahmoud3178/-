@@ -21,7 +21,7 @@
         </label>
       </div>
 
-      <!-- زر اختيار الدور -->
+      <!-- اختيار الدور -->
       <div class="d-flex justify-content-between mb-3">
         <button type="button" class="btn w-50 fw-bold me-2"
           [ngClass]="{ 'bg-orange text-white border-0': selectedRole === 'provider', 'border border-orange text-dark': selectedRole !== 'provider' }"
@@ -30,6 +30,11 @@
         <button type="button" class="btn w-50 fw-bold"
           [ngClass]="{ 'bg-orange text-white border-0': selectedRole === 'client', 'border border-orange text-dark': selectedRole !== 'client' }"
           (click)="setRole('client')">عميل</button>
+      </div>
+
+      <!-- رسالة الخطأ -->
+      <div *ngIf="errorMessage" class="alert alert-danger text-center">
+        {{ errorMessage }}
       </div>
 
       <!-- الفورم -->
@@ -55,7 +60,7 @@
             <input formControlName="confirmPassword" type="password" class="form-control text-end" placeholder="تأكيد كلمة المرور" />
           </div>
 
-          <!-- ✅ المدينة للجميع -->
+          <!-- المدينة -->
           <div class="col-md-12">
             <select formControlName="city" class="form-select text-end">
               <option value="" disabled selected>اختر المدينة</option>
@@ -65,7 +70,7 @@
             </select>
           </div>
 
-          <!-- بيانات مقدم الخدمة -->
+          <!-- مقدم الخدمة -->
           <ng-container *ngIf="selectedRole === 'provider'">
             <div class="col-md-6">
               <input formControlName="nationalId" type="text" class="form-control text-end" placeholder="الرقم القومي" />
@@ -80,7 +85,6 @@
               </select>
             </div>
 
-            <!-- ✅ منطقة الخدمة لمقدم الخدمة فقط -->
             <div class="col-md-6">
               <select formControlName="serviceAreas" class="form-select text-end">
                 <option value="" disabled selected>اختر منطقة الخدمة</option>
@@ -93,15 +97,19 @@
             <div class="col-md-6">
               <input formControlName="workingHours" type="number" class="form-control text-end" placeholder="عدد ساعات العمل" />
             </div>
+
             <div class="col-md-6">
               <input formControlName="experienceYears" type="number" class="form-control text-end" placeholder="سنوات الخبرة" />
             </div>
+
             <div class="col-md-6">
               <input formControlName="bankName" type="text" class="form-control text-end" placeholder="اسم البنك" />
             </div>
+
             <div class="col-md-6">
               <input formControlName="bankAccountNumber" type="text" class="form-control text-end" placeholder="رقم الحساب البنكي" />
             </div>
+
             <div class="col-md-6">
               <select formControlName="serviceName" class="form-select text-end">
                 <option value="" disabled selected>اختر نوع الخدمة</option>
@@ -117,7 +125,6 @@
           إنشاء حساب
         </button>
       </form>
-
     </div>
   </div>
 </div>
