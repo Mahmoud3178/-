@@ -40,11 +40,10 @@ export class ProviderHomeComponent implements OnInit {
   map: L.Map | null = null;
   marker: L.Marker | null = null;
 
-  // العنوان الأساسي
   address: any = {
     city: '',
     area: '',
-    lat: 26.1642,   // قنا
+    lat: 26.1642,
     lng: 32.7267
   };
 
@@ -69,7 +68,6 @@ export class ProviderHomeComponent implements OnInit {
       this.loadCompletedOrdersCount();
     }
 
-    // أيقونة الماركر
     const defaultIcon = L.icon({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -160,13 +158,11 @@ export class ProviderHomeComponent implements OnInit {
     });
   }
 
-  /** تحديث محلي */
   private applyLocalStatusChange(orderId: number, newState: number) {
     this.orders = this.orders.map(o => o.id === orderId ? { ...o, status: newState } : o);
     if (newState === 5) this.provider.orders = (this.provider.orders || 0) + 1;
   }
 
-  /** ترتيب الطلبات */
   private sortOrders() {
     this.orders.sort((a: any, b: any) => {
       const ta = a.visitingDate ? new Date(a.visitingDate).getTime() : (a.id || 0);
@@ -212,8 +208,9 @@ export class ProviderHomeComponent implements OnInit {
 
           const reverse = await this.reverseGeocode(latLng.lat, latLng.lng);
           if (reverse) {
-            this.address.city = reverse.city || reverse.town || '';
-            this.address.area = reverse.suburb || reverse.village || '';
+            this.address.city = reverse.city || reverse.town || reverse.state || '';
+            this.address.area =
+              reverse.suburb || reverse.village || reverse.neighbourhood || reverse.county || '';
             this.cd.detectChanges();
           }
         });
@@ -244,6 +241,14 @@ export class ProviderHomeComponent implements OnInit {
         this.map.setView([lat, lon], 13);
         if (this.marker) this.marker.setLatLng([lat, lon]);
       }
+
+      const reverse = await this.reverseGeocode(lat, lon);
+      if (reverse) {
+        this.address.city = reverse.city || reverse.town || reverse.state || '';
+        this.address.area =
+          reverse.suburb || reverse.village || reverse.neighbourhood || reverse.county || '';
+        this.cd.detectChanges();
+      }
     }
   }
 
@@ -259,16 +264,15 @@ export class ProviderHomeComponent implements OnInit {
   /** زر التأكيد */
   confirmLocation() {
     this.updateLocationOnServer(this.address.lat, this.address.lng);
-    this.successMessage = '✅ تم تحديث موقعك بنجاح';
-    setTimeout(() => this.successMessage = null, 3000);
   }
 
-  /** تحديث على السيرفر */
+  /** تحديث على السيرفر (نسبي) */
   updateLocationOnServer(lat: number, lng: number) {
-    const apiUrl = `http://on-demand-service-backend.runasp.net/api/Services/UpdateLat_long?technicianId=${this.provider.id}&lat=${lat}&lng=${lng}`;
+    const apiUrl = `/api/Services/UpdateLat_long?technicianId=${this.provider.id}&lat=${lat}&lng=${lng}`;
     fetch(apiUrl, { method: 'POST' })
-      .then(res => res.ok ? console.log('✅ الموقع اتحدث') : console.error('❌ فشل:', res.statusText))
-      .catch(err => console.error('❌ خطأ:', err));
+      .then(res => res.ok ? this.successMessage = '✅ تم تحديث موقعك بنجاح' : this.errorMessage = '❌ فشل التحديث')
+      .catch(() => this.errorMessage = '❌ خطأ في الاتصال');
+    this.clearMessagesAfterDelay();
   }
 
   /** تحميل عدد الطلبات المكتملة */
