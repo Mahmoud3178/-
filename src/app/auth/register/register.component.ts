@@ -153,7 +153,7 @@ export class RegisterComponent implements OnInit {
         PhoneNumber: form.phone,
         Password: form.password,
         ConfirmPassword: form.confirmPassword,
-        City: form.city,   // ✅ ID من الدروب داون
+        City: form.city,
         Category: form.department,
         NationalId: form.nationalId,
         ServiceAreas: form.serviceAreas,
@@ -171,7 +171,7 @@ export class RegisterComponent implements OnInit {
       PhoneNumber: form.phone,
       Password: form.password,
       ConfirmPassword: form.confirmPassword,
-      City: form.city   // ✅ ID من الدروب داون
+      City: form.city
     };
   }
 

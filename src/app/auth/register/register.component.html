@@ -35,79 +35,130 @@
       <!-- الفورم -->
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
         <div class="row g-2">
+
+          <!-- الاسم -->
           <div class="col-md-12">
             <input formControlName="fullName" type="text" class="form-control text-end" placeholder="الاسم الكامل" />
+            <div *ngIf="registerForm.get('fullName')?.touched && registerForm.get('fullName')?.invalid" class="text-danger small mt-1">
+              الاسم مطلوب
+            </div>
           </div>
 
+          <!-- البريد الإلكتروني -->
           <div class="col-md-12">
             <input formControlName="email" type="email" class="form-control text-end" placeholder="البريد الإلكتروني" />
+            <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('required')" class="text-danger small mt-1">
+              البريد الإلكتروني مطلوب
+            </div>
+            <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('email')" class="text-danger small mt-1">
+              البريد الإلكتروني غير صالح
+            </div>
           </div>
 
+          <!-- الهاتف -->
           <div class="col-md-12">
             <input formControlName="phone" type="tel" class="form-control text-end" placeholder="رقم الهاتف" />
+            <div *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid" class="text-danger small mt-1">
+              رقم الهاتف مطلوب
+            </div>
           </div>
 
+          <!-- كلمة المرور -->
           <div class="col-md-6">
             <input formControlName="password" type="password" class="form-control text-end" placeholder="كلمة المرور" />
+            <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')" class="text-danger small mt-1">
+              كلمة المرور مطلوبة
+            </div>
+            <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('pattern')" class="text-danger small mt-1">
+              كلمة المرور يجب أن تحتوي على حروف كبيرة وصغيرة ورقم ورمز خاص
+            </div>
           </div>
 
+          <!-- تأكيد كلمة المرور -->
           <div class="col-md-6">
             <input formControlName="confirmPassword" type="password" class="form-control text-end" placeholder="تأكيد كلمة المرور" />
+            <div *ngIf="registerForm.errors?.['passwordsMismatch'] && registerForm.get('confirmPassword')?.touched" class="text-danger small mt-1">
+              كلمتا المرور غير متطابقتين
+            </div>
           </div>
 
-          <!-- ✅ المدينة للجميع -->
+          <!-- المدينة -->
           <div class="col-md-12">
             <select formControlName="city" class="form-select text-end">
               <option value="" disabled selected>اختر المدينة</option>
-              <option *ngFor="let place of serviceAreasOptions" [value]="place.id">
-                {{ place.name }}
-              </option>
+              <option *ngFor="let place of serviceAreasOptions" [value]="place.id">{{ place.name }}</option>
             </select>
+            <div *ngIf="registerForm.get('city')?.touched && registerForm.get('city')?.invalid" class="text-danger small mt-1">
+              المدينة مطلوبة
+            </div>
           </div>
 
           <!-- بيانات مقدم الخدمة -->
           <ng-container *ngIf="selectedRole === 'provider'">
             <div class="col-md-6">
               <input formControlName="nationalId" type="text" class="form-control text-end" placeholder="الرقم القومي" />
+              <div *ngIf="registerForm.get('nationalId')?.touched && registerForm.get('nationalId')?.hasError('pattern')" class="text-danger small mt-1">
+                الرقم القومي يجب أن يحتوي على 14 رقم
+              </div>
             </div>
 
             <div class="col-md-6">
               <select formControlName="department" class="form-select text-end">
                 <option value="" disabled selected>اختر القسم</option>
-                <option *ngFor="let dept of departmentsOptions" [value]="dept.id">
-                  {{ dept.name }}
-                </option>
+                <option *ngFor="let dept of departmentsOptions" [value]="dept.id">{{ dept.name }}</option>
               </select>
+              <div *ngIf="registerForm.get('department')?.touched && registerForm.get('department')?.invalid" class="text-danger small mt-1">
+                القسم مطلوب
+              </div>
             </div>
 
-            <!-- ✅ منطقة الخدمة لمقدم الخدمة فقط -->
             <div class="col-md-6">
               <select formControlName="serviceAreas" class="form-select text-end">
                 <option value="" disabled selected>اختر منطقة الخدمة</option>
-                <option *ngFor="let place of serviceAreasOptions" [value]="place.id">
-                  {{ place.name }}
-                </option>
+                <option *ngFor="let place of serviceAreasOptions" [value]="place.id">{{ place.name }}</option>
               </select>
+              <div *ngIf="registerForm.get('serviceAreas')?.touched && registerForm.get('serviceAreas')?.invalid" class="text-danger small mt-1">
+                منطقة الخدمة مطلوبة
+              </div>
             </div>
 
             <div class="col-md-6">
               <input formControlName="workingHours" type="number" class="form-control text-end" placeholder="عدد ساعات العمل" />
+              <div *ngIf="registerForm.get('workingHours')?.touched && registerForm.get('workingHours')?.invalid" class="text-danger small mt-1">
+                عدد الساعات مطلوب
+              </div>
             </div>
+
             <div class="col-md-6">
               <input formControlName="experienceYears" type="number" class="form-control text-end" placeholder="سنوات الخبرة" />
+              <div *ngIf="registerForm.get('experienceYears')?.touched && registerForm.get('experienceYears')?.invalid" class="text-danger small mt-1">
+                سنوات الخبرة مطلوبة
+              </div>
             </div>
+
             <div class="col-md-6">
               <input formControlName="bankName" type="text" class="form-control text-end" placeholder="اسم البنك" />
+              <div *ngIf="registerForm.get('bankName')?.touched && registerForm.get('bankName')?.invalid" class="text-danger small mt-1">
+                اسم البنك مطلوب
+              </div>
             </div>
+
             <div class="col-md-6">
               <input formControlName="bankAccountNumber" type="text" class="form-control text-end" placeholder="رقم الحساب البنكي" />
+              <div *ngIf="registerForm.get('bankAccountNumber')?.touched && registerForm.get('bankAccountNumber')?.invalid" class="text-danger small mt-1">
+                رقم الحساب مطلوب
+              </div>
             </div>
+
             <div class="col-md-6">
               <select formControlName="serviceName" class="form-select text-end">
                 <option value="" disabled selected>اختر نوع الخدمة</option>
                 <option value="مكتبي">مكتبي</option>
                 <option value="منزلي">منزلي</option>
               </select>
+              <div *ngIf="registerForm.get('serviceName')?.touched && registerForm.get('serviceName')?.invalid" class="text-danger small mt-1">
+                نوع الخدمة مطلوب
+              </div>
             </div>
           </ng-container>
         </div>
