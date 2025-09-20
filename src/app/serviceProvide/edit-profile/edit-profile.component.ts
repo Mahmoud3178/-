@@ -39,9 +39,6 @@ export class EditProfileComponent implements OnInit {
 
   technicianId = '';
 
-  // ✅ هنا بنحط السيرفر الأساسي عشان الصور
-  private backendBaseUrl = 'https://on-demand-service-backend.runasp.net';
-
   constructor(
     private http: HttpClient,
     private authService: AuthService,
@@ -200,12 +197,17 @@ export class EditProfileComponent implements OnInit {
   getSafeImageUrl(url: string): string {
     if (!url) return 'assets/images/default-avatar.png';
 
-    // لو الرابط نسبي لازم نضيف له السيرفر
-    if (!url.startsWith('http')) {
-      return `${this.backendBaseUrl}${url}`;
+    // لو الرابط جاي من السيرفر بالـ http خلي Vercel يتصرف
+    if (url.includes('on-demand-service-backend.runasp.net/Uploads')) {
+      const fileName = url.split('/Uploads/')[1];
+      return `/Uploads/${fileName}`;
     }
 
-    return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+    if (!url.startsWith('http')) {
+      return `/Uploads/${url}`;
+    }
+
+    return url;
   }
 
   logout() {
