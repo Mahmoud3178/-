@@ -68,57 +68,60 @@
       </div>
 
       <!-- باقي الفورم -->
-      <div class="row g-2 mb-4">
-        <div class="col-md-6">
-          <input type="text" class="form-control" placeholder="الاسم الكامل" [(ngModel)]="profileData.name" />
-        </div>
-        <div class="col-md-6">
-<!-- القسم -->
-<div class="col-md-6">
-  <select class="form-select" [(ngModel)]="profileData.categoryName">
-    <option value="" disabled selected>اختر القسم</option>
-    <option *ngFor="let cat of categories" [value]="cat.name">
-      {{ cat.name }}
-    </option>
-  </select>
-</div>        </div>
-        <div class="col-md-6">
-          <input type="email" class="form-control" placeholder="البريد الإلكتروني" [(ngModel)]="profileData.email" />
-        </div>
-        <div class="col-md-6">
-          <input type="text" class="form-control" placeholder="رقم الهاتف" [(ngModel)]="profileData.phoneNumber" />
-        </div>
-        <div class="col-md-6">
-          <input type="text" class="form-control" placeholder="الرقم القومي" [(ngModel)]="profileData.nationalId" />
-        </div>
-        <div class="col-md-6">
+   <div class="row g-2 mb-4">
+  <div class="col-md-6">
+    <input type="text" class="form-control" placeholder="الاسم الكامل" [(ngModel)]="profileData.name" />
+  </div>
 
-<!-- مناطق الخدمة -->
-<div class="col-md-6">
-  <select class="form-select" [(ngModel)]="profileData.serviceAreas">
-    <option value="" disabled selected>اختر منطقة الخدمة</option>
-    <option *ngFor="let place of places" [value]="place.name">
-      {{ place.name }}
-    </option>
-  </select>
+  <!-- القسم -->
+  <div class="col-md-6">
+    <select class="form-select" [(ngModel)]="profileData.categoryName">
+      <option value="" disabled>اختر القسم</option>
+      <option *ngFor="let cat of categories" [value]="cat.name">
+        {{ cat.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="col-md-6">
+    <input type="email" class="form-control" placeholder="البريد الإلكتروني" [(ngModel)]="profileData.email" />
+  </div>
+
+  <div class="col-md-6">
+    <input type="text" class="form-control" placeholder="رقم الهاتف" [(ngModel)]="profileData.phoneNumber" />
+  </div>
+
+  <div class="col-md-6">
+    <input type="text" class="form-control" placeholder="الرقم القومي" [(ngModel)]="profileData.nationalId" />
+  </div>
+
+  <!-- مناطق الخدمة -->
+  <div class="col-md-6">
+    <select class="form-select" [(ngModel)]="profileData.serviceAreas">
+      <option value="" disabled>اختر منطقة الخدمة</option>
+      <option *ngFor="let place of places" [value]="place.name">
+        {{ place.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="col-md-6">
+    <input type="number" class="form-control" placeholder="عدد ساعات العمل" [(ngModel)]="profileData.workingHours" />
+  </div>
+  <div class="col-md-6">
+    <input type="number" class="form-control" placeholder="سنوات الخبرة" [(ngModel)]="profileData.yearsOfExperience" />
+  </div>
+  <div class="col-md-6">
+    <input type="text" class="form-control" placeholder="اسم البنك" [(ngModel)]="profileData.bankName" />
+  </div>
+  <div class="col-md-6">
+    <input type="text" class="form-control" placeholder="رقم الحساب البنكي" [(ngModel)]="profileData.bankAccountNumber" />
+  </div>
+  <div class="col-12">
+    <input type="text" class="form-control" placeholder="الخدمات المقدمة" [(ngModel)]="profileData.nameServices" />
+  </div>
 </div>
-        </div>
-        <div class="col-md-6">
-          <input type="number" class="form-control" placeholder="عدد ساعات العمل" [(ngModel)]="profileData.workingHours" />
-        </div>
-        <div class="col-md-6">
-          <input type="number" class="form-control" placeholder="سنوات الخبرة" [(ngModel)]="profileData.yearsOfExperience" />
-        </div>
-        <div class="col-md-6">
-          <input type="text" class="form-control" placeholder="اسم البنك" [(ngModel)]="profileData.bankName" />
-        </div>
-        <div class="col-md-6">
-          <input type="text" class="form-control" placeholder="رقم الحساب البنكي" [(ngModel)]="profileData.bankAccountNumber" />
-        </div>
-        <div class="col-12">
-          <input type="text" class="form-control" placeholder="الخدمات المقدمة" [(ngModel)]="profileData.nameServices" />
-        </div>
-      </div>
+
 
       <!-- التنبيهات -->
       <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
