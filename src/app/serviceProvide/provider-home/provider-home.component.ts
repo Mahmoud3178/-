@@ -1,4 +1,3 @@
-// src/app/pages/provider-home/provider-home.component.ts
 import {
   Component,
   OnInit,
@@ -41,12 +40,12 @@ export class ProviderHomeComponent implements OnInit {
   map: L.Map | null = null;
   marker: L.Marker | null = null;
 
-  // العنوان الأساسي للمدينة والمنطقة فقط
+  // العنوان الأساسي
   address: any = {
     city: '',
     area: '',
-    lat: '',
-    lng: ''
+    lat: 26.1642,   // قنا
+    lng: 32.7267
   };
 
   constructor(
@@ -60,21 +59,17 @@ export class ProviderHomeComponent implements OnInit {
     const userJson = localStorage.getItem('user');
     if (userJson) {
       const user = JSON.parse(userJson);
-
       this.provider = {
         id: user.id,
         name: user.name,
         avatar: user.image,
-        rating: 0,
-        reviews: 0,
         orders: 0
       };
-
       this.loadOrders(this.selectedStatus, this.selectedStatusLabel);
       this.loadCompletedOrdersCount();
     }
 
-    // إعداد أيقونة الافتراضية للماركر
+    // أيقونة الماركر
     const defaultIcon = L.icon({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -171,7 +166,7 @@ export class ProviderHomeComponent implements OnInit {
     if (newState === 5) this.provider.orders = (this.provider.orders || 0) + 1;
   }
 
-  /** ترتيب */
+  /** ترتيب الطلبات */
   private sortOrders() {
     this.orders.sort((a: any, b: any) => {
       const ta = a.visitingDate ? new Date(a.visitingDate).getTime() : (a.id || 0);
@@ -202,17 +197,14 @@ export class ProviderHomeComponent implements OnInit {
     modal.show();
 
     setTimeout(() => {
-      const defaultLat = 24.7136, defaultLng = 46.6753;
-      const userLat = this.address.lat || defaultLat;
-      const userLng = this.address.lng || defaultLng;
-
       if (!this.map) {
-        this.map = L.map('providerMap').setView([userLat, userLng], 13);
+        this.map = L.map('providerMap').setView([this.address.lat, this.address.lng], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap'
         }).addTo(this.map);
 
-        this.marker = L.marker([userLat, userLng], { draggable: true }).addTo(this.map);
+        this.marker = L.marker([this.address.lat, this.address.lng], { draggable: true }).addTo(this.map);
+
         this.marker.on('dragend', async () => {
           const latLng = this.marker!.getLatLng();
           this.address.lat = latLng.lat;
@@ -221,20 +213,41 @@ export class ProviderHomeComponent implements OnInit {
           const reverse = await this.reverseGeocode(latLng.lat, latLng.lng);
           if (reverse) {
             this.address.city = reverse.city || reverse.town || '';
-            this.address.area = reverse.suburb || '';
+            this.address.area = reverse.suburb || reverse.village || '';
             this.cd.detectChanges();
           }
-
-          this.updateLocationOnServer(latLng.lat, latLng.lng);
         });
       } else {
         this.map.invalidateSize();
-        this.map.setView([userLat, userLng], 13);
-        if (this.marker) this.marker.setLatLng([userLat, userLng]);
+        this.map.setView([this.address.lat, this.address.lng], 13);
+        if (this.marker) this.marker.setLatLng([this.address.lat, this.address.lng]);
       }
     }, 300);
   }
 
+  /** البحث من خلال الحقول */
+  async searchLocation() {
+    if (!this.address.city && !this.address.area) return;
+
+    const query = `${this.address.city} ${this.address.area}`;
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+    const data = await response.json();
+
+    if (data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+
+      this.address.lat = lat;
+      this.address.lng = lon;
+
+      if (this.map) {
+        this.map.setView([lat, lon], 13);
+        if (this.marker) this.marker.setLatLng([lat, lon]);
+      }
+    }
+  }
+
+  /** عكس الإحداثيات → اسم المدينة والمنطقة */
   async reverseGeocode(lat: number, lng: number): Promise<any> {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
@@ -243,6 +256,14 @@ export class ProviderHomeComponent implements OnInit {
     return data.address;
   }
 
+  /** زر التأكيد */
+  confirmLocation() {
+    this.updateLocationOnServer(this.address.lat, this.address.lng);
+    this.successMessage = '✅ تم تحديث موقعك بنجاح';
+    setTimeout(() => this.successMessage = null, 3000);
+  }
+
+  /** تحديث على السيرفر */
   updateLocationOnServer(lat: number, lng: number) {
     const apiUrl = `http://on-demand-service-backend.runasp.net/api/Services/UpdateLat_long?technicianId=${this.provider.id}&lat=${lat}&lng=${lng}`;
     fetch(apiUrl, { method: 'POST' })
@@ -250,6 +271,7 @@ export class ProviderHomeComponent implements OnInit {
       .catch(err => console.error('❌ خطأ:', err));
   }
 
+  /** تحميل عدد الطلبات المكتملة */
   loadCompletedOrdersCount() {
     if (!this.provider.id) return;
     this.requestService.getCompletedRequestsCount(this.provider.id).subscribe({

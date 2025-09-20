@@ -26,14 +26,32 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
+        <!-- الخريطة -->
         <div id="providerMap" style="height: 400px;" class="mb-3 border rounded"></div>
-        <div>
-          <p><strong>المدينة:</strong> {{ address.city || 'غير متوفر' }}</p>
-          <p><strong>المنطقة:</strong> {{ address.area || 'غير متوفر' }}</p>
+
+        <!-- الحقول -->
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">المدينة</label>
+            <input type="text" [(ngModel)]="address.city"
+                   (blur)="searchLocation()" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">المنطقة</label>
+            <input type="text" [(ngModel)]="address.area"
+                   (blur)="searchLocation()" class="form-control">
+          </div>
+        </div>
+
+        <!-- زر تأكيد -->
+        <div class="text-end mt-3">
+          <button class="btn btn-success" (click)="confirmLocation()">تأكيد الموقع</button>
         </div>
       </div>
     </div>
   </div>
+</div>
+
 </div>
 
     <!-- اونلاين / اوفلاين -->
@@ -165,4 +183,3 @@
       </div>
     </div>
   </div>
-</div>
