@@ -77,17 +77,26 @@ loadProfile() {
         email: res.email
       });
 
-      // الأول: شوف لو الصورة موجودة في localStorage
+      // ✅ الأول: شوف لو فيه صورة محفوظة في localStorage (أحدث نسخة)
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.image) {
         this.userImage = user.image;
-      } else if (res.imageUrl) {
+      }
+      // ✅ لو مفيش في localStorage، fallback على اللي جاي من السيرفر
+      else if (res.imageUrl) {
         this.userImage = res.imageUrl;
       }
+      // ✅ fallback أخير للصورة الافتراضية
+      else {
+        this.userImage = 'assets/images/default-avatar.png';
+      }
     },
-    error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
+    error: (err) => {
+      console.error('❌ فشل في تحميل بيانات المستخدم:', err);
+    }
   });
 }
+
 
 
   // ✅ تحديث بيانات البروفايل
@@ -98,20 +107,16 @@ onSaveProfile() {
       name: this.profileForm.value.name,
       phoneNumber: this.profileForm.value.phoneNumber,
       email: this.profileForm.value.email,
-      imageUrl: this.userImage // الصورة الحالية تفضل زي ما هي
+      imageUrl: this.userImage // مفيش ?t
     };
 
     this.profileService.updateProfile(this.userId, data).subscribe({
       next: () => {
         this.successMessage = '✅ تم تحديث الملف بنجاح.';
 
-        // ✅ تحديث نسخة localStorage بس بدون ما نرجع للصورة القديمة من السيرفر
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        user.image = this.userImage + `?t=${Date.now()}`; // كسر الكاش
+        user.image = this.userImage;
         localStorage.setItem('user', JSON.stringify(user));
-
-        // ❌ مهم: مانعملش loadProfile() هنا عشان مايرجعش يطير الصورة
-        // this.loadProfile();   <-- احذف دي لو كانت موجودة
       },
       error: (err) => {
         console.error('❌ فشل التحديث:', err);
@@ -191,7 +196,6 @@ onSaveProfile() {
     this.selectedTab = tab;
   }
 
-// ✅ تغيير صورة البروفايل وتحديث localStorage عشان النافبار يقرأها
 onChangeImage(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (file) {
@@ -199,9 +203,9 @@ onChangeImage(event: Event) {
     reader.onload = () => {
       this.userImage = reader.result as string;
 
-      // ✅ تحديث نسخة localStorage عشان النافبار يظهر نفس الصورة
+      // ✅ خزّن الصورة مباشرة من غير ?t=
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      user.image = this.userImage + `?t=${Date.now()}`; // كسر الكاش
+      user.image = this.userImage;
       localStorage.setItem('user', JSON.stringify(user));
     };
     reader.readAsDataURL(file);
