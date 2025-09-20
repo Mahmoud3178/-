@@ -57,7 +57,7 @@
       <p><strong>القسم:</strong> {{ order.departmentName }}</p>
             <!-- ✅ بيانات الفني -->
       <p><strong>الفني:</strong> {{ order.technicianName }}</p>
-      <p><strong>رقم الهاتف:</strong> {{ order.technicianNumber }}</p>
+      <p><strong>رقم الهاتف:</strong> {{ order.phoneNumber }}</p>
        <!-- ✅ عرض التقييم فقط للحالة الأخيرة -->
     <div class="text-center mt-3" *ngIf="order.status === 5 && !order.isRated">
       <h6 class="mb-2">قيّم الفني:</h6>

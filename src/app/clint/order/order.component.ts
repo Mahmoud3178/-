@@ -54,7 +54,7 @@ export class OrderComponent implements OnInit {
             departmentName: order.categoryName,
             serviceType: order.servicesType,
             technicianName: order.technicianName || 'غير متوفر',
-            technicianNumber: order.technicianNumber || 'غير متوفر',
+            phoneNumber: order.phoneNumber || 'غير متوفر',
             tempRating: 0,
             tempComment: '',
             isRated: order.isRated || false
