@@ -117,6 +117,10 @@
         <ng-container *ngIf="orders.length > 0">
           <div class="card shadow-sm mb-3" *ngFor="let order of orders">
             <div class="card-body">
+                 <!-- اسم العميل + رقم التليفون -->
+    <p><strong>👤 العميل:</strong> {{ order.name || 'غير متوفر' }}</p>
+    <p><strong>📞 الهاتف:</strong> {{ order.phoneNumber || 'غير متوفر' }}</p>
+
               <p><strong>الاسم:</strong> {{ order.name || 'غير متوفر' }}</p>
               <p><strong>العنوان:</strong> {{ order.city }} - {{ order.area }} - {{ order.street }}</p>
               <p><strong>موعد الخدمة:</strong> {{ order.visitingDate | date: 'short' }}</p>
