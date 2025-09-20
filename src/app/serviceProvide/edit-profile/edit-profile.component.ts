@@ -79,8 +79,6 @@ export class EditProfileComponent implements OnInit {
 
     this.http.get<any>(url).subscribe({
       next: (res) => {
-        console.log('✅ بيانات الفني:', res);
-
         this.profileData = {
           name: res.name || '',
           categoryName: res.categoryName || '',
@@ -93,7 +91,7 @@ export class EditProfileComponent implements OnInit {
           bankName: res.bankName || '',
           bankAccountNumber: res.bankAccountNumber || '',
           nameServices: res.nameServices || '',
-          imageUrl: res.imageUrl || ''
+          imageUrl: res.imageUrl || ''   // ← نقرأ imageUrl (GET)
         };
 
         if (res.imageUrl) {
@@ -127,7 +125,7 @@ export class EditProfileComponent implements OnInit {
 
     reader.onload = () => {
       this.selectedImage = reader.result as string;
-      this.userImage = this.selectedImage; // نعرض الصورة مباشرة
+      this.userImage = this.selectedImage;
     };
 
     reader.readAsDataURL(file);
@@ -160,9 +158,10 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
+    // ✅ في PATCH لازم نستخدم imageUrll (LL)
     const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
     if (fileInput?.files?.[0]) {
-      formData.append('imageUrl', fileInput.files[0]);
+      formData.append('imageUrll', fileInput.files[0]);
     }
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -174,8 +173,6 @@ export class EditProfileComponent implements OnInit {
         const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
         this.http.get<any>(getUrl).subscribe({
           next: (res) => {
-            console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
-
             this.profileData.imageUrl = res.imageUrl;
             this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
             this.provider.avatar = this.userImage;

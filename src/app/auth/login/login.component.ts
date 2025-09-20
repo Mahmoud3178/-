@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  private backendBaseUrl = 'http://on-demand-service-backend.runasp.net'; // ضع هنا رابط السيرفر الأساسي الخاص بك
+  private backendBaseUrl = 'http://on-demand-service-backend.runasp.net'; // رابط السيرفر الأساسي
 
   constructor(
     private fb: FormBuilder,
@@ -60,7 +60,9 @@ export class LoginComponent implements OnInit {
       loginObservable.subscribe({
         next: (res) => {
           if (!res || !res.token) {
-            this.errorMessage = '@ البريد أو كلمة المرور غير صحيحة';
+            this.errorMessage = this.selectedRole === 'client'
+              ? '❌ البريد أو كلمة المرور غير صحيحة'
+              : '@ البريد أو كلمة المرور غير صحيحة';
             return;
           }
 
@@ -74,11 +76,13 @@ export class LoginComponent implements OnInit {
           const expectedRole = this.selectedRole === 'provider' ? 'Technician' : 'User';
 
           if (roleFromToken !== expectedRole) {
-            this.errorMessage = '@ الحساب لا يتطابق مع نوع المستخدم المختار';
+            this.errorMessage = this.selectedRole === 'client'
+              ? '❌ الحساب غير صحيح'
+              : '@ الحساب لا يتطابق مع نوع المستخدم المختار';
             return;
           }
 
-          // تنظيف رابط الصورة لجعله رابط نسبي فقط
+          // تنظيف رابط الصورة لو كامل
           let imageUrl = res.photo || res.image || null;
           if (imageUrl && imageUrl.startsWith(this.backendBaseUrl)) {
             imageUrl = imageUrl.replace(this.backendBaseUrl, '');
@@ -105,7 +109,9 @@ export class LoginComponent implements OnInit {
           }, 1000);
         },
         error: () => {
-          this.errorMessage = '@ قد يكون لم يوافق الادمن عليك ستصلك رساله تاكيد عند تفعيل الحساب علي الجيميل أو البيانات غير صحيحة';
+          this.errorMessage = this.selectedRole === 'client'
+            ? '❌ البريد أو كلمة المرور غير صحيحة'
+            : '@ قد يكون لم يوافق الادمن عليك ستصلك رساله تاكيد عند تفعيل الحساب علي الجيميل أو البيانات غير صحيحة';
         }
       });
     } else {
