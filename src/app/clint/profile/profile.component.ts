@@ -86,26 +86,36 @@ export class ProfileComponent implements OnInit {
   }
 
   // ✅ تحديث بيانات البروفايل
-  onSaveProfile() {
-    if (this.profileForm.valid) {
-      const data: UpdateProfileUser = {
-        id: this.userId,
-        name: this.profileForm.value.name,
-        phoneNumber: this.profileForm.value.phoneNumber,
-        email: this.profileForm.value.email,
-        imageUrl: this.userImage
-      };
+// ✅ تحديث بيانات البروفايل
+onSaveProfile() {
+  if (this.profileForm.valid) {
+    const data: UpdateProfileUser = {
+      id: this.userId,
+      name: this.profileForm.value.name,
+      phoneNumber: this.profileForm.value.phoneNumber,
+      email: this.profileForm.value.email,
+      imageUrl: this.userImage
+    };
 
-      this.profileService.updateProfile(this.userId, data).subscribe({
-        next: () => this.successMessage = '✅ تم تحديث الملف بنجاح.',
-        error: (err) => {
-          console.error('❌ فشل التحديث:', err);
-          this.errorMessage = '❌ حدث خطأ أثناء تحديث البيانات.';
-        }
-      });
-    }
+    this.profileService.updateProfile(this.userId, data).subscribe({
+      next: () => {
+        this.successMessage = '✅ تم تحديث الملف بنجاح.';
+
+        // 🔄 تحديث localStorage بالصورة الجديدة
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        user.image = this.userImage + `?t=${Date.now()}`; // عشان يكسر الكاش
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // 🔄 تحديث المتغير المستخدم في الهيدر
+        this.userImage = user.image;
+      },
+      error: (err) => {
+        console.error('❌ فشل التحديث:', err);
+        this.errorMessage = '❌ حدث خطأ أثناء تحديث البيانات.';
+      }
+    });
   }
-
+}
   // ✅ تغيير كلمة المرور
   onChangePassword() {
     if (this.passwordForm.valid) {
