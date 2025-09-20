@@ -11,7 +11,8 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { RequestService } from '../../services/request.service';
 import { AuthService } from '../../services/auth.service';
 import * as L from 'leaflet';
-import { finalize } from 'rxjs/operators';
+import { finalize, retry, timeout, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 declare var bootstrap: any;
 
@@ -84,15 +85,22 @@ export class ProviderHomeComponent implements OnInit {
     this.selectedStatus = status;
     this.selectedStatusLabel = label;
 
-    this.requestService.getTechnicianRequests(this.provider.id, status).subscribe({
-      next: (data) => {
-        this.orders = (Array.isArray(data) ? data : []).map(order => ({ ...order }));
-        this.sortOrders();
-      },
-      error: () => {
-        this.orders = [];
-      }
-    });
+    this.requestService
+      .getTechnicianRequests(this.provider.id, status)
+      .pipe(
+        timeout(10000),
+        retry(2),
+        catchError(() => of([]))
+      )
+      .subscribe({
+        next: (data) => {
+          this.orders = (Array.isArray(data) ? data : []).map(order => ({ ...order }));
+          this.sortOrders();
+        },
+        error: () => {
+          this.orders = [];
+        }
+      });
   }
 
   /** قبول الطلب */
@@ -101,16 +109,19 @@ export class ProviderHomeComponent implements OnInit {
     this.processingIds.add(order.id);
 
     this.requestService.acceptRequest(order.id).pipe(
-      finalize(() => this.processingIds.delete(order.id))
+      timeout(10000),
+      retry(1),
+      finalize(() => this.processingIds.delete(order.id)),
+      catchError(() => of(null))
     ).subscribe({
-      next: () => {
-        this.successMessage = '✅ تم قبول الطلب بنجاح';
-        this.clearMessagesAfterDelay();
-        this.applyLocalStatusChange(order.id, 2);
-        this.sortOrders();
-      },
-      error: () => {
-        this.errorMessage = '❌ خطأ أثناء قبول الطلب';
+      next: (res) => {
+        if (res) {
+          this.successMessage = '✅ تم قبول الطلب بنجاح';
+          this.applyLocalStatusChange(order.id, 2);
+          this.sortOrders();
+        } else {
+          this.errorMessage = '❌ لم يتم قبول الطلب';
+        }
         this.clearMessagesAfterDelay();
       }
     });
@@ -122,16 +133,19 @@ export class ProviderHomeComponent implements OnInit {
     this.processingIds.add(requestId);
 
     this.requestService.rejectRequest(requestId).pipe(
-      finalize(() => this.processingIds.delete(requestId))
+      timeout(10000),
+      retry(1),
+      finalize(() => this.processingIds.delete(requestId)),
+      catchError(() => of(null))
     ).subscribe({
-      next: () => {
-        this.successMessage = '✅ تم رفض الطلب';
-        this.clearMessagesAfterDelay();
-        this.orders = this.orders.filter(o => o.id !== requestId);
-        this.sortOrders();
-      },
-      error: () => {
-        this.errorMessage = '❌ خطأ أثناء رفض الطلب';
+      next: (res) => {
+        if (res) {
+          this.successMessage = '✅ تم رفض الطلب';
+          this.orders = this.orders.filter(o => o.id !== requestId);
+          this.sortOrders();
+        } else {
+          this.errorMessage = '❌ لم يتم رفض الطلب';
+        }
         this.clearMessagesAfterDelay();
       }
     });
@@ -143,16 +157,19 @@ export class ProviderHomeComponent implements OnInit {
     this.processingIds.add(orderId);
 
     this.requestService.updateOrderState(orderId, newState).pipe(
-      finalize(() => this.processingIds.delete(orderId))
+      timeout(10000),
+      retry(1),
+      finalize(() => this.processingIds.delete(orderId)),
+      catchError(() => of(null))
     ).subscribe({
-      next: () => {
-        this.successMessage = '✅ تم تحديث حالة الطلب';
-        this.clearMessagesAfterDelay();
-        this.applyLocalStatusChange(orderId, newState);
-        this.sortOrders();
-      },
-      error: () => {
-        this.errorMessage = '❌ خطأ أثناء تحديث الطلب';
+      next: (res) => {
+        if (res) {
+          this.successMessage = '✅ تم تحديث حالة الطلب';
+          this.applyLocalStatusChange(orderId, newState);
+          this.sortOrders();
+        } else {
+          this.errorMessage = '❌ لم يتم تحديث الطلب';
+        }
         this.clearMessagesAfterDelay();
       }
     });
@@ -221,6 +238,7 @@ export class ProviderHomeComponent implements OnInit {
       }
     }, 300);
   }
+
   async onAddressChange() {
     if (this.address.city && this.address.area && this.address.street) {
       const query = `${this.address.street}, ${this.address.area}, ${this.address.city}`;
@@ -237,14 +255,15 @@ export class ProviderHomeComponent implements OnInit {
       }
     }
   }
-    async forwardGeocode(query: string): Promise<any> {
+
+  async forwardGeocode(query: string): Promise<any> {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
     );
     const results = await response.json();
     return results.length > 0 ? results[0] : null;
   }
-  /** البحث من خلال الحقول */
+
   async searchLocation() {
     if (!this.address.city && !this.address.area) return;
 
@@ -274,7 +293,6 @@ export class ProviderHomeComponent implements OnInit {
     }
   }
 
-  /** عكس الإحداثيات → اسم المدينة والمنطقة */
   async reverseGeocode(lat: number, lng: number): Promise<any> {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
@@ -283,12 +301,10 @@ export class ProviderHomeComponent implements OnInit {
     return data.address;
   }
 
-  /** زر التأكيد */
   confirmLocation() {
     this.updateLocationOnServer(this.address.lat, this.address.lng);
   }
 
-  /** تحديث على السيرفر (نسبي) */
   updateLocationOnServer(lat: number, lng: number) {
     const apiUrl = `/api/Services/UpdateLat_long?technicianId=${this.provider.id}&lat=${lat}&lng=${lng}`;
     fetch(apiUrl, { method: 'POST' })
@@ -300,8 +316,12 @@ export class ProviderHomeComponent implements OnInit {
   /** تحميل عدد الطلبات المكتملة */
   loadCompletedOrdersCount() {
     if (!this.provider.id) return;
-    this.requestService.getCompletedRequestsCount(this.provider.id).subscribe({
-      next: (res) => this.provider.orders = Number(res),
+    this.requestService.getCompletedRequestsCount(this.provider.id).pipe(
+      timeout(10000),
+      retry(2),
+      catchError(() => of(0))
+    ).subscribe({
+      next: (res) => this.provider.orders = Number(res) || 0,
       error: () => this.provider.orders = 0
     });
   }
