@@ -72,35 +72,27 @@
         <div class="modal-body">
           <div id="map" style="height: 300px" class="mb-3 border rounded"></div>
           <div *ngIf="addressError" class="alert alert-danger py-1">{{ addressError }}</div>
-<div class="row g-2">
-  <div class="col-md-6">
-    <input #cityInput class="form-control text-end" placeholder="المدينة" [value]="address.city" />
-  </div>
-  <div class="col-md-6">
-    <input #areaInput class="form-control text-end" placeholder="المنطقة" [value]="address.area" />
-  </div>
-  <div class="col-md-12">
-    <input #streetInput class="form-control text-end" placeholder="الشارع" [value]="address.street" />
-  </div>
-  <div class="col-md-4">
-    <input #buildingInput class="form-control text-end" placeholder="رقم المبنى" [value]="address.buildingNumber" />
-  </div>
-  <div class="col-md-4">
-    <input #floorInput class="form-control text-end" placeholder="رقم الدور" [value]="address.floorNumber" />
-  </div>
-  <div class="col-md-4">
-    <input #aptInput class="form-control text-end" placeholder="رقم الشقة" [value]="address.apartmentNumber" />
-  </div>
 
-  <!-- ✅ عرض الإحداثيات بشكل أوتوماتيك -->
-  <div class="col-md-6">
-    <input class="form-control text-end" placeholder="خط العرض (Lat)" [value]="address.lat" readonly />
-  </div>
-  <div class="col-md-6">
-    <input class="form-control text-end" placeholder="خط الطول (Lng)" [value]="address.lng" readonly />
-  </div>
-</div>
-
+          <div class="row g-2">
+            <div class="col-md-6">
+              <input #cityInput class="form-control text-end" placeholder="المدينة" [(ngModel)]="address.city" (input)="onAddressChange()" />
+            </div>
+            <div class="col-md-6">
+              <input #areaInput class="form-control text-end" placeholder="المنطقة" [(ngModel)]="address.area" (input)="onAddressChange()" />
+            </div>
+            <div class="col-md-12">
+              <input #streetInput class="form-control text-end" placeholder="الشارع" [(ngModel)]="address.street" (input)="onAddressChange()" />
+            </div>
+            <div class="col-md-4">
+              <input #buildingInput class="form-control text-end" placeholder="رقم المبنى" [(ngModel)]="address.buildingNumber" />
+            </div>
+            <div class="col-md-4">
+              <input #floorInput class="form-control text-end" placeholder="رقم الدور" [(ngModel)]="address.floorNumber" />
+            </div>
+            <div class="col-md-4">
+              <input #aptInput class="form-control text-end" placeholder="رقم الشقة" [(ngModel)]="address.apartmentNumber" />
+            </div>
+          </div>
         </div>
         <div class="modal-footer justify-content-center">
           <button class="btn btn-primary"
