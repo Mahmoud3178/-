@@ -64,33 +64,44 @@
   {{ errorMessage }}
 </div>
 
-   <!-- ✅ Main Content -->
 <div class="col-lg-9 col-md-8 p-4 d-flex flex-column gap-2">
+  <!-- ✅ Name + Category -->
   <div class="overview-item p-3 rounded border d-flex flex-column text-end">
-    <div class="text-muted fw-bold mb-1">القسم</div>
-    <div class="text-primary">{{ overview.section }}</div>
+    <div class="fw-bold text-primary fs-5">{{ overview.name }}</div>
+    <small class="text-muted">{{ overview.categoryName }}</small>
   </div>
-  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
-    <div class="text-muted fw-bold mb-1">سنوات الخبرة</div>
-    <div class="text-primary">{{ overview.experienceYears }}</div>
-  </div>
-  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
-    <div class="text-muted fw-bold mb-1">المحافظة</div>
-    <div class="text-primary">{{ overview.city }}</div>
-  </div>
+
+  <!-- ✅ Service Areas -->
   <div class="overview-item p-3 rounded border d-flex flex-column text-end">
     <div class="text-muted fw-bold mb-1">مناطق الخدمة</div>
-    <div class="text-primary">{{ overview.areas }}</div>
+    <div class="text-primary">{{ overview.serviceAreas }}</div>
   </div>
+
+  <!-- ✅ Bank Name -->
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">اسم البنك</div>
+    <div class="text-primary">{{ overview.bankName }}</div>
+  </div>
+
+  <!-- ✅ Bank Account -->
+  <div class="overview-item p-3 rounded border d-flex flex-column text-end">
+    <div class="text-muted fw-bold mb-1">رقم الحساب البنكي</div>
+    <div class="text-primary">{{ overview.bankAccountNumber }}</div>
+  </div>
+
+  <!-- ✅ Name Services -->
   <div class="overview-item p-3 rounded border d-flex flex-column text-end">
     <div class="text-muted fw-bold mb-1">الخدمات المقدمة</div>
-    <div class="text-primary">{{ overview.services }}</div>
+    <div class="text-primary">{{ overview.nameServices }}</div>
   </div>
+
+  <!-- ✅ National ID -->
   <div class="overview-item p-3 rounded border d-flex flex-column text-end">
-    <div class="text-muted fw-bold mb-1">ساعات العمل</div>
-    <div class="text-primary">{{ overview.workHours }}</div>
+    <div class="text-muted fw-bold mb-1">الرقم القومي</div>
+    <div class="text-primary">{{ overview.nationalId }}</div>
   </div>
 </div>
+
 
   </div>
 </div>
