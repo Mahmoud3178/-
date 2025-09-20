@@ -57,6 +57,7 @@ export class EditProfileComponent implements OnInit {
       }
     }
 
+    // ✅ تحميل بيانات المستخدم من localStorage كبداية
     this.provider = {
       id: user.id,
       name: user.name || '',
@@ -79,6 +80,9 @@ export class EditProfileComponent implements OnInit {
 
     this.http.get<any>(url).subscribe({
       next: (res) => {
+        console.log('✅ بيانات الفني:', res);
+
+        // ✅ تحديث باقي البيانات
         this.profileData = {
           name: res.name || '',
           categoryName: res.categoryName || '',
@@ -91,10 +95,11 @@ export class EditProfileComponent implements OnInit {
           bankName: res.bankName || '',
           bankAccountNumber: res.bankAccountNumber || '',
           nameServices: res.nameServices || '',
-          imageUrl: res.imageUrl || ''   // ← نقرأ imageUrl (GET)
+          imageUrl: res.imageUrl || this.profileData.imageUrl
         };
 
-        if (res.imageUrl) {
+        // ✅ فقط لو السيرفر رجع صورة جديدة
+        if (res.imageUrl && res.imageUrl.trim() !== '') {
           this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
           this.provider.avatar = this.userImage;
 
@@ -103,6 +108,7 @@ export class EditProfileComponent implements OnInit {
           localStorage.setItem('user', JSON.stringify(user));
         }
 
+        // ✅ تحديث بيانات الهيدر
         this.provider.name = res.name || this.provider.name;
         this.provider.orders = res.ordersCount || 0;
         this.provider.rating = res.rating || 0;
@@ -125,7 +131,7 @@ export class EditProfileComponent implements OnInit {
 
     reader.onload = () => {
       this.selectedImage = reader.result as string;
-      this.userImage = this.selectedImage;
+      this.userImage = this.selectedImage; // نعرض الصورة مباشرة
     };
 
     reader.readAsDataURL(file);
@@ -158,10 +164,9 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
-    // ✅ في PATCH لازم نستخدم imageUrll (LL)
     const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
     if (fileInput?.files?.[0]) {
-      formData.append('imageUrll', fileInput.files[0]);
+      formData.append('imageurll', fileInput.files[0]); // ⚠️ حسب الـ API اسم البارام imageurll
     }
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -173,13 +178,17 @@ export class EditProfileComponent implements OnInit {
         const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
         this.http.get<any>(getUrl).subscribe({
           next: (res) => {
-            this.profileData.imageUrl = res.imageUrl;
-            this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
-            this.provider.avatar = this.userImage;
+            console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
 
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            user.image = this.userImage;
-            localStorage.setItem('user', JSON.stringify(user));
+            if (res.imageUrl && res.imageUrl.trim() !== '') {
+              this.profileData.imageUrl = res.imageUrl;
+              this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
+              this.provider.avatar = this.userImage;
+
+              const user = JSON.parse(localStorage.getItem('user') || '{}');
+              user.image = this.userImage;
+              localStorage.setItem('user', JSON.stringify(user));
+            }
           },
           error: (err) => console.error('❌ فشل في جلب البيانات بعد التحديث:', err)
         });
@@ -197,7 +206,7 @@ export class EditProfileComponent implements OnInit {
   }
 
   logout() {
-    const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
+    const confirmed = confirm('هل تريد فعلاً تسجيل الخروج؟');
     if (confirmed) {
       localStorage.removeItem('user');
       this.authService.logout();
