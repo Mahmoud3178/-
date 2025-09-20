@@ -23,25 +23,25 @@ export class NotificationsComponent implements OnInit {
     private notificationState: NotificationStateService
   ) {}
 
-ngOnInit(): void {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userId = user.id;
+  ngOnInit(): void {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user.id;
 
-  if (userId) {
-    this.notificationState.fetchNotifications(userId);
+    if (userId) {
+      this.notificationState.fetchNotifications(userId);
 
-    this.notificationState.notifications$.subscribe((res) => {
-      this.notifications = res.map(n => ({
-        id: n.id,
-        title: n.title,
-        message: n.message,
-        time: this.getRelativeTime(n.date)
-      }));
-    });
+      this.notificationState.notifications$.subscribe((res) => {
+        this.notifications = res.map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          time: this.getRelativeTime(n.date)
+        }))
+        // ✅ عكس الترتيب علشان أحدث إشعار يظهر الأول
+        .reverse();
+      });
+    }
   }
-}
-
-
 
   getRelativeTime(dateStr: string): string {
     const date = new Date(dateStr);

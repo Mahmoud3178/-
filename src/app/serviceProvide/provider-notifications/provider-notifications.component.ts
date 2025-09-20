@@ -4,7 +4,6 @@ import { NotificationStateService } from '../../services/notification-state.serv
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectorRef } from '@angular/core';
 
-
 @Component({
   selector: 'app-provider-notifications',
   standalone: true,
@@ -17,10 +16,9 @@ export class ProviderNotificationsComponent implements OnInit {
   userId = '';
 
   constructor(
-
     private notificationsService: NotificationsService,
     private notificationState: NotificationStateService,
-      private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -35,10 +33,11 @@ export class ProviderNotificationsComponent implements OnInit {
   loadNotifications() {
     this.notificationsService.getNotifications(this.userId).subscribe({
       next: (data) => {
-        this.notifications = data;
+        // ✅ نخلي أحدث إشعار الأول (عكس الترتيب)
+        this.notifications = data.reverse();
 
         // تحقق من وجود إشعارات غير مقروءة
-        const hasUnseen = data.some(n => !n.seen);
+        const hasUnseen = this.notifications.some(n => !n.seen);
         this.notificationState.setHasNewNotifications(hasUnseen); // لو عاوز علامة جرس
       },
       error: (err) => {
@@ -46,22 +45,21 @@ export class ProviderNotificationsComponent implements OnInit {
       }
     });
   }
-deleteNotification(id: number) {
-  this.notificationsService.deleteNotification(id).subscribe({
-    next: () => {
-      this.notifications = this.notifications.filter(n => n.id.toString() !== id.toString());
-      this.cdRef.detectChanges(); // 💥 ترغم Angular يعمل تحديث
-      window.location.reload();
 
-    },
-    error: (err) => {
-      console.error('Error deleting notification', err);
-    }
-  });
-}
+  deleteNotification(id: number) {
+    this.notificationsService.deleteNotification(id).subscribe({
+      next: () => {
+        this.notifications = this.notifications.filter(n => n.id.toString() !== id.toString());
+        this.cdRef.detectChanges(); // 💥 ترغم Angular يعمل تحديث
+        window.location.reload();
+      },
+      error: (err) => {
+        console.error('Error deleting notification', err);
+      }
+    });
+  }
 
   trackById(index: number, item: any): any {
-  return item.id;
-}
-
+    return item.id;
+  }
 }

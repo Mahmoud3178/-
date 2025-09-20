@@ -84,6 +84,9 @@ export class RatingsComponent implements OnInit {
             };
           });
 
+          // ✅ عكس الترتيب علشان الأحدث يظهر الأول
+          this.ratings.reverse();
+
           this.visibleRatings = this.ratings.slice(0, this.showCount);
 
           this.successMessage = '✅ تم تحميل التقييمات بنجاح';
