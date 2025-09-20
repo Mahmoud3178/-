@@ -221,7 +221,29 @@ export class ProviderHomeComponent implements OnInit {
       }
     }, 300);
   }
+  async onAddressChange() {
+    if (this.address.city && this.address.area && this.address.street) {
+      const query = `${this.address.street}, ${this.address.area}, ${this.address.city}`;
+      const geo = await this.forwardGeocode(query);
 
+      if (geo) {
+        this.address.lat = geo.lat;
+        this.address.lng = geo.lon;
+
+        if (this.map && this.marker) {
+          this.marker.setLatLng([geo.lat, geo.lon]);
+          this.map.setView([geo.lat, geo.lon], 15);
+        }
+      }
+    }
+  }
+    async forwardGeocode(query: string): Promise<any> {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+    );
+    const results = await response.json();
+    return results.length > 0 ? results[0] : null;
+  }
   /** البحث من خلال الحقول */
   async searchLocation() {
     if (!this.address.city && !this.address.area) return;

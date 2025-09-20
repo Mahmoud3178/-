@@ -82,7 +82,7 @@ export class ForgotVerifyComponent implements OnInit, AfterViewInit {
 
       console.log('📤 Sending:', { email: this.email, otp });
 
-      this.http.post('http://on-demand-service-backend.runasp.net/api/Auth/VerifyOTP', {
+      this.http.post('/api/Auth/VerifyOTP', {
         email: this.email,
         otp
       }).subscribe({
