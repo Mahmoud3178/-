@@ -68,26 +68,24 @@ export class ProfileComponent implements OnInit {
   }
 
   // ✅ تحميل بيانات البروفايل
-loadProfile() {
-  this.profileService.getUserProfile(this.userId).subscribe({
-    next: (res) => {
-      this.profileForm.patchValue({
-        name: res.name,
-        phoneNumber: res.phoneNumber,
-        email: res.email
-      });
+  loadProfile() {
+    this.profileService.getUserProfile(this.userId).subscribe({
+      next: (res) => {
+        this.profileForm.patchValue({
+          name: res.name,
+          phoneNumber: res.phoneNumber,
+          email: res.email
+        });
 
-      // ✅ لو الصورة لسه default وما تمشيّرتش، خدها من السيرفر
-      if (this.userImage === 'assets/images/default-avatar.png' && res.imageUrl) {
-        this.userImage = res.imageUrl;
-      }
-    },
-    error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
-  });
-}
+        if (res.imageUrl) {
+          this.userImage = res.imageUrl;
+        }
+      },
+      error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
+    });
+  }
 
   // ✅ تحديث بيانات البروفايل
-// ✅ تحديث بيانات البروفايل
 onSaveProfile() {
   if (this.profileForm.valid) {
     const data: UpdateProfileUser = {
