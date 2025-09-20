@@ -67,23 +67,28 @@ export class ProfileComponent implements OnInit {
     this.loadMessages();
   }
 
-  // ✅ تحميل بيانات البروفايل
-  loadProfile() {
-    this.profileService.getUserProfile(this.userId).subscribe({
-      next: (res) => {
-        this.profileForm.patchValue({
-          name: res.name,
-          phoneNumber: res.phoneNumber,
-          email: res.email
-        });
+// ✅ تحميل بيانات البروفايل
+loadProfile() {
+  this.profileService.getUserProfile(this.userId).subscribe({
+    next: (res) => {
+      this.profileForm.patchValue({
+        name: res.name,
+        phoneNumber: res.phoneNumber,
+        email: res.email
+      });
 
-        if (res.imageUrl) {
-          this.userImage = res.imageUrl;
-        }
-      },
-      error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
-    });
-  }
+      // الأول: شوف لو الصورة موجودة في localStorage
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.image) {
+        this.userImage = user.image;
+      } else if (res.imageUrl) {
+        this.userImage = res.imageUrl;
+      }
+    },
+    error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
+  });
+}
+
 
   // ✅ تحديث بيانات البروفايل
 onSaveProfile() {
@@ -186,17 +191,23 @@ onSaveProfile() {
     this.selectedTab = tab;
   }
 
-  // ✅ تغيير صورة البروفايل
-  onChangeImage(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.userImage = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
+// ✅ تغيير صورة البروفايل وتحديث localStorage عشان النافبار يقرأها
+onChangeImage(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.userImage = reader.result as string;
+
+      // ✅ تحديث نسخة localStorage عشان النافبار يظهر نفس الصورة
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      user.image = this.userImage + `?t=${Date.now()}`; // كسر الكاش
+      localStorage.setItem('user', JSON.stringify(user));
+    };
+    reader.readAsDataURL(file);
   }
+}
+
 
   // ✅ حذف صورة البروفايل
   onDeleteImage() {
