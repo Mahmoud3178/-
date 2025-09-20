@@ -6,6 +6,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { RequestService } from '../../services/request.service';
 import { AuthService } from '../../services/auth.service';
 import * as L from 'leaflet';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-provider-home',
@@ -25,6 +26,11 @@ export class ProviderHomeComponent implements OnInit {
 
   successMessage: string | null = null;
   errorMessage: string | null = null;
+
+  processingIds = new Set<number>();
+
+  showMapModal = false;
+  map: L.Map | null = null;
 
   constructor(
     private authService: AuthService,
@@ -48,91 +54,122 @@ export class ProviderHomeComponent implements OnInit {
 
       this.loadOrders(this.selectedStatus, this.selectedStatusLabel);
       this.loadCompletedOrdersCount();
-    } else {
-      console.error('⚠️ لا يوجد بيانات تسجيل دخول');
     }
   }
 
-loadOrders(status: number, label: string) {
-  this.selectedStatus = status;
-  this.selectedStatusLabel = label;
+  /** تحميل الطلبات من السيرفر وترتيبها */
+  loadOrders(status: number, label: string) {
+    this.selectedStatus = status;
+    this.selectedStatusLabel = label;
 
-  const technicianId = this.provider.id;
+    const technicianId = this.provider.id;
 
-  this.requestService.getTechnicianRequests(technicianId, status).subscribe({
-    next: (data) => {
-      this.orders = (Array.isArray(data) ? data : [])
-        .map(order => ({ ...order, accepted: false }))
-        // ✅ خلي الأحدث يظهر الأول
-        .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
-    },
-    error: (err) => {
-      console.error('❌ فشل في تحميل الطلبات:', err);
+    this.requestService.getTechnicianRequests(technicianId, status).subscribe({
+      next: (data) => {
+        this.orders = (Array.isArray(data) ? data : []).map(order => ({ ...order }));
+        this.sortOrders();
+      },
+      error: () => {
+        this.orders = [];
+      }
+    });
+  }
+
+  /** قبول الطلب */
+  acceptOrder(order: any) {
+    if (!order?.id) return;
+
+    this.processingIds.add(order.id);
+    this.requestService.acceptRequest(order.id).pipe(
+      finalize(() => this.processingIds.delete(order.id))
+    ).subscribe({
+      next: () => {
+        this.successMessage = '✅ تم قبول الطلب بنجاح';
+        this.clearMessagesAfterDelay();
+        this.applyLocalStatusChange(order.id, 2);
+        this.sortOrders();
+      },
+      error: () => {
+        this.errorMessage = '❌ حدث خطأ أثناء قبول الطلب';
+        this.clearMessagesAfterDelay();
+      }
+    });
+  }
+
+  /** رفض الطلب */
+  rejectOrder(requestId: number) {
+    if (!requestId) return;
+
+    this.processingIds.add(requestId);
+    this.requestService.rejectRequest(requestId).pipe(
+      finalize(() => this.processingIds.delete(requestId))
+    ).subscribe({
+      next: () => {
+        this.successMessage = '✅ تم رفض الطلب بنجاح';
+        this.clearMessagesAfterDelay();
+        this.orders = this.orders.filter(o => o.id !== requestId);
+        this.sortOrders();
+      },
+      error: () => {
+        this.errorMessage = '❌ حدث خطأ أثناء رفض الطلب';
+        this.clearMessagesAfterDelay();
+      }
+    });
+  }
+
+  /** تحديث حالة الطلب */
+  updateOrderStatus(orderId: number, newState: number) {
+    if (!orderId) return;
+
+    this.processingIds.add(orderId);
+    this.requestService.updateOrderState(orderId, newState).pipe(
+      finalize(() => this.processingIds.delete(orderId))
+    ).subscribe({
+      next: () => {
+        this.successMessage = '✅ تم تحديث حالة الطلب بنجاح';
+        this.clearMessagesAfterDelay();
+        this.applyLocalStatusChange(orderId, newState);
+        this.sortOrders();
+      },
+      error: () => {
+        this.errorMessage = '❌ حدث خطأ أثناء تحديث حالة الطلب';
+        this.clearMessagesAfterDelay();
+      }
+    });
+  }
+
+  /** تحديث الحالة محلياً */
+  private applyLocalStatusChange(orderId: number, newState: number) {
+    let found = false;
+    this.orders = this.orders.map(o => {
+      if (o.id === orderId) {
+        found = true;
+        return { ...o, status: newState };
+      }
+      return o;
+    });
+
+    if (found) {
+      const updated = this.orders.find(o => o.id === orderId);
+      if (updated && updated.status !== this.selectedStatus) {
+        this.orders = this.orders.filter(o => o.id !== orderId);
+      }
     }
-  });
-}
 
-
- acceptOrder(order: any) {
-  this.requestService.acceptRequest(order.id).subscribe({
-    next: () => {
-      this.successMessage = '✅ تم قبول الطلب بنجاح';
-      this.clearMessagesAfterDelay();
-
-      // ✅ شيل الطلب من القائمة ورتب الباقي من الأحدث للأقدم
-      this.orders = this.orders
-        .filter(o => o.id !== order.id)
-        .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
-    },
-    error: () => {
-      this.errorMessage = '❌ حدث خطأ أثناء قبول الطلب';
-      this.clearMessagesAfterDelay();
+    if (newState === 5) {
+      this.provider.orders = (this.provider.orders || 0) + 1;
     }
-  });
-}
+  }
 
-rejectOrder(requestId: number) {
-  this.requestService.rejectRequest(requestId).subscribe({
-    next: () => {
-      this.successMessage = '✅ تم رفض الطلب بنجاح';
-      this.clearMessagesAfterDelay();
-
-      // ✅ شيل الطلب من القائمة ورتب الباقي من الأحدث للأقدم
-      this.orders = this.orders
-        .filter(o => o.id !== requestId)
-        .sort((a, b) => new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime());
-    },
-    error: () => {
-      this.errorMessage = '❌ حدث خطأ أثناء رفض الطلب';
-      this.clearMessagesAfterDelay();
-    }
-  });
-}
-
-
-updateOrderStatus(orderId: number, newState: number) {
-  this.requestService.updateOrderState(orderId, newState).subscribe({
-    next: () => {
-      this.successMessage = '✅ تم تحديث حالة الطلب بنجاح';
-      this.clearMessagesAfterDelay();
-
-      // ✅ تحديث محلي
-      this.orders = this.orders.map(o =>
-        o.id === orderId ? { ...o, status: newState } : o
-      );
-
-      // ✅ إعادة ترتيب بعد التحديث
-      this.orders.sort((a, b) =>
-        new Date(b.visitingDate).getTime() - new Date(a.visitingDate).getTime()
-      );
-    },
-    error: () => {
-      this.errorMessage = '❌ حدث خطأ أثناء تحديث حالة الطلب';
-      this.clearMessagesAfterDelay();
-    }
-  });
-}
-
+  /** ترتيب الطلبات (الأحدث فوق) */
+  private sortOrders() {
+    this.orders.sort((a: any, b: any) => {
+      const ta = a.visitingDate ? new Date(a.visitingDate).getTime() : (a.id || 0);
+      const tb = b.visitingDate ? new Date(b.visitingDate).getTime() : (b.id || 0);
+      return tb - ta;
+    });
+    this.orders = [...this.orders];
+  }
 
   clearMessagesAfterDelay() {
     setTimeout(() => {
@@ -150,10 +187,7 @@ updateOrderStatus(orderId: number, newState: number) {
     }
   }
 
-  // --- الخريطة ---
-  showMapModal = false;
-  map: L.Map | null = null;
-
+  // === خريطة ===
   openLocationMap() {
     this.showMapModal = true;
 
@@ -164,9 +198,7 @@ updateOrderStatus(orderId: number, newState: number) {
         this.initMap(lat, lng);
         this.updateLocationOnServer(lat, lng);
       },
-      (error) => {
-        console.error('❌ فشل في الحصول على الموقع:', error);
-        alert('حدث خطأ أثناء تحديد الموقع. تأكد من السماح بالموقع في المتصفح.');
+      () => {
         this.initMap(24.7136, 46.6753);
       }
     );
@@ -212,6 +244,9 @@ updateOrderStatus(orderId: number, newState: number) {
     this.requestService.getCompletedRequestsCount(this.provider.id).subscribe({
       next: (res) => {
         this.provider.orders = Number(res);
+      },
+      error: () => {
+        this.provider.orders = 0;
       }
     });
   }
