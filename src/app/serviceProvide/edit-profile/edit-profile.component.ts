@@ -17,6 +17,8 @@ export class EditProfileComponent implements OnInit {
   toggleStatus = true;
   userImage: string = 'assets/images/default-avatar.png';
   selectedImage: string | null = null;
+categories: any[] = [];
+places: any[] = [];
 
   provider: any = {};
   successMessage: string | null = null;
@@ -114,6 +116,20 @@ export class EditProfileComponent implements OnInit {
         console.error('❌ خطأ في تحميل بيانات الفني:', err);
       }
     });
+    this.http.get<any[]>('/api/Category/GetAll').subscribe({
+  next: (res) => {
+    this.categories = res;
+  },
+  error: (err) => console.error('❌ فشل في تحميل الأقسام:', err)
+});
+
+this.http.get<any[]>('/api/Places/GetAllPlaces').subscribe({
+  next: (res) => {
+    this.places = res;
+  },
+  error: (err) => console.error('❌ فشل في تحميل مناطق الخدمة:', err)
+});
+
   }
 
   onChangeImage(event: Event): void {
