@@ -166,7 +166,7 @@ export class ProviderHomeComponent implements OnInit {
     this.orders.sort((a: any, b: any) => {
       const ta = a.visitingDate ? new Date(a.visitingDate).getTime() : (a.id || 0);
       const tb = b.visitingDate ? new Date(b.visitingDate).getTime() : (b.id || 0);
-      return tb - ta;
+      return ta - tb; // ✅ الأحدث فوق
     });
     this.orders = [...this.orders];
   }

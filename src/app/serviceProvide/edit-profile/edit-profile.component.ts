@@ -58,7 +58,7 @@ export class EditProfileComponent implements OnInit {
       }
     }
 
-    // ✅ تحميل الصورة من localStorage زي change-password
+    // ✅ تحميل الصورة من localStorage
     this.provider = {
       id: user.id,
       name: user.name || '',
@@ -147,76 +147,74 @@ export class EditProfileComponent implements OnInit {
     return new File([blob], filename, { type: mimeType });
   }
 
-async onSave(): Promise<void> {
-  this.successMessage = '';
-  this.errorMessage = '';
+  async onSave(): Promise<void> {
+    this.successMessage = '';
+    this.errorMessage = '';
 
-  const formData = new FormData();
-  formData.append('name', this.profileData.name);
-  formData.append('categoryName', this.profileData.categoryName);
-  formData.append('email', this.profileData.email);
-  formData.append('phoneNumber', this.profileData.phoneNumber);
-  formData.append('nationalId', this.profileData.nationalId);
-  formData.append('serviceAreas', this.profileData.serviceAreas);
-  formData.append('workingHours', this.profileData.workingHours.toString());
-  formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
-  formData.append('bankName', this.profileData.bankName);
-  formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
-  formData.append('nameServices', this.profileData.nameServices);
+    const formData = new FormData();
+    formData.append('name', this.profileData.name);
+    formData.append('categoryName', this.profileData.categoryName);
+    formData.append('email', this.profileData.email);
+    formData.append('phoneNumber', this.profileData.phoneNumber);
+    formData.append('nationalId', this.profileData.nationalId);
+    formData.append('serviceAreas', this.profileData.serviceAreas);
+    formData.append('workingHours', this.profileData.workingHours.toString());
+    formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
+    formData.append('bankName', this.profileData.bankName);
+    formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
+    formData.append('nameServices', this.profileData.nameServices);
 
-  if (!this.technicianId) {
-    this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
-    return;
-  }
-
-  // ✅ الصورة
-  const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
-  if (fileInput?.files?.[0]) {
-    formData.append('imageUrll', fileInput.files[0]); // ← اتأكد من اسم الحقل اللي الـ backend مستنيه
-  }
-
-  const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
-
-  this.http.patch(url, formData, { responseType: 'text' }).subscribe({
-    next: () => {
-      this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
-
-      // ⬅️ إعادة تحميل البيانات
-      const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
-      this.http.get<any>(getUrl).subscribe({
-        next: (res) => {
-          console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
-
-          // ✅ تحديث البيانات
-          this.profileData.imageUrl = res.imageUrll;
-          this.provider.avatar = this.getSafeImageUrl(res.imageUrll) + `?t=${Date.now()}`;
-          this.userImage = this.provider.avatar;
-
-          // ✅ تحديث localStorage
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          user.image = this.provider.avatar;
-          localStorage.setItem('user', JSON.stringify(user));
-        },
-        error: (err) => console.error('❌ فشل في جلب البيانات بعد التحديث:', err)
-      });
-
-      this.selectedImage = null;
-    },
-    error: (err) => {
-      console.error('❌ خطأ في حفظ البيانات:', err);
-      this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
+    if (!this.technicianId) {
+      this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
+      return;
     }
-  });
-}
 
+    // ✅ الصورة
+    const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
+    if (fileInput?.files?.[0]) {
+      formData.append('imageUrl', fileInput.files[0]); // ← الاسم الصحيح للـ backend
+    }
 
+    const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
+
+    this.http.patch(url, formData, { responseType: 'text' }).subscribe({
+      next: () => {
+        this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+
+        // ⬅️ إعادة تحميل البيانات
+        const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
+        this.http.get<any>(getUrl).subscribe({
+          next: (res) => {
+            console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
+
+            // ✅ تحديث البيانات
+            this.profileData.imageUrl = res.imageUrl;
+            this.provider.avatar = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
+            this.userImage = this.provider.avatar;
+
+            // ✅ تحديث localStorage
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            user.image = this.provider.avatar;
+            localStorage.setItem('user', JSON.stringify(user));
+          },
+          error: (err) => console.error('❌ فشل في جلب البيانات بعد التحديث:', err)
+        });
+
+        this.selectedImage = null;
+      },
+      error: (err) => {
+        console.error('❌ خطأ في حفظ البيانات:', err);
+        this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
+      }
+    });
+  }
 
   getSafeImageUrl(url: string): string {
     if (!url) return 'assets/images/default-avatar.png';
     return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
   }
 
- logout() {
+  logout() {
     const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
     if (confirmed) {
       localStorage.removeItem('user');
