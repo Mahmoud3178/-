@@ -1,8 +1,8 @@
 // ✅ DTO
 export interface IngeneralEye {
   name: string;
-  categoryName: string;
-  serviceAreas: string;
+  email: string;
+  phoneNumber: string;
   bankName: string;
   bankAccountNumber: string;
   nameServices: string;

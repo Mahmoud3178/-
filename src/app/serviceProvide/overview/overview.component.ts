@@ -26,8 +26,8 @@ export class OverviewComponent implements OnInit {
   // ✅ مربوط بالـ DTO
   overview: IngeneralEye = {
     name: '',
-    categoryName: '',
-    serviceAreas: '',
+    email: '',
+    phoneNumber: '',
     bankName: '',
     bankAccountNumber: '',
     nameServices: '',
@@ -60,8 +60,8 @@ export class OverviewComponent implements OnInit {
           this.provider.name = res.name;
 
           this.overview.name = res.name ?? '-';
-          this.overview.categoryName = res.categoryName ?? '-';
-          this.overview.serviceAreas = res.serviceAreas ?? '-';
+          this.overview.email = res.email ?? '-';
+          this.overview.phoneNumber = res.phoneNumber ?? '-';
           this.overview.bankName = res.bankName ?? '-';
           this.overview.bankAccountNumber = res.bankAccountNumber ?? '-';
           this.overview.nameServices = res.nameServices ?? '-';
