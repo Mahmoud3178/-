@@ -81,7 +81,7 @@ export class SearchComponent implements AfterViewInit {
               email: p.email,
               rating: p.rating,
               description: p.nameServices || p.categoryName || 'بدون وصف',
-              image: this.getImagePath(p.imageUrl),
+              image: this.normalizeImage(p.imageUrl),
               x: (p.long - lng) * 1000,
               y: (p.lat - lat) * -1000
             };
@@ -97,36 +97,8 @@ export class SearchComponent implements AfterViewInit {
     });
   }
 
-  getImagePath(imageValue: string | null | undefined): string {
-    if (!imageValue || typeof imageValue !== "string" || imageValue.trim() === "") {
-      return "assets/images/default-avatar.png";
-    }
-
-    try {
-      const parsed = JSON.parse(imageValue);
-
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const first = parsed[0];
-        if (typeof first === "string" && first.trim() !== "") {
-          return this.normalizeImage(first);
-        }
-      }
-
-      if (!Array.isArray(parsed)) {
-        const url = parsed.imageUrl || parsed.imageUrll;
-        if (url && typeof url === "string") {
-          return this.normalizeImage(url);
-        }
-      }
-    } catch {
-      return this.normalizeImage(imageValue);
-    }
-
-    return "assets/images/default-avatar.png";
-  }
-
-  private normalizeImage(path: string): string {
-    if (!path || typeof path !== "string") {
+  private normalizeImage(path: string | null | undefined): string {
+    if (!path || typeof path !== "string" || path.trim() === "") {
       return "assets/images/default-avatar.png";
     }
 
@@ -135,17 +107,12 @@ export class SearchComponent implements AfterViewInit {
       return path;
     }
 
-    // ✅ لو string طويلة (Base64)
-    if (/^[A-Za-z0-9+/=]+$/.test(path) && path.length > 50) {
-      return "data:image/jpeg;base64," + path;
-    }
-
-    // ✅ إجبار https بدل http
+    // ✅ لو الرابط من السيرفر لازم نعدله لـ https
     if (path.includes("on-demand-service-backend.runasp.net")) {
       return path.replace("http://", "https://");
     }
 
-    // ✅ أي لينك http/https خارجي
+    // ✅ أي لينك خارجي
     if (path.startsWith("http")) {
       return path;
     }
@@ -173,7 +140,6 @@ export class SearchComponent implements AfterViewInit {
           const successModal = new bootstrap.Modal(modalElement);
           successModal.show();
 
-          // ✅ بعد إغلاق المودال يتم التوجيه إلى /order
           modalElement.addEventListener('hidden.bs.modal', () => {
             this.router.navigate(['/order']);
           });
