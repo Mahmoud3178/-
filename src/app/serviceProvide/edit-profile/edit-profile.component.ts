@@ -39,6 +39,9 @@ export class EditProfileComponent implements OnInit {
 
   technicianId = '';
 
+  // ✅ هنا بنحط السيرفر الأساسي عشان الصور
+  private backendBaseUrl = 'https://on-demand-service-backend.runasp.net';
+
   constructor(
     private http: HttpClient,
     private authService: AuthService,
@@ -57,7 +60,6 @@ export class EditProfileComponent implements OnInit {
       }
     }
 
-    // ✅ تحميل بيانات المستخدم من localStorage كبداية
     this.provider = {
       id: user.id,
       name: user.name || '',
@@ -82,7 +84,6 @@ export class EditProfileComponent implements OnInit {
       next: (res) => {
         console.log('✅ بيانات الفني:', res);
 
-        // ✅ تحديث باقي البيانات
         this.profileData = {
           name: res.name || '',
           categoryName: res.categoryName || '',
@@ -98,7 +99,6 @@ export class EditProfileComponent implements OnInit {
           imageUrl: res.imageUrl || this.profileData.imageUrl
         };
 
-        // ✅ فقط لو السيرفر رجع صورة جديدة
         if (res.imageUrl && res.imageUrl.trim() !== '') {
           this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
           this.provider.avatar = this.userImage;
@@ -108,7 +108,6 @@ export class EditProfileComponent implements OnInit {
           localStorage.setItem('user', JSON.stringify(user));
         }
 
-        // ✅ تحديث بيانات الهيدر
         this.provider.name = res.name || this.provider.name;
         this.provider.orders = res.ordersCount || 0;
         this.provider.rating = res.rating || 0;
@@ -122,16 +121,14 @@ export class EditProfileComponent implements OnInit {
 
   onChangeImage(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) {
-      return;
-    }
+    if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
     const reader = new FileReader();
 
     reader.onload = () => {
       this.selectedImage = reader.result as string;
-      this.userImage = this.selectedImage; // نعرض الصورة مباشرة
+      this.userImage = this.selectedImage;
     };
 
     reader.readAsDataURL(file);
@@ -166,7 +163,7 @@ export class EditProfileComponent implements OnInit {
 
     const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
     if (fileInput?.files?.[0]) {
-      formData.append('imageurll', fileInput.files[0]); // ⚠️ حسب الـ API اسم البارام imageurll
+      formData.append('imageurll', fileInput.files[0]); // ⚠️ نفس اسم البارام بتاع API
     }
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -202,6 +199,12 @@ export class EditProfileComponent implements OnInit {
 
   getSafeImageUrl(url: string): string {
     if (!url) return 'assets/images/default-avatar.png';
+
+    // لو الرابط نسبي لازم نضيف له السيرفر
+    if (!url.startsWith('http')) {
+      return `${this.backendBaseUrl}${url}`;
+    }
+
     return url.startsWith('http://') ? url.replace('http://', 'https://') : url;
   }
 
