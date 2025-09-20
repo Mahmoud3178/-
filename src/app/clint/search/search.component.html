@@ -36,7 +36,8 @@
   <div class="text-center my-5">
     <canvas #radarCanvas></canvas>
   </div>
- <!-- الفنيين -->
+
+  <!-- الفنيين -->
   <div class="row gy-4" *ngIf="providers.length > 0; else noResults">
     <div class="col-md-6" *ngFor="let provider of providers">
       <div class="provider-card position-relative">
@@ -50,8 +51,9 @@
               <span class="text-muted small ms-1">{{ provider.rating || 0 }} / 5</span>
             </div>
           </div>
-          <img [src]="provider.image" class="avatar"
-               (error)="provider.image = 'images/default-avatar.png'" />
+          <img [src]="provider.image"
+               class="avatar"
+               (error)="provider.image = 'assets/images/default-avatar.png'" />
         </div>
         <p class="small text-muted text-end mb-1">{{ provider.description || 'بدون وصف' }}</p>
         <p class="small text-muted text-end mb-1">

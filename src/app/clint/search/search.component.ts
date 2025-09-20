@@ -102,23 +102,29 @@ export class SearchComponent implements AfterViewInit {
       return "assets/images/default-avatar.png";
     }
 
-    // ✅ Base64 مباشرة
+    // ✅ Base64
     if (path.startsWith("data:image")) {
       return path;
     }
 
-    // ✅ لو الرابط من السيرفر لازم نعدله لـ https
+    // ✅ صور السيرفر (http → https + encodeURIComponent)
     if (path.includes("on-demand-service-backend.runasp.net")) {
-      return path.replace("http://", "https://");
+      let safePath = path.replace("http://", "https://");
+
+      const parts = safePath.split("/");
+      const fileName = parts.pop();
+      const encodedFileName = encodeURIComponent(fileName!);
+
+      return parts.join("/") + "/" + encodedFileName;
     }
 
-    // ✅ أي لينك خارجي
+    // ✅ روابط خارجية
     if (path.startsWith("http")) {
       return path;
     }
 
-    // ✅ fallback: ضمها على Uploads
-    const fileName = path.split("/").pop();
+    // ✅ fallback
+    const fileName = encodeURIComponent(path.split("/").pop()!);
     return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
   }
 
