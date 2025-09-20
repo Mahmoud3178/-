@@ -11,28 +11,30 @@
       </div>
     </div>
 
-    <!-- زر الموقع -->
-    <div class="orders-card text-center px-4 py-3">
-      <button class="btn btn-outline-primary mt-3 d-flex align-items-center justify-content-center gap-2"
-              (click)="openLocationMap()">
-        <i class="bi bi-geo-alt-fill"></i> موقعك
-      </button>
+<!-- زر فتح الموقع -->
+<button class="btn btn-outline-primary mt-3 d-flex align-items-center gap-2"
+        (click)="openModal()">
+  <i class="bi bi-geo-alt-fill"></i> موقعك
+</button>
 
-      <!-- مودال الخريطة -->
-      <div class="modal" tabindex="-1" [ngClass]="{'show d-block': showMapModal}" (click)="closeMapModal()">
-        <div class="modal-dialog modal-lg modal-dialog-centered" (click)="$event.stopPropagation()">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">موقعك الحالي</h5>
-              <button type="button" class="btn-close" (click)="closeMapModal()" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div id="map" style="height: 400px;"></div>
-            </div>
-          </div>
+<!-- Modal -->
+<div #locationModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">موقعك الحالي</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="providerMap" style="height: 400px;" class="mb-3 border rounded"></div>
+        <div>
+          <p><strong>المدينة:</strong> {{ address.city || 'غير متوفر' }}</p>
+          <p><strong>المنطقة:</strong> {{ address.area || 'غير متوفر' }}</p>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- اونلاين / اوفلاين -->
     <div>

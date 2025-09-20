@@ -1,5 +1,11 @@
 // src/app/pages/provider-home/provider-home.component.ts
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ElementRef,
+  ViewChild,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -7,6 +13,8 @@ import { RequestService } from '../../services/request.service';
 import { AuthService } from '../../services/auth.service';
 import * as L from 'leaflet';
 import { finalize } from 'rxjs/operators';
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-provider-home',
@@ -16,6 +24,8 @@ import { finalize } from 'rxjs/operators';
   styleUrls: ['./provider-home.component.css']
 })
 export class ProviderHomeComponent implements OnInit {
+  @ViewChild('locationModal') locationModalRef!: ElementRef;
+
   toggleStatus = true;
   selectedDate = new Date().toISOString().substring(0, 10);
   selectedStatusLabel = 'الطلبات الجديدة';
@@ -26,16 +36,24 @@ export class ProviderHomeComponent implements OnInit {
 
   successMessage: string | null = null;
   errorMessage: string | null = null;
-
   processingIds = new Set<number>();
 
-  showMapModal = false;
   map: L.Map | null = null;
+  marker: L.Marker | null = null;
+
+  // العنوان الأساسي للمدينة والمنطقة فقط
+  address: any = {
+    city: '',
+    area: '',
+    lat: '',
+    lng: ''
+  };
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private requestService: RequestService
+    private requestService: RequestService,
+    private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -55,16 +73,25 @@ export class ProviderHomeComponent implements OnInit {
       this.loadOrders(this.selectedStatus, this.selectedStatusLabel);
       this.loadCompletedOrdersCount();
     }
+
+    // إعداد أيقونة الافتراضية للماركر
+    const defaultIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      shadowSize: [41, 41],
+      popupAnchor: [1, -34]
+    });
+    L.Marker.prototype.options.icon = defaultIcon;
   }
 
-  /** تحميل الطلبات من السيرفر وترتيبها */
+  /** تحميل الطلبات */
   loadOrders(status: number, label: string) {
     this.selectedStatus = status;
     this.selectedStatusLabel = label;
 
-    const technicianId = this.provider.id;
-
-    this.requestService.getTechnicianRequests(technicianId, status).subscribe({
+    this.requestService.getTechnicianRequests(this.provider.id, status).subscribe({
       next: (data) => {
         this.orders = (Array.isArray(data) ? data : []).map(order => ({ ...order }));
         this.sortOrders();
@@ -78,8 +105,8 @@ export class ProviderHomeComponent implements OnInit {
   /** قبول الطلب */
   acceptOrder(order: any) {
     if (!order?.id) return;
-
     this.processingIds.add(order.id);
+
     this.requestService.acceptRequest(order.id).pipe(
       finalize(() => this.processingIds.delete(order.id))
     ).subscribe({
@@ -90,7 +117,7 @@ export class ProviderHomeComponent implements OnInit {
         this.sortOrders();
       },
       error: () => {
-        this.errorMessage = '❌ حدث خطأ أثناء قبول الطلب';
+        this.errorMessage = '❌ خطأ أثناء قبول الطلب';
         this.clearMessagesAfterDelay();
       }
     });
@@ -99,19 +126,19 @@ export class ProviderHomeComponent implements OnInit {
   /** رفض الطلب */
   rejectOrder(requestId: number) {
     if (!requestId) return;
-
     this.processingIds.add(requestId);
+
     this.requestService.rejectRequest(requestId).pipe(
       finalize(() => this.processingIds.delete(requestId))
     ).subscribe({
       next: () => {
-        this.successMessage = '✅ تم رفض الطلب بنجاح';
+        this.successMessage = '✅ تم رفض الطلب';
         this.clearMessagesAfterDelay();
         this.orders = this.orders.filter(o => o.id !== requestId);
         this.sortOrders();
       },
       error: () => {
-        this.errorMessage = '❌ حدث خطأ أثناء رفض الطلب';
+        this.errorMessage = '❌ خطأ أثناء رفض الطلب';
         this.clearMessagesAfterDelay();
       }
     });
@@ -120,53 +147,36 @@ export class ProviderHomeComponent implements OnInit {
   /** تحديث حالة الطلب */
   updateOrderStatus(orderId: number, newState: number) {
     if (!orderId) return;
-
     this.processingIds.add(orderId);
+
     this.requestService.updateOrderState(orderId, newState).pipe(
       finalize(() => this.processingIds.delete(orderId))
     ).subscribe({
       next: () => {
-        this.successMessage = '✅ تم تحديث حالة الطلب بنجاح';
+        this.successMessage = '✅ تم تحديث حالة الطلب';
         this.clearMessagesAfterDelay();
         this.applyLocalStatusChange(orderId, newState);
         this.sortOrders();
       },
       error: () => {
-        this.errorMessage = '❌ حدث خطأ أثناء تحديث حالة الطلب';
+        this.errorMessage = '❌ خطأ أثناء تحديث الطلب';
         this.clearMessagesAfterDelay();
       }
     });
   }
 
-  /** تحديث الحالة محلياً */
+  /** تحديث محلي */
   private applyLocalStatusChange(orderId: number, newState: number) {
-    let found = false;
-    this.orders = this.orders.map(o => {
-      if (o.id === orderId) {
-        found = true;
-        return { ...o, status: newState };
-      }
-      return o;
-    });
-
-    if (found) {
-      const updated = this.orders.find(o => o.id === orderId);
-      if (updated && updated.status !== this.selectedStatus) {
-        this.orders = this.orders.filter(o => o.id !== orderId);
-      }
-    }
-
-    if (newState === 5) {
-      this.provider.orders = (this.provider.orders || 0) + 1;
-    }
+    this.orders = this.orders.map(o => o.id === orderId ? { ...o, status: newState } : o);
+    if (newState === 5) this.provider.orders = (this.provider.orders || 0) + 1;
   }
 
-  /** ترتيب الطلبات (الأحدث فوق) */
+  /** ترتيب */
   private sortOrders() {
     this.orders.sort((a: any, b: any) => {
       const ta = a.visitingDate ? new Date(a.visitingDate).getTime() : (a.id || 0);
       const tb = b.visitingDate ? new Date(b.visitingDate).getTime() : (b.id || 0);
-      return ta - tb; // ✅ الأحدث فوق
+      return ta - tb;
     });
     this.orders = [...this.orders];
   }
@@ -179,75 +189,72 @@ export class ProviderHomeComponent implements OnInit {
   }
 
   logout() {
-    const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
-    if (confirmed) {
+    if (confirm("هل تريد تسجيل الخروج؟")) {
       localStorage.removeItem('user');
       this.authService.logout();
       this.router.navigate(['/']);
     }
   }
 
-  // === خريطة ===
-  openLocationMap() {
-    this.showMapModal = true;
+  // === الخريطة ===
+  openModal() {
+    const modal = new bootstrap.Modal(this.locationModalRef.nativeElement);
+    modal.show();
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        this.initMap(lat, lng);
-        this.updateLocationOnServer(lat, lng);
-      },
-      () => {
-        this.initMap(24.7136, 46.6753);
+    setTimeout(() => {
+      const defaultLat = 24.7136, defaultLng = 46.6753;
+      const userLat = this.address.lat || defaultLat;
+      const userLng = this.address.lng || defaultLng;
+
+      if (!this.map) {
+        this.map = L.map('providerMap').setView([userLat, userLng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap'
+        }).addTo(this.map);
+
+        this.marker = L.marker([userLat, userLng], { draggable: true }).addTo(this.map);
+        this.marker.on('dragend', async () => {
+          const latLng = this.marker!.getLatLng();
+          this.address.lat = latLng.lat;
+          this.address.lng = latLng.lng;
+
+          const reverse = await this.reverseGeocode(latLng.lat, latLng.lng);
+          if (reverse) {
+            this.address.city = reverse.city || reverse.town || '';
+            this.address.area = reverse.suburb || '';
+            this.cd.detectChanges();
+          }
+
+          this.updateLocationOnServer(latLng.lat, latLng.lng);
+        });
+      } else {
+        this.map.invalidateSize();
+        this.map.setView([userLat, userLng], 13);
+        if (this.marker) this.marker.setLatLng([userLat, userLng]);
       }
+    }, 300);
+  }
+
+  async reverseGeocode(lat: number, lng: number): Promise<any> {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
     );
-  }
-
-  closeMapModal() {
-    this.showMapModal = false;
-  }
-
-  initMap(lat: number, lng: number) {
-    if (this.map) {
-      this.map.setView([lat, lng], 13);
-      return;
-    }
-
-    this.map = L.map('map').setView([lat, lng], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(this.map);
-
-    const marker = L.marker([lat, lng], { draggable: true }).addTo(this.map)
-      .bindPopup('موقعك الحالي')
-      .openPopup();
-
-    marker.on('dragend', () => {
-      const newLatLng = marker.getLatLng();
-      this.updateLocationOnServer(newLatLng.lat, newLatLng.lng);
-    });
+    const data = await response.json();
+    return data.address;
   }
 
   updateLocationOnServer(lat: number, lng: number) {
-    const technicianId = this.provider.id;
-    const apiUrl = `http://on-demand-service-backend.runasp.net/api/Services/UpdateLat_long?technicianId=${technicianId}&lat=${lat}&lng=${lng}`;
-
+    const apiUrl = `http://on-demand-service-backend.runasp.net/api/Services/UpdateLat_long?technicianId=${this.provider.id}&lat=${lat}&lng=${lng}`;
     fetch(apiUrl, { method: 'POST' })
-      .then(res => res.ok ? console.log('✅ تم تحديث الموقع') : console.error('❌ فشل:', res.statusText))
+      .then(res => res.ok ? console.log('✅ الموقع اتحدث') : console.error('❌ فشل:', res.statusText))
       .catch(err => console.error('❌ خطأ:', err));
   }
 
   loadCompletedOrdersCount() {
     if (!this.provider.id) return;
     this.requestService.getCompletedRequestsCount(this.provider.id).subscribe({
-      next: (res) => {
-        this.provider.orders = Number(res);
-      },
-      error: () => {
-        this.provider.orders = 0;
-      }
+      next: (res) => this.provider.orders = Number(res),
+      error: () => this.provider.orders = 0
     });
   }
 }
