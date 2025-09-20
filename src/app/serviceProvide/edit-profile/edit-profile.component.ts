@@ -19,7 +19,6 @@ export class EditProfileComponent implements OnInit {
   selectedImage: string | null = null;
 
   provider: any = {};
-  orders: any[] = [];
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
@@ -58,7 +57,6 @@ export class EditProfileComponent implements OnInit {
       }
     }
 
-    // ✅ تحميل الصورة من localStorage
     this.provider = {
       id: user.id,
       name: user.name || '',
@@ -98,13 +96,12 @@ export class EditProfileComponent implements OnInit {
           imageUrl: res.imageUrl || ''
         };
 
-        // ✅ تحديث الصورة من السيرفر لو موجودة
         if (res.imageUrl) {
-          this.provider.avatar = this.getSafeImageUrl(res.imageUrl);
-          this.userImage = this.provider.avatar;
+          this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
+          this.provider.avatar = this.userImage;
 
           const user = JSON.parse(localStorage.getItem('user') || '{}');
-          user.image = this.provider.avatar;
+          user.image = this.userImage;
           localStorage.setItem('user', JSON.stringify(user));
         }
 
@@ -130,7 +127,7 @@ export class EditProfileComponent implements OnInit {
 
     reader.onload = () => {
       this.selectedImage = reader.result as string;
-      this.userImage = this.selectedImage;
+      this.userImage = this.selectedImage; // نعرض الصورة مباشرة
     };
 
     reader.readAsDataURL(file);
@@ -138,13 +135,7 @@ export class EditProfileComponent implements OnInit {
 
   onDeleteImage(): void {
     this.selectedImage = null;
-    this.userImage = this.provider.avatar || 'assets/images/default-avatar.png';
-  }
-
-  async urlToFile(url: string, filename: string, mimeType: string): Promise<File> {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new File([blob], filename, { type: mimeType });
+    this.userImage = 'assets/images/default-avatar.png';
   }
 
   async onSave(): Promise<void> {
@@ -169,10 +160,9 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
-    // ✅ الصورة
     const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
     if (fileInput?.files?.[0]) {
-      formData.append('imageUrl', fileInput.files[0]); // ← الاسم الصحيح للـ backend
+      formData.append('imageUrl', fileInput.files[0]);
     }
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -181,26 +171,21 @@ export class EditProfileComponent implements OnInit {
       next: () => {
         this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
 
-        // ⬅️ إعادة تحميل البيانات
         const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
         this.http.get<any>(getUrl).subscribe({
           next: (res) => {
             console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
 
-            // ✅ تحديث البيانات
             this.profileData.imageUrl = res.imageUrl;
-            this.provider.avatar = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
-            this.userImage = this.provider.avatar;
+            this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
+            this.provider.avatar = this.userImage;
 
-            // ✅ تحديث localStorage
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            user.image = this.provider.avatar;
+            user.image = this.userImage;
             localStorage.setItem('user', JSON.stringify(user));
           },
           error: (err) => console.error('❌ فشل في جلب البيانات بعد التحديث:', err)
         });
-
-        this.selectedImage = null;
       },
       error: (err) => {
         console.error('❌ خطأ في حفظ البيانات:', err);

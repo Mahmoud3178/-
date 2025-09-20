@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="provider-header d-flex justify-content-between align-items-center px-4 py-3">
     <div class="d-flex align-items-center gap-3">
-      <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'"
+      <img [src]="userImage || 'assets/images/default-avatar.png'"
            class="rounded-circle" width="70" height="70" alt="Avatar">
       <div>
         <h5 class="mb-0 fw-bold">{{ provider.name }}</h5>
@@ -51,7 +51,7 @@
       <!-- الصورة الشخصية -->
       <div class="text-center mb-4">
         <div class="position-relative d-inline-block">
-          <img [src]="selectedImage || provider.avatar || 'assets/images/default-avatar.png'"
+          <img [src]="userImage || 'assets/images/default-avatar.png'"
                width="100" height="100" class="rounded-circle border" alt="User Avatar">
 
           <button class="delete-avatar-btn" (click)="onDeleteImage()" type="button" aria-label="حذف الصورة">
@@ -66,7 +66,6 @@
           <input type="file" id="imageFileInput" accept="image/*" (change)="onChangeImage($event)" style="display:none;">
         </div>
       </div>
-
 
       <!-- حقول البيانات -->
       <div class="row g-2 mb-4">
@@ -105,18 +104,14 @@
         </div>
       </div>
 
-      <!-- تنبيهات النجاح أو الخطأ -->
+      <!-- تنبيهات -->
       <div class="alert-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
-        <div *ngIf="successMessage"
-             class="alert alert-success alert-dismissible fade show shadow-sm"
-             role="alert">
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
           {{ successMessage }}
           <button type="button" class="btn-close" aria-label="Close" (click)="successMessage = null"></button>
         </div>
 
-        <div *ngIf="errorMessage"
-             class="alert alert-danger alert-dismissible fade show shadow-sm"
-             role="alert">
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
           {{ errorMessage }}
           <button type="button" class="btn-close" aria-label="Close" (click)="errorMessage = null"></button>
         </div>
