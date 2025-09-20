@@ -54,9 +54,7 @@
       <h6 class="fw-bold mb-3">تفاصيل الطلب</h6>
       <p><strong>رقم الطلب:</strong> {{ order.id }}</p>
       <p><strong>موعد الزيارة:</strong> {{ order.visitDate | date:'dd/MM/yyyy' }}</p>
-      <p><strong>الوقت:</strong> {{ order.time }}</p>
       <p><strong>القسم:</strong> {{ order.departmentName }}</p>
-      <p><strong>النوع:</strong> {{ order.serviceType }}</p>
        <!-- ✅ عرض التقييم فقط للحالة الأخيرة -->
     <div class="text-center mt-3" *ngIf="order.status === 5 && !order.isRated">
       <h6 class="mb-2">قيّم الفني:</h6>
