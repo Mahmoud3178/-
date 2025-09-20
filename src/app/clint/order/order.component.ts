@@ -47,18 +47,19 @@ export class OrderComponent implements OnInit {
       next: (res) => {
         const result = Array.isArray(res) ? res : [res];
 
-        // ✅ تهيئة البيانات + الترتيب عكسي (آخر أوردر فوق)
         this.orders = result
           .map(order => ({
             ...order,
             visitDate: order.visitingDate,
             departmentName: order.categoryName,
             serviceType: order.servicesType,
+            technicianName: order.technicianName || 'غير متوفر',
+            technicianNumber: order.technicianNumber || 'غير متوفر',
             tempRating: 0,
             tempComment: '',
             isRated: order.isRated || false
           }))
-          .sort((a, b) => b.id - a.id); // 👈 الأحدث أولاً
+          .sort((a, b) => b.id - a.id);
 
         if (this.orders.length === 0) {
           this.errorMessage = '@ لا توجد طلبات في هذه الحالة.';
