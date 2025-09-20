@@ -68,22 +68,23 @@ export class ProfileComponent implements OnInit {
   }
 
   // ✅ تحميل بيانات البروفايل
-  loadProfile() {
-    this.profileService.getUserProfile(this.userId).subscribe({
-      next: (res) => {
-        this.profileForm.patchValue({
-          name: res.name,
-          phoneNumber: res.phoneNumber,
-          email: res.email
-        });
+loadProfile() {
+  this.profileService.getUserProfile(this.userId).subscribe({
+    next: (res) => {
+      this.profileForm.patchValue({
+        name: res.name,
+        phoneNumber: res.phoneNumber,
+        email: res.email
+      });
 
-        if (res.imageUrl) {
-          this.userImage = res.imageUrl;
-        }
-      },
-      error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
-    });
-  }
+      // ✅ لو الصورة لسه default وما تمشيّرتش، خدها من السيرفر
+      if (this.userImage === 'assets/images/default-avatar.png' && res.imageUrl) {
+        this.userImage = res.imageUrl;
+      }
+    },
+    error: (err) => console.error('❌ فشل في تحميل بيانات المستخدم:', err)
+  });
+}
 
   // ✅ تحديث بيانات البروفايل
 // ✅ تحديث بيانات البروفايل
@@ -94,20 +95,20 @@ onSaveProfile() {
       name: this.profileForm.value.name,
       phoneNumber: this.profileForm.value.phoneNumber,
       email: this.profileForm.value.email,
-      imageUrl: this.userImage
+      imageUrl: this.userImage // الصورة الحالية تفضل زي ما هي
     };
 
     this.profileService.updateProfile(this.userId, data).subscribe({
       next: () => {
         this.successMessage = '✅ تم تحديث الملف بنجاح.';
 
-        // 🔄 تحديث localStorage بالصورة الجديدة
+        // ✅ تحديث نسخة localStorage بس بدون ما نرجع للصورة القديمة من السيرفر
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        user.image = this.userImage + `?t=${Date.now()}`; // عشان يكسر الكاش
+        user.image = this.userImage + `?t=${Date.now()}`; // كسر الكاش
         localStorage.setItem('user', JSON.stringify(user));
 
-        // 🔄 تحديث المتغير المستخدم في الهيدر
-        this.userImage = user.image;
+        // ❌ مهم: مانعملش loadProfile() هنا عشان مايرجعش يطير الصورة
+        // this.loadProfile();   <-- احذف دي لو كانت موجودة
       },
       error: (err) => {
         console.error('❌ فشل التحديث:', err);
@@ -116,6 +117,7 @@ onSaveProfile() {
     });
   }
 }
+
   // ✅ تغيير كلمة المرور
   onChangePassword() {
     if (this.passwordForm.valid) {
