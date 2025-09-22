@@ -1,10 +1,19 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
+
+interface DecodedToken {
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": string;
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
+  exp: number;
+}
 
 interface UserData {
   email: string;
-  role: 'client' | 'provider';
+  role: 'client' | 'provider' | 'User'; // دعم role اللي جاي من السيرفر
+  name?: string;
 }
 
 @Injectable({
@@ -13,81 +22,86 @@ interface UserData {
 export class AuthService {
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  // الحالة اللحظية لتسجيل الدخول
   isLoggedIn$ = new BehaviorSubject<boolean>(false);
-
-  // بيانات المستخدم
   user$ = new BehaviorSubject<UserData | null>(null);
 
   constructor() {}
 
-  /**
-   * تهيئة الخدمة عند بدء التطبيق (تُستدعى من main.ts)
-   */
-  init(): Promise<void> {
-    return new Promise((resolve) => {
-      if (this.isBrowser) {
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
+  async init(): Promise<void> {
+    if (!this.isBrowser) return;
 
-        if (token && user) {
-          this.isLoggedIn$.next(true);
-          this.user$.next(JSON.parse(user));
-        } else {
-          this.isLoggedIn$.next(false);
-          this.user$.next(null);
-        }
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      const userData = this.decodeToken(token);
+      if (userData) {
+        this.isLoggedIn$.next(true);
+        this.user$.next(userData);
+      } else {
+        this.clearStorage();
       }
-      resolve();
-    });
+    } else {
+      this.clearStorage();
+    }
   }
 
-  /**
-   * تسجيل الدخول وتحديث الحالة
-   */
-  login(token: string, userData: UserData): void {
+  login(token: string): void {
     if (this.isBrowser) {
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
     }
-
-    this.isLoggedIn$.next(true);
-    this.user$.next(userData);
+    const userData = this.decodeToken(token);
+    if (userData) {
+      this.isLoggedIn$.next(true);
+      this.user$.next(userData);
+    }
   }
 
-  /**
-   * تسجيل الخروج وتفريغ البيانات
-   */
   logout(): void {
-    if (this.isBrowser) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
-
+    this.clearStorage();
     this.isLoggedIn$.next(false);
     this.user$.next(null);
   }
 
-  /**
-   * جلب المستخدم الحالي (غير لحظي)
-   */
   getUser(): UserData | null {
     if (!this.isBrowser) return null;
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    const token = localStorage.getItem('token');
+    return token ? this.decodeToken(token) : null;
   }
 
-  getUserRole(): 'client' | 'provider' | null {
-    const user = this.getUser();
-    return user?.role ?? null;
+  getUserRole(): string | null {
+    return this.getUser()?.role ?? null;
   }
 
   getUserEmail(): string | null {
-    const user = this.getUser();
-    return user?.email ?? null;
+    return this.getUser()?.email ?? null;
+  }
+
+  getUserName(): string | null {
+    return this.getUser()?.name ?? null;
   }
 
   isAuthenticated(): boolean {
     return this.isBrowser && !!localStorage.getItem('token');
+  }
+
+  // ✅ فكّ التوكين وبناء بيانات المستخدم
+  private decodeToken(token: string): UserData | null {
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      return {
+        email: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || '',
+        name: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
+        role: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] as any
+      };
+    } catch (error) {
+      console.error('❌ فشل فك التوكين:', error);
+      return null;
+    }
+  }
+
+  private clearStorage() {
+    if (this.isBrowser) {
+      localStorage.removeItem('token');
+    }
   }
 }
