@@ -152,33 +152,45 @@ export class ProviderHomeComponent implements OnInit {
   }
 
   /** تحديث حالة الطلب */
-  updateOrderStatus(orderId: number, newState: number) {
-    if (!orderId) return;
-    this.processingIds.add(orderId);
+/** تحديث حالة الطلب */
+updateOrderStatus(orderId: number, newState: number) {
+  if (!orderId) return;
+  this.processingIds.add(orderId);
 
-    this.requestService.updateOrderState(orderId, newState).pipe(
-      timeout(10000),
-      retry(1),
-      finalize(() => this.processingIds.delete(orderId)),
-      catchError(() => of(null))
-    ).subscribe({
-      next: (res) => {
-        if (res) {
-          this.successMessage = '✅ تم تحديث حالة الطلب';
-          this.applyLocalStatusChange(orderId, newState);
-          this.sortOrders();
+  this.requestService.updateOrderState(orderId, newState).pipe(
+    timeout(10000),
+    retry(1),
+    finalize(() => this.processingIds.delete(orderId)),
+    catchError(() => of(null))
+  ).subscribe({
+    next: (res) => {
+      if (res) {
+        // ✅ لو الـ API رجعت الطلب بعد التحديث استعمله
+        this.successMessage = '✅ تم تحديث حالة الطلب';
+        if (res.id) {
+          // استبدل الطلب باللي رجع من السيرفر عشان يكون متزامن مع الـ DB
+          this.orders = this.orders.map(o => o.id === orderId ? res : o);
         } else {
-          this.errorMessage = '❌ لم يتم تحديث الطلب';
+          // fallback لو الـ API رجعت null أو boolean
+          this.applyLocalStatusChange(orderId, newState);
         }
-        this.clearMessagesAfterDelay();
+        this.sortOrders();
+      } else {
+        this.errorMessage = '❌ لم يتم تحديث الطلب';
       }
-    });
-  }
+      this.clearMessagesAfterDelay();
+    }
+  });
+}
 
-  private applyLocalStatusChange(orderId: number, newState: number) {
-    this.orders = this.orders.map(o => o.id === orderId ? { ...o, status: newState } : o);
-    if (newState === 5) this.provider.orders = (this.provider.orders || 0) + 1;
+
+private applyLocalStatusChange(orderId: number, newState: number) {
+  this.orders = this.orders.filter(o => o.id !== orderId); // شيل من الحالة الحالية
+  // لو الحالة الجديدة هي اللي معروضة حالياً، أضفه هنا
+  if (newState === this.selectedStatus) {
+    this.orders.push({ ...this.orders.find(o => o.id === orderId), status: newState });
   }
+}
 
   private sortOrders() {
     this.orders.sort((a: any, b: any) => {

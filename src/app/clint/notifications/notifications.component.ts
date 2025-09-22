@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProfileUserService } from '../../services/profile-user.service';
 import { NotificationStateService } from '../../services/notification-state.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-notifications',
@@ -10,13 +11,9 @@ import { NotificationStateService } from '../../services/notification-state.serv
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.css']
 })
-export class NotificationsComponent implements OnInit {
-  notifications: {
-    id: number;
-    title: string;
-    time: string;
-    message: string;
-  }[] = [];
+export class NotificationsComponent implements OnInit, OnDestroy {
+  notifications: { id: number; title: string; time: string; message: string }[] = [];
+  private subscription?: Subscription;
 
   constructor(
     private profileService: ProfileUserService,
@@ -28,19 +25,24 @@ export class NotificationsComponent implements OnInit {
     const userId = user.id;
 
     if (userId) {
+      // ✅ يبدأ polling من الخدمة
       this.notificationState.fetchNotifications(userId);
 
-      this.notificationState.notifications$.subscribe((res) => {
-        this.notifications = res.map(n => ({
-          id: n.id,
-          title: n.title,
-          message: n.message,
-          time: this.getRelativeTime(n.date)
-        }))
-        // ✅ عكس الترتيب علشان أحدث إشعار يظهر الأول
-        .reverse();
+      this.subscription = this.notificationState.notifications$.subscribe((res) => {
+        this.notifications = res
+          .map(n => ({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            time: this.getRelativeTime(n.date)
+          }))
+          .reverse();
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 
   getRelativeTime(dateStr: string): string {
@@ -59,11 +61,10 @@ export class NotificationsComponent implements OnInit {
 
   deleteNotification(index: number, notificationId: number) {
     this.profileService.deleteNotification(notificationId).subscribe({
-      next: (res) => {
-        console.log('Response:', res);
-        this.notifications.splice(index, 1);
+      next: () => {
+        this.notificationState.removeNotificationLocally(notificationId); // ✅ تحديث فوري للـ UI
       },
-      error: err => console.error('❌ فشل في حذف الإشعار:', err)
+      error: (err) => console.error('❌ فشل في حذف الإشعار:', err)
     });
   }
 }

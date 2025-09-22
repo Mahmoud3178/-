@@ -20,7 +20,7 @@ export class OrderComponent implements OnInit {
   userId: number = 0;
   successMessage: string | null = null;
   errorMessage: string | null = null;
-  selectedStatusLabel: string = 'الطلبات الجديدة'; // الافتراضي
+  selectedStatusLabel: string = 'الطلبات الجديدة';
 
   constructor(private requestService: RequestService, private http: HttpClient) {}
 
@@ -36,12 +36,10 @@ export class OrderComponent implements OnInit {
     this.fetchOrders(this.selectedStatus);
   }
 
+  /** تحميل الطلبات */
   fetchOrders(status: number): void {
     this.errorMessage = '';
-    const query: RequestQueryDTO = {
-      userId: this.userId,
-      status: status
-    };
+    const query: RequestQueryDTO = { userId: this.userId, status: status };
 
     this.requestService.getUserRequests(query).subscribe({
       next: (res) => {
@@ -71,23 +69,49 @@ export class OrderComponent implements OnInit {
     });
   }
 
-  setStepFromOrderStatus(status: number): void {
-    this.currentStep = Math.min(Math.max(status - 1, 0), this.statusSteps.length - 1);
-  }
-
+  /** إلغاء الطلب */
   cancelOrder(orderId: number): void {
     if (!confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) return;
 
     this.requestService.cancelRequest(orderId).subscribe({
       next: () => {
+        // ✅ حدث الـ UI فوراً
         this.orders = this.orders.filter(order => order.id !== orderId);
+        this.successMessage = '✅ تم إلغاء الطلب بنجاح';
+        this.clearMessages();
       },
       error: () => {
-        alert('حدث خطأ أثناء محاولة إلغاء الطلب.');
+        this.errorMessage = '❌ حدث خطأ أثناء محاولة إلغاء الطلب.';
+        this.clearMessages();
       }
     });
   }
 
+  /** تغيير حالة الطلب محلياً بعد ما السيرفر يرجع OK */
+  updateOrderStatus(orderId: number, newState: number): void {
+    this.requestService.updateOrderState(orderId, newState).subscribe({
+      next: (res: any) => {
+        if (res) {
+          // ✅ لو الـ API رجعت الطلب الجديد، استبدل الطلب به
+          this.orders = this.orders.map(o => o.id === orderId ? { ...o, status: newState } : o);
+          this.successMessage = '✅ تم تحديث حالة الطلب';
+        } else {
+          this.errorMessage = '❌ لم يتم تحديث حالة الطلب';
+        }
+        this.clearMessages();
+      },
+      error: () => {
+        this.errorMessage = '❌ حدث خطأ أثناء تحديث حالة الطلب.';
+        this.clearMessages();
+      }
+    });
+  }
+
+  setStepFromOrderStatus(status: number): void {
+    this.currentStep = Math.min(Math.max(status - 1, 0), this.statusSteps.length - 1);
+  }
+
+  /** إضافة تقييم */
   setRating(order: any, stars: number): void {
     order.tempRating = stars;
   }
@@ -111,29 +135,33 @@ export class OrderComponent implements OnInit {
       `/api/Rating/Create`,
       JSON.stringify(ratingData),
       {
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         responseType: 'text' as 'json'
       }
     ).subscribe({
       next: (res: any) => {
-        order.isRated = true;
-        alert(res);
+        order.isRated = true; // ✅ عدل الطلب محلياً بحيث يختفي زر التقييم
+        this.successMessage = '✅ تم إرسال التقييم';
+        this.clearMessages();
       },
       error: () => {
-        alert('حدث خطأ أثناء إرسال التقييم.');
+        this.errorMessage = '❌ حدث خطأ أثناء إرسال التقييم.';
+        this.clearMessages();
       }
     });
   }
 
   changeStatusFilter(status: number, label?: string): void {
     this.selectedStatus = status;
-
-    if (label) {
-      this.selectedStatusLabel = label;
-    }
-
+    if (label) this.selectedStatusLabel = label;
     this.fetchOrders(status);
+  }
+
+  /** تنظيف الرسائل بعد 3 ثواني */
+  clearMessages() {
+    setTimeout(() => {
+      this.successMessage = null;
+      this.errorMessage = null;
+    }, 3000);
   }
 }
