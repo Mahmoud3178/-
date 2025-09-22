@@ -35,17 +35,20 @@ export class RatingsComponent implements OnInit {
       const user = JSON.parse(userJson);
 
       // ✅ معالجة صورة المزود
-      let avatar = 'assets/images/provider1.jpg';
-      if (user.image) {
-        try {
-          const fileName = user.image.split('/').pop();
-          if (fileName) {
-            avatar = `/Uploads/${fileName}`;
-          }
-        } catch (e) {
-          console.error('❌ خطأ في معالجة صورة المزود:', e);
-        }
-      }
+ // ✅ معالجة صورة المزود
+let avatar = 'assets/images/provider1.jpg';
+
+if (user.image) {
+  try {
+    const fileName = user.image.split('/').pop();
+    if (fileName) {
+      avatar = `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
+    }
+  } catch (e) {
+    console.error('❌ خطأ في معالجة صورة المزود:', e);
+  }
+}
+
 
       this.provider = {
         id: user.id,
