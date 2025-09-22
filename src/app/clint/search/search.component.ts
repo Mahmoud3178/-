@@ -66,6 +66,9 @@ export class SearchComponent implements AfterViewInit {
         this.formData.categoryName = data.categoryName || '';
         this.formData.description = data.description || '';
         this.formData.city = `${data.city || ''} ${data.area || ''} ${data.street || ''}`.trim();
+
+        // ✅ بعد ما نجيب الداتا نعيد البحث مع الفلترة على أساس الكاتيجوري
+        this.getNearbyTechnicians();
       },
       error: (err) => {
         console.error('❌ Error loading request data:', err);
@@ -79,18 +82,33 @@ export class SearchComponent implements AfterViewInit {
     this.http.get<any[]>(url).subscribe({
       next: (res) => {
         if (Array.isArray(res) && res.length > 0) {
-          this.providers = res.map(p => ({
+          // ✅ فلترة الفنيين حسب الكاتيجوري
+          const filtered = res.filter(p => {
+            return this.formData.categoryName
+              ? p.categoryName?.trim() === this.formData.categoryName.trim()
+              : true; // لو مفيش كاتيجوري، رجّع الكل
+          });
+
+          this.providers = filtered.map(p => ({
             id: p.id,
             name: p.name,
             phoneNumber: p.phoneNumber,
             email: p.email,
             rating: p.rating,
-            description: p.nameServices || p.categoryName || 'بدون وصف',
+            description: p.categoryName || 'بدون وصف',
             image: this.normalizeImage(p.imageUrl),
             x: (p.long - this.lng) * 1000,
             y: (p.lat - this.lat) * -1000
           }));
-          console.log(`✅ تم العثور على ${this.providers.length} مزود خدمة.`);
+
+          console.log(`✅ تم العثور على ${this.providers.length} مزود خدمة مطابق للفئة.`);
+
+          // لو مفيش مزودين مطابقين، نحاول تاني لحد maxRetries
+          if (this.providers.length === 0 && this.retryCount < this.maxRetries) {
+            this.retryCount++;
+            console.log(`⏳ إعادة المحاولة (${this.retryCount}/${this.maxRetries})...`);
+            setTimeout(() => this.getNearbyTechnicians(), 3000);
+          }
         } else {
           this.providers = [];
           if (this.retryCount < this.maxRetries) {
