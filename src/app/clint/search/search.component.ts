@@ -26,6 +26,12 @@ export class SearchComponent implements AfterViewInit {
     city: ''
   };
 
+  private lat!: number;
+  private lng!: number;
+  private range!: number;
+  private retryCount = 0;
+  private maxRetries = 10; // نحاول 10 مرات كحد أقصى
+
   constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) {}
 
   ngAfterViewInit() {
@@ -36,16 +42,16 @@ export class SearchComponent implements AfterViewInit {
 
     this.route.queryParams.subscribe(params => {
       const requestId = params['requestId'];
-      const lat = parseFloat(params['lat']);
-      const lng = parseFloat(params['lng']);
-      const range = parseInt(params['range'], 10) || 10000;
+      this.lat = parseFloat(params['lat']);
+      this.lng = parseFloat(params['lng']);
+      this.range = parseInt(params['range'], 10) || 10000;
 
       if (requestId) {
         this.loadRequestData(requestId);
       }
 
-      if (lat && lng) {
-        this.getNearbyTechnicians(lat, lng, range);
+      if (this.lat && this.lng) {
+        this.getNearbyTechnicians();
       }
     });
 
@@ -67,32 +73,41 @@ export class SearchComponent implements AfterViewInit {
     });
   }
 
-  getNearbyTechnicians(lat: number, lng: number, range: number) {
-    const url = `/api/Services/NearestTechnician?latitude=${lat}&longitude=${lng}&range=${range}`;
+  getNearbyTechnicians() {
+    const url = `/api/Services/NearestTechnician?latitude=${this.lat}&longitude=${this.lng}&range=${this.range}`;
 
     this.http.get<any[]>(url).subscribe({
       next: (res) => {
         if (Array.isArray(res) && res.length > 0) {
-          this.providers = res.map(p => {
-            return {
-              id: p.id,
-              name: p.name,
-              phoneNumber: p.phoneNumber,
-              email: p.email,
-              rating: p.rating,
-              description: p.nameServices || p.categoryName || 'بدون وصف',
-              image: this.normalizeImage(p.imageUrl),
-              x: (p.long - lng) * 1000,
-              y: (p.lat - lat) * -1000
-            };
-          });
+          this.providers = res.map(p => ({
+            id: p.id,
+            name: p.name,
+            phoneNumber: p.phoneNumber,
+            email: p.email,
+            rating: p.rating,
+            description: p.nameServices || p.categoryName || 'بدون وصف',
+            image: this.normalizeImage(p.imageUrl),
+            x: (p.long - this.lng) * 1000,
+            y: (p.lat - this.lat) * -1000
+          }));
+          console.log(`✅ تم العثور على ${this.providers.length} مزود خدمة.`);
         } else {
           this.providers = [];
+          if (this.retryCount < this.maxRetries) {
+            this.retryCount++;
+            console.log(`⏳ إعادة المحاولة (${this.retryCount}/${this.maxRetries})...`);
+            setTimeout(() => this.getNearbyTechnicians(), 3000);
+          } else {
+            console.warn('⚠️ لم يتم العثور على مزودين بعد عدة محاولات.');
+          }
         }
       },
       error: (err) => {
         console.error('❌ Error fetching technicians:', err);
-        this.providers = [];
+        if (this.retryCount < this.maxRetries) {
+          this.retryCount++;
+          setTimeout(() => this.getNearbyTechnicians(), 3000);
+        }
       }
     });
   }
@@ -102,28 +117,17 @@ export class SearchComponent implements AfterViewInit {
       return "assets/images/default-avatar.png";
     }
 
-    // ✅ Base64
-    if (path.startsWith("data:image")) {
-      return path;
-    }
+    if (path.startsWith("data:image")) return path;
 
-    // ✅ صور السيرفر (http → https + encodeURIComponent)
     if (path.includes("on-demand-service-backend.runasp.net")) {
       let safePath = path.replace("http://", "https://");
-
       const parts = safePath.split("/");
-      const fileName = parts.pop();
-      const encodedFileName = encodeURIComponent(fileName!);
-
-      return parts.join("/") + "/" + encodedFileName;
+      const fileName = encodeURIComponent(parts.pop()!);
+      return parts.join("/") + "/" + fileName;
     }
 
-    // ✅ روابط خارجية
-    if (path.startsWith("http")) {
-      return path;
-    }
+    if (path.startsWith("http")) return path;
 
-    // ✅ fallback
     const fileName = encodeURIComponent(path.split("/").pop()!);
     return `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
   }
