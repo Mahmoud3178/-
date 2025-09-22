@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { NotificationsService } from '../../services/notifications.service';
 import { NotificationStateService } from '../../services/notification-state.service';
-import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-provider-notifications',
@@ -10,9 +11,10 @@ import { CommonModule, DatePipe } from '@angular/common';
   templateUrl: './provider-notifications.component.html',
   styleUrls: ['./provider-notifications.component.css']
 })
-export class ProviderNotificationsComponent implements OnInit {
+export class ProviderNotificationsComponent implements OnInit, OnDestroy {
   notifications: any[] = [];
   userId = '';
+  private subscription?: Subscription;
 
   constructor(
     private notificationsService: NotificationsService,
@@ -24,30 +26,20 @@ export class ProviderNotificationsComponent implements OnInit {
     this.userId = user?.id;
 
     if (this.userId) {
-      this.loadNotifications();
+      // ✅ نبدأ الـ polling
+      this.notificationState.fetchNotifications(this.userId);
+
+      // ✅ نتابع التغييرات في الإشعارات
+      this.subscription = this.notificationState.notifications$.subscribe((data) => {
+        this.notifications = [...data].reverse();
+      });
     }
-  }
-
-  loadNotifications() {
-    this.notificationsService.getNotifications(this.userId).subscribe({
-      next: (data) => {
-        this.notifications = data.reverse();
-
-        // ✅ نحدث حالة الجرس
-        const hasUnseen = this.notifications.some(n => !n.seen);
-        this.notificationState.setHasNewNotifications(hasUnseen);
-      },
-      error: (err) => {
-        console.error('❌ Error loading notifications', err);
-      }
-    });
   }
 
   deleteNotification(id: number) {
     this.notificationsService.deleteNotification(id).subscribe({
       next: () => {
-        // نحذف محليًا فورًا
-        this.notifications = this.notifications.filter(n => n.id.toString() !== id.toString());
+        // ✅ نحذف محليًا من state
         this.notificationState.removeNotificationLocally(id);
       },
       error: (err) => {
@@ -58,5 +50,9 @@ export class ProviderNotificationsComponent implements OnInit {
 
   trackById(index: number, item: any): any {
     return item.id;
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 }

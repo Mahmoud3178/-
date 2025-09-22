@@ -78,16 +78,17 @@
   <span class="position-relative">
     <i class="bi bi-bell fs-5 text-primary"></i>
     <span *ngIf="notificationCount > 0"
-          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-          style="font-size: 0.6rem;">
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger px-2"
+          style="font-size: 0.7rem; min-width: 18px; text-align: center;">
       {{ notificationCount }}
     </span>
   </span>
   <small class="text-dark">الإشعارات</small>
 </a>
 
+
               <ng-container *ngIf="(userData$ | async) as user">
-                <div routerLink="/profile" class="text-center d-flex flex-column align-items-center">
+         <div routerLink="/profile" class="text-center d-flex flex-column align-items-center">
 <img
   [src]="user.image"
   (error)="user.image = 'assets/images/default-avatar.png'"

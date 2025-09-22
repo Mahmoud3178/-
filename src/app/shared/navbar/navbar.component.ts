@@ -1,11 +1,9 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
-import { Observable, map } from 'rxjs';
+import { Observable, map, Subscription } from 'rxjs';
 import { NotificationStateService } from '../../services/notification-state.service';
-import { HttpClient } from '@angular/common/http';
-
 
 @Component({
   selector: 'app-navbar',
@@ -14,24 +12,24 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   @Output() scrollToSection = new EventEmitter<string>();
 
   isLoggedIn$: Observable<boolean>;
   userData$: Observable<{ name: string; role: 'client' | 'provider' | null; image: string }>;
 
   hasNewNotifications = false;
-notificationCount: number = 0;
+  notificationCount: number = 0;
 
   ready = false;
   isNavbarCollapsed = true;
   showMobileMenu = false;
 
+  private subscription?: Subscription;
+
   constructor(
     private authService: AuthService,
-    private notificationState: NotificationStateService,
-      private http: HttpClient
-
+    private notificationState: NotificationStateService
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
@@ -43,17 +41,17 @@ notificationCount: number = 0;
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         const name = user?.email?.split('@')[0] || 'العميل';
         const role: 'client' | 'provider' | null = user?.role || null;
-let image = 'assets/images/default-avatar.png';
 
-if (user?.image) {
-  if (user.image.startsWith('data:image')) {
-    image = user.image;
-  } else if (user.image.startsWith('/Uploads')) {
-    image = user.image;
-  } else if (user.image.startsWith('http')) {
-    image = user.image;
-  }
-}
+        let image = 'assets/images/default-avatar.png';
+        if (user?.image) {
+          if (user.image.startsWith('data:image')) {
+            image = user.image;
+          } else if (user.image.startsWith('/Uploads')) {
+            image = user.image;
+          } else if (user.image.startsWith('http')) {
+            image = user.image;
+          }
+        }
         return { name, role, image };
       })
     );
@@ -63,31 +61,30 @@ if (user?.image) {
     });
   }
 
- ngOnInit() {
-  this.notificationState.hasNewNotifications$.subscribe(value => {
-    this.hasNewNotifications = value;
-  });
-
-  this.fetchNotificationCount(); // ✅ استدعاء جديد
-}
-fetchNotificationCount() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userId = user?.id;
-
-  if (!userId) return;
-
-this.http.get<number>(`/api/notifications/GetNotificationCount?id=${userId}`)
-    .subscribe({
-      next: (count) => {
-        this.notificationCount = count;
-      },
-      error: (err) => {
-        console.error('❌ فشل في جلب عدد الإشعارات:', err);
-        this.notificationCount = 0;
-      }
+  ngOnInit() {
+    // ✅ الجرس (مقروء/غير مقروء)
+    this.subscription = this.notificationState.hasNewNotifications$.subscribe(value => {
+      this.hasNewNotifications = value;
     });
-}
 
+    // ✅ العداد يتحدث من الاستيت مش API
+    this.subscription.add(
+      this.notificationState.notifications$.subscribe(list => {
+        this.notificationCount = list.filter(n => !n.seen).length;
+      })
+    );
+
+    // ✅ أول مرة: شغل polling عشان يملأ الستيت
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user?.id;
+    if (userId) {
+      this.notificationState.fetchNotifications(userId);
+    }
+  }
+
+  ngOnDestroy() {
+    this.subscription?.unsubscribe();
+  }
 
   toggleNavbar(): void {
     this.isNavbarCollapsed = !this.isNavbarCollapsed;

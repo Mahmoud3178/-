@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 export class NotificationsComponent implements OnInit, OnDestroy {
   notifications: { id: number; title: string; time: string; message: string }[] = [];
   private subscription?: Subscription;
+  private userId = '';
 
   constructor(
     private notificationState: NotificationStateService,
@@ -22,11 +23,13 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userId = user.id;
+    this.userId = user.id;
 
-    if (userId) {
-      this.notificationState.fetchNotifications(userId);
+    if (this.userId) {
+      // ✅ يبدأ polling من الخدمة
+      this.notificationState.fetchNotifications(this.userId);
 
+      // ✅ اشترك مع الاستيت عشان UI والجرس يتحدثوا دايمًا
       this.subscription = this.notificationState.notifications$.subscribe((res) => {
         this.notifications = res
           .map(n => ({
@@ -58,10 +61,11 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     return `منذ ${diffDays} يوم`;
   }
 
-  deleteNotification(notificationId: number) {
+  deleteNotification(index: number, notificationId: number) {
     this.notificationsService.deleteNotification(notificationId).subscribe({
       next: () => {
-        this.notificationState.removeNotificationLocally(notificationId); // ✅ تحديث فوري للـ UI
+        // ✅ تحديث الـ State فورًا → يختفي من الليست + الجرس يتحدث
+        this.notificationState.removeNotificationLocally(notificationId);
       },
       error: (err) => console.error('❌ فشل في حذف الإشعار:', err)
     });
