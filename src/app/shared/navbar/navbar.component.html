@@ -77,18 +77,22 @@
     <small class="text-dark">الطلبات</small>
   </a>
 
-  <!-- رابط الإشعارات -->
-  <a routerLink="/notifications" class="text-center d-flex flex-column align-items-center text-decoration-none">
-    <span class="position-relative d-inline-flex align-items-center justify-content-center">
-      <i class="bi bi-bell fs-5 text-primary"></i>
-      <span *ngIf="notificationCount > 0"
-            class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger px-2"
-            style="font-size: 0.7rem; min-width: 18px; text-align: center;">
-        {{ notificationCount }}
-      </span>
+<a routerLink="/notifications" class="text-center d-flex flex-column align-items-center text-decoration-none">
+  <span class="position-relative d-inline-flex align-items-center justify-content-center">
+    <i class="bi bi-bell fs-5 text-primary"></i>
+    <span *ngIf="notificationCount > 0"
+          class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger px-2"
+          style="
+            font-size: 0.7rem;
+            min-width: 18px;
+            text-align: center;
+            transform: translate(-30%, -50%);
+          ">
+      {{ notificationCount }}
     </span>
-    <small class="text-dark">الإشعارات</small>
-  </a>
+  </span>
+  <small class="text-dark">الإشعارات</small>
+</a>
 
   <!-- رابط البروفايل -->
   <ng-container *ngIf="(userData$ | async) as user">
