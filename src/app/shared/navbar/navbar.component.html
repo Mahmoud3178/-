@@ -70,36 +70,41 @@
               <button routerLink="/login" class="btn btn-outline-warning fw-bold px-5 py-1">تسجيل الدخول</button>
             </ng-container>
 
-            <ng-template #clientLinks>
-              <a routerLink="/order" class="text-center d-flex flex-column align-items-center text-decoration-none">
-                <i class="bi bi-basket fs-5 text-primary"></i><small class="text-dark">الطلبات</small>
-              </a>
-<a routerLink="/notifications" class="text-center d-flex flex-column align-items-center text-decoration-none">
-  <span class="position-relative">
-    <i class="bi bi-bell fs-5 text-primary"></i>
-    <span *ngIf="notificationCount > 0"
-          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger px-2"
-          style="font-size: 0.7rem; min-width: 18px; text-align: center;">
-      {{ notificationCount }}
+ <ng-template #clientLinks>
+  <!-- رابط الطلبات -->
+  <a routerLink="/order" class="text-center d-flex flex-column align-items-center text-decoration-none">
+    <i class="bi bi-basket fs-5 text-primary"></i>
+    <small class="text-dark">الطلبات</small>
+  </a>
+
+  <!-- رابط الإشعارات -->
+  <a routerLink="/notifications" class="text-center d-flex flex-column align-items-center text-decoration-none">
+    <span class="position-relative d-inline-flex align-items-center justify-content-center">
+      <i class="bi bi-bell fs-5 text-primary"></i>
+      <span *ngIf="notificationCount > 0"
+            class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger px-2"
+            style="font-size: 0.7rem; min-width: 18px; text-align: center;">
+        {{ notificationCount }}
+      </span>
     </span>
-  </span>
-  <small class="text-dark">الإشعارات</small>
-</a>
+    <small class="text-dark">الإشعارات</small>
+  </a>
 
+  <!-- رابط البروفايل -->
+  <ng-container *ngIf="(userData$ | async) as user">
+    <div routerLink="/profile" class="text-center d-flex flex-column align-items-center">
+      <img
+        [src]="user.image"
+        (error)="user.image = 'assets/images/default-avatar.png'"
+        alt="User"
+        class="rounded-circle"
+        style="width: 36px; height: 36px;"
+      />
+      <small>{{ user.name }}</small>
+    </div>
+  </ng-container>
+</ng-template>
 
-              <ng-container *ngIf="(userData$ | async) as user">
-         <div routerLink="/profile" class="text-center d-flex flex-column align-items-center">
-<img
-  [src]="user.image"
-  (error)="user.image = 'assets/images/default-avatar.png'"
-  alt="User"
-  class="rounded-circle"
-  style="width: 36px; height: 36px;"
-/>
-                  <small>{{ user.name }}</small>
-                </div>
-              </ng-container>
-            </ng-template>
           </div>
         </div>
       </div>
