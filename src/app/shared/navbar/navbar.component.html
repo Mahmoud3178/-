@@ -22,20 +22,22 @@
     <!-- ✅ Main Navbar -->
     <nav class="navbar navbar-expand-lg py-3">
       <div class="w-90-custom mx-auto position-relative d-flex align-items-center justify-content-between">
-        <!-- ✅ جرس الإشعارات -->
-        <ng-container *ngIf="(userData$ | async)?.role === 'provider'">
-          <div class="position-absolute bell-left">
-<a routerLink="/provider-notifications" class="btn btn-outline-secondary position-relative">
-  <i class="bi bi-bell fs-5"></i>
-  <span *ngIf="notificationCount > 0"
-        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-        style="font-size: 0.6rem;">
-    {{ notificationCount }}
-  </span>
-</a>
+<!-- ✅ جرس الإشعارات -->
+<ng-container *ngIf="(userData$ | async)?.role === 'provider'">
+  <div class="position-absolute bell-left">
+    <a routerLink="/provider-notifications" class="btn btn-outline-secondary position-relative">
+      <i class="bi bi-bell fs-5"></i>
 
-          </div>
-        </ng-container>
+      <!-- ✅ البادج المحسن -->
+      <span *ngIf="notificationCount > 0"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger d-flex align-items-center justify-content-center"
+            style="min-width: 22px; height: 22px; font-size: 0.75rem;">
+        {{ notificationCount }}
+      </span>
+    </a>
+  </div>
+</ng-container>
+
 
         <!-- ✅ اللوجو -->
         <a class="navbar-brand" [routerLink]="(userData$ | async)?.role === 'provider' ? '/provider-home' : '/hero'">

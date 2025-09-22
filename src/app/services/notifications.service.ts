@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class NotificationsService {
-  private baseUrl = '/api/notifications';  // خلي الرابط نسبي
+  private baseUrl = '/api/notifications'; // رابط نسبي
 
   constructor(private http: HttpClient) {}
 

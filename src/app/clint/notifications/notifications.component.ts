@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProfileUserService } from '../../services/profile-user.service';
 import { NotificationStateService } from '../../services/notification-state.service';
+import { NotificationsService } from '../../services/notifications.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,8 +16,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   private subscription?: Subscription;
 
   constructor(
-    private profileService: ProfileUserService,
-    private notificationState: NotificationStateService
+    private notificationState: NotificationStateService,
+    private notificationsService: NotificationsService
   ) {}
 
   ngOnInit(): void {
@@ -25,7 +25,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     const userId = user.id;
 
     if (userId) {
-      // ✅ يبدأ polling من الخدمة
       this.notificationState.fetchNotifications(userId);
 
       this.subscription = this.notificationState.notifications$.subscribe((res) => {
@@ -59,8 +58,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     return `منذ ${diffDays} يوم`;
   }
 
-  deleteNotification(index: number, notificationId: number) {
-    this.profileService.deleteNotification(notificationId).subscribe({
+  deleteNotification(notificationId: number) {
+    this.notificationsService.deleteNotification(notificationId).subscribe({
       next: () => {
         this.notificationState.removeNotificationLocally(notificationId); // ✅ تحديث فوري للـ UI
       },

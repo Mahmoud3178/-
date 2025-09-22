@@ -7,9 +7,6 @@ import { NotificationsService } from './notifications.service';
   providedIn: 'root',
 })
 export class NotificationStateService implements OnDestroy {
-  setHasNewNotifications(hasUnseen: boolean) {
-    throw new Error('Method not implemented.');
-  }
   private notificationsSubject = new BehaviorSubject<any[]>([]);
   notifications$ = this.notificationsSubject.asObservable();
 
@@ -20,15 +17,14 @@ export class NotificationStateService implements OnDestroy {
 
   constructor(private notificationsService: NotificationsService) {}
 
+  /** Polling كل 10 ثواني */
   fetchNotifications(userId: string): void {
-    // نعمل Polling كل 10 ثواني
     this.pollingSub = timer(0, 10000)
       .pipe(switchMap(() => this.notificationsService.getNotifications(userId)))
       .subscribe({
         next: (notifications) => {
           this.notificationsSubject.next(notifications);
 
-          // لو فيه إشعارات غير مقروءة علم عليها
           const hasNew = notifications.some(n => !n.seen);
           this.hasNewNotificationsSubject.next(hasNew);
         },
@@ -38,7 +34,7 @@ export class NotificationStateService implements OnDestroy {
       });
   }
 
-  /** نستخدمها عند حذف إشعار محلياً */
+  /** حذف إشعار محليًا */
   removeNotificationLocally(id: number): void {
     const current = this.notificationsSubject.value;
     const updated = current.filter(n => n.id !== id);
@@ -47,8 +43,12 @@ export class NotificationStateService implements OnDestroy {
     const hasNew = updated.some(n => !n.seen);
     this.hasNewNotificationsSubject.next(hasNew);
   }
+  /** تحديث علامة الجرس يدويًا */
+  setHasNewNotifications(hasUnseen: boolean): void {
+    this.hasNewNotificationsSubject.next(hasUnseen);
+  }
 
-  /** نستخدمها لو المستخدم قرأ الإشعارات */
+  /** تعليم الكل كمقروء */
   markAllAsRead(): void {
     const updated = this.notificationsSubject.value.map(n => ({
       ...n,
