@@ -131,6 +131,38 @@ this.http.get<any[]>('/api/Places/GetAllPlaces').subscribe({
 });
 
   }
+loadCategories(retries = 3, delayMs = 2000) {
+  this.http.get<any[]>('/api/Category/GetAll').subscribe({
+    next: (res) => {
+      this.categories = res;
+    },
+    error: (err) => {
+      console.error('❌ فشل في تحميل الأقسام:', err);
+      if (retries > 0) {
+        console.log(`🔄 إعادة المحاولة... باقي ${retries}`);
+        setTimeout(() => this.loadCategories(retries - 1, delayMs), delayMs);
+      } else {
+        this.errorMessage = '⚠️ لم يتم تحميل الأقسام، حاول لاحقًا';
+      }
+    }
+  });
+}
+
+loadPlaces(retries = 3, delayMs = 2000) {
+  this.http.get<any[]>('/api/Places/GetAllPlaces').subscribe({
+    next: (res) => {
+      this.places = res;
+    },
+    error: (err) => {
+      console.error('❌ فشل في تحميل مناطق الخدمة:', err);
+      if (retries > 0) {
+        setTimeout(() => this.loadPlaces(retries - 1, delayMs), delayMs);
+      } else {
+        this.errorMessage = '⚠️ لم يتم تحميل مناطق الخدمة';
+      }
+    }
+  });
+}
 
   onChangeImage(event: Event): void {
     const input = event.target as HTMLInputElement;
