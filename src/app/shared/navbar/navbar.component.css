@@ -98,7 +98,11 @@
   padding: 0;
   margin: 0;
 }
-
+/*count of notification*/
+.px-2{
+    padding-right: .10rem !important;
+    padding-left: .10rem !important;
+}
 .mobile-nav li {
   margin-bottom: 1.2rem;
 }
