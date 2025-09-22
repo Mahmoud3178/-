@@ -16,12 +16,11 @@ import { Router } from '@angular/router';
 })
 export class PreviousWorkComponent implements OnInit {
   toggleStatus = true;
-  technicianId = '369af723-dbda-427d-b075-d51b5d2083a8'; // ثابت للتجربة فقط
+  technicianId = ''; // هيتم تعيينه من localStorage
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
   provider: any = {};
-  orders: any[] = [];
   newWork = {
     title: '',
     description: ''
@@ -44,8 +43,6 @@ export class PreviousWorkComponent implements OnInit {
     const userJson = localStorage.getItem('user');
     if (userJson) {
       const user = JSON.parse(userJson);
-
-      // اسند ID المستخدم اللي سجل دخول للفني
       this.technicianId = user.id;
 
       this.provider = {
@@ -57,60 +54,64 @@ export class PreviousWorkComponent implements OnInit {
         orders: 0
       };
 
-      // حمل الأعمال الخاصة بهذا المستخدم فقط
       this.loadWorks();
     }
   }
 
-  // ✅ تحميل الأعمال السابقة بترتيب عكسي (الأحدث فوق)
   loadWorks() {
     this.previosWorkService.getPreviousWorks(this.technicianId).subscribe({
       next: (res) => {
-        this.works = res.map(item => {
-          let imageBeforeUrl = this.getValidImageUrl(item.imageBeforeUrl, 'before');
-          let imageAfterUrl = this.getValidImageUrl(item.imageAfterUrl, 'after');
-
-          return {
-            ...item,
-            imageBeforeUrl,
-            imageAfterUrl
-          };
-        }).reverse(); // 👈 نخلي الأحدث يبان فوق
+        this.works = res.map(item => ({
+          ...item,
+          imageBeforeUrl: this.normalizeImageUrl(item.imageBeforeUrl, 'before'),
+          imageAfterUrl: this.normalizeImageUrl(item.imageAfterUrl, 'after')
+        })).reverse(); // أحدث عمل في الأعلى
       },
       error: (err) => console.error('❌ خطأ في تحميل الأعمال السابقة:', err)
     });
   }
 
-  getValidImageUrl(rawUrl: string, type: 'before' | 'after'): string {
+  normalizeImageUrl(rawUrl: string, type: 'before' | 'after'): string {
     if (!rawUrl) {
       return type === 'before'
-        ? 'images/default-before.jpg'
-        : 'images/default-after.jpg';
+        ? 'assets/images/default-before.jpg'
+        : 'assets/images/default-after.jpg';
+    }
+
+    // ✅ لو اللينك بالفعل يبدأ بـ http أو https → استخدمه زي ما هو
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      return rawUrl;
     }
 
     try {
-      // لو القيمة JSON Array
+      // لو القيمة جاية كـ JSON array
       const parsed = JSON.parse(rawUrl);
       if (Array.isArray(parsed) && parsed.length > 0) {
         const fileName = parsed[0].split('/').pop();
-        if (fileName) return `/Uploads/${fileName}`;
+        return fileName
+          ? `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`
+          : this.getDefaultImage(type);
       }
     } catch (e) {
-      // لو قيمة عادية (مش JSON)
+      // قيمة عادية (مش JSON)
       const fileName = rawUrl.split('/').pop();
-      if (fileName) return `/Uploads/${fileName}`;
+      return fileName
+        ? `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`
+        : this.getDefaultImage(type);
     }
 
+    return this.getDefaultImage(type);
+  }
+
+  getDefaultImage(type: 'before' | 'after'): string {
     return type === 'before'
-      ? 'images/default-before.jpg'
-      : 'images/default-after.jpg';
+      ? 'assets/images/default-before.jpg'
+      : 'assets/images/default-after.jpg';
   }
 
   onImageError(event: Event, type: 'before' | 'after') {
     const element = event.target as HTMLImageElement;
-    element.src = type === 'before'
-      ? 'images/default-before.jpg'
-      : 'images/default-after.jpg';
+    element.src = this.getDefaultImage(type);
   }
 
   onImageSelected(event: any, type: 'before' | 'after') {
@@ -130,7 +131,6 @@ export class PreviousWorkComponent implements OnInit {
     }
   }
 
-  // ✅ إضافة عمل جديد ويظهر فوق فورًا
   submitWork() {
     if (!this.newWork.title || !this.newWork.description || !this.beforeFile || !this.afterFile) {
       this.errorMessage = '❌ يرجى إدخال العنوان والوصف وتحميل الصور';
@@ -149,14 +149,12 @@ export class PreviousWorkComponent implements OnInit {
       next: (res: any) => {
         this.successMessage = '✅ تم إضافة العمل بنجاح';
 
-        // 👇 ضيف العمل الجديد في أول الليستة
         this.works.unshift({
           ...res,
           imageBeforeUrl: this.beforePreview,
           imageAfterUrl: this.afterPreview
         });
 
-        // Reset للفورم
         this.beforePreview = '';
         this.afterPreview = '';
         this.newWork = { title: '', description: '' };
@@ -177,12 +175,11 @@ export class PreviousWorkComponent implements OnInit {
     setTimeout(() => {
       this.successMessage = '';
       this.errorMessage = '';
-    }, 3000); // 3 ثواني
+    }, 3000);
   }
 
   logout() {
-    const confirmed = confirm("هل تريد فعلاً تسجيل الخروج؟");
-    if (confirmed) {
+    if (confirm("هل تريد فعلاً تسجيل الخروج؟")) {
       localStorage.removeItem('user');
       this.authService.logout();
       this.router.navigate(['/']);
