@@ -34,13 +34,18 @@ export class RatingsComponent implements OnInit {
     if (userJson) {
       const user = JSON.parse(userJson);
 
-      // ✅ معالجة صورة المزود باستخدام /Uploads بدلاً من الرابط الطويل
+      // ✅ معالجة صورة المزود (Base64 أو اسم ملف)
       let avatar = 'assets/images/provider1.jpg';
       if (user.image) {
         try {
-          const fileName = user.image.split('/').pop();
-          if (fileName) {
-            avatar = `/Uploads/${fileName}`; // ✅ هنا نستخدم الـ rewrite
+          if (user.image.startsWith('data:image')) {
+            // لو الصورة Base64 نستخدمها كما هي
+            avatar = user.image;
+          } else {
+            const fileName = user.image.split('/').pop();
+            if (fileName) {
+              avatar = `/Uploads/${fileName}`;
+            }
           }
         } catch (e) {
           console.error('❌ خطأ في معالجة صورة المزود:', e);
@@ -64,9 +69,13 @@ export class RatingsComponent implements OnInit {
             let clientAvatar = 'assets/images/avatar1.jpg';
             if (r.userImage) {
               try {
-                const fileName = r.userImage.split('/').pop();
-                if (fileName) {
-                  clientAvatar = `/Uploads/${fileName}`; // ✅ نفس النظام
+                if (r.userImage.startsWith('data:image')) {
+                  clientAvatar = r.userImage;
+                } else {
+                  const fileName = r.userImage.split('/').pop();
+                  if (fileName) {
+                    clientAvatar = `/Uploads/${fileName}`;
+                  }
                 }
               } catch (e) {
                 console.error('❌ خطأ في معالجة صورة العميل:', e);
@@ -85,9 +94,8 @@ export class RatingsComponent implements OnInit {
             };
           });
 
-          // ✅ عكس الترتيب علشان الأحدث يظهر الأول
+          // ✅ ترتيب من الأحدث للأقدم
           this.ratings.reverse();
-
           this.visibleRatings = this.ratings.slice(0, this.showCount);
 
           this.successMessage = '✅ تم تحميل التقييمات بنجاح';
