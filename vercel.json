@@ -2,11 +2,21 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://on-demand-service-backend.runasp.net/api/:path*"
+      "destination": "https://on-demand-service-backend.runasp.net/api/:path*"
     },
     {
       "source": "/Uploads/:path*",
-      "destination": "http://on-demand-service-backend.runasp.net/Uploads/:path*"
+      "destination": "https://on-demand-service-backend.runasp.net/Uploads/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "*" }
+      ]
     }
   ]
 }

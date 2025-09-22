@@ -17,8 +17,8 @@ export class EditProfileComponent implements OnInit {
   toggleStatus = true;
   userImage: string = 'assets/images/default-avatar.png';
   selectedImage: string | null = null;
-categories: any[] = [];
-places: any[] = [];
+  categories: any[] = [];
+  places: any[] = [];
 
   provider: any = {};
   successMessage: string | null = null;
@@ -77,8 +77,13 @@ places: any[] = [];
       return;
     }
 
-    const url = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
+    this.loadTechnicianData();
+    this.loadCategories();
+    this.loadPlaces();
+  }
 
+  loadTechnicianData(): void {
+    const url = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
     this.http.get<any>(url).subscribe({
       next: (res) => {
         console.log('✅ بيانات الفني:', res);
@@ -101,7 +106,6 @@ places: any[] = [];
         if (res.imageUrl && res.imageUrl.trim() !== '') {
           this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
           this.provider.avatar = this.userImage;
-
           const user = JSON.parse(localStorage.getItem('user') || '{}');
           user.image = this.userImage;
           localStorage.setItem('user', JSON.stringify(user));
@@ -116,57 +120,35 @@ places: any[] = [];
         console.error('❌ خطأ في تحميل بيانات الفني:', err);
       }
     });
-    this.http.get<any[]>('/api/Category/GetAll').subscribe({
-  next: (res) => {
-    this.categories = res;
-  },
-  error: (err) => console.error('❌ فشل في تحميل الأقسام:', err)
-});
-
-this.http.get<any[]>('/api/Places/GetAllPlaces').subscribe({
-  next: (res) => {
-    this.places = res;
-  },
-  error: (err) => console.error('❌ فشل في تحميل مناطق الخدمة:', err)
-});
-
   }
-loadCategories(retries = 3, delayMs = 2000) {
-  this.http.get<any[]>('/api/Category/GetAll').subscribe({
-    next: (res) => {
-      this.categories = res;
-    },
-    error: (err) => {
-      console.error('❌ فشل في تحميل الأقسام:', err);
-      if (retries > 0) {
-        console.log(`🔄 إعادة المحاولة... باقي ${retries}`);
-        setTimeout(() => this.loadCategories(retries - 1, delayMs), delayMs);
-      } else {
-        this.errorMessage = '⚠️ لم يتم تحميل الأقسام، حاول لاحقًا';
-      }
-    }
-  });
-}
 
-loadPlaces(retries = 3, delayMs = 2000) {
-  this.http.get<any[]>('/api/Places/GetAllPlaces').subscribe({
-    next: (res) => {
-      this.places = res;
-    },
-    error: (err) => {
-      console.error('❌ فشل في تحميل مناطق الخدمة:', err);
-      if (retries > 0) {
-        setTimeout(() => this.loadPlaces(retries - 1, delayMs), delayMs);
-      } else {
-        this.errorMessage = '⚠️ لم يتم تحميل مناطق الخدمة';
+  loadCategories(retries = 3, delayMs = 2000) {
+    this.http.get<any[]>('/api/Category/GetAll').subscribe({
+      next: (res) => (this.categories = res),
+      error: (err) => {
+        console.error('❌ فشل في تحميل الأقسام:', err);
+        if (retries > 0) {
+          setTimeout(() => this.loadCategories(retries - 1, delayMs), delayMs);
+        }
       }
-    }
-  });
-}
+    });
+  }
+
+  loadPlaces(retries = 3, delayMs = 2000) {
+    this.http.get<any[]>('/api/Places/GetAllPlaces').subscribe({
+      next: (res) => (this.places = res),
+      error: (err) => {
+        console.error('❌ فشل في تحميل مناطق الخدمة:', err);
+        if (retries > 0) {
+          setTimeout(() => this.loadPlaces(retries - 1, delayMs), delayMs);
+        }
+      }
+    });
+  }
 
   onChangeImage(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+    if (!input.files?.length) return;
 
     const file = input.files[0];
     const reader = new FileReader();
@@ -184,31 +166,23 @@ loadPlaces(retries = 3, delayMs = 2000) {
     this.userImage = 'assets/images/default-avatar.png';
   }
 
-  async onSave(): Promise<void> {
+  onSave(): void {
     this.successMessage = '';
     this.errorMessage = '';
-
-    const formData = new FormData();
-    formData.append('name', this.profileData.name);
-    formData.append('categoryName', this.profileData.categoryName);
-    formData.append('email', this.profileData.email);
-    formData.append('phoneNumber', this.profileData.phoneNumber);
-    formData.append('nationalId', this.profileData.nationalId);
-    formData.append('serviceAreas', this.profileData.serviceAreas);
-    formData.append('workingHours', this.profileData.workingHours.toString());
-    formData.append('yearsOfExperience', this.profileData.yearsOfExperience.toString());
-    formData.append('bankName', this.profileData.bankName);
-    formData.append('bankAccountNumber', this.profileData.bankAccountNumber);
-    formData.append('nameServices', this.profileData.nameServices);
 
     if (!this.technicianId) {
       this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
       return;
     }
 
+    const formData = new FormData();
+    Object.entries(this.profileData).forEach(([key, value]) =>
+      formData.append(key, value.toString())
+    );
+
     const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
     if (fileInput?.files?.[0]) {
-      formData.append('imageurll', fileInput.files[0]); // ⚠️ نفس اسم البارام بتاع API
+      formData.append('imageurll', fileInput.files[0]);
     }
 
     const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
@@ -216,24 +190,7 @@ loadPlaces(retries = 3, delayMs = 2000) {
     this.http.patch(url, formData, { responseType: 'text' }).subscribe({
       next: () => {
         this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
-
-        const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
-        this.http.get<any>(getUrl).subscribe({
-          next: (res) => {
-            console.log('🔄 تم تحديث بيانات الفني من السيرفر:', res);
-
-            if (res.imageUrl && res.imageUrl.trim() !== '') {
-              this.profileData.imageUrl = res.imageUrl;
-              this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
-              this.provider.avatar = this.userImage;
-
-              const user = JSON.parse(localStorage.getItem('user') || '{}');
-              user.image = this.userImage;
-              localStorage.setItem('user', JSON.stringify(user));
-            }
-          },
-          error: (err) => console.error('❌ فشل في جلب البيانات بعد التحديث:', err)
-        });
+        this.reloadTechnicianDataWithRetry();
       },
       error: (err) => {
         console.error('❌ خطأ في حفظ البيانات:', err);
@@ -242,25 +199,43 @@ loadPlaces(retries = 3, delayMs = 2000) {
     });
   }
 
+  reloadTechnicianDataWithRetry(retries: number = 3, delayMs: number = 1500): void {
+    const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
+    this.http.get<any>(getUrl).subscribe({
+      next: (res) => {
+        if (retries > 0 && res.imageUrl === this.profileData.imageUrl) {
+          console.log(`🔄 البيانات لم تتحدث بعد، إعادة المحاولة (${retries})...`);
+          setTimeout(() => this.reloadTechnicianDataWithRetry(retries - 1, delayMs), delayMs);
+          return;
+        }
+        this.profileData.imageUrl = res.imageUrl;
+        this.userImage = this.getSafeImageUrl(res.imageUrl) + `?t=${Date.now()}`;
+        this.provider.avatar = this.userImage;
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        user.image = this.userImage;
+        localStorage.setItem('user', JSON.stringify(user));
+      },
+      error: (err) => {
+        console.error('❌ فشل في جلب البيانات بعد التحديث:', err);
+        if (retries > 0) {
+          setTimeout(() => this.reloadTechnicianDataWithRetry(retries - 1, delayMs), delayMs);
+        }
+      }
+    });
+  }
+
   getSafeImageUrl(url: string): string {
     if (!url) return 'assets/images/default-avatar.png';
-
-    // لو الرابط جاي من السيرفر بالـ http خلي Vercel يتصرف
     if (url.includes('on-demand-service-backend.runasp.net/Uploads')) {
-      const fileName = url.split('/Uploads/')[1];
-      return `/Uploads/${fileName}`;
+      return `/Uploads/${url.split('/Uploads/')[1]}`;
     }
-
-    if (!url.startsWith('http')) {
-      return `/Uploads/${url}`;
-    }
-
+    if (!url.startsWith('http')) return `/Uploads/${url}`;
     return url;
   }
 
-  logout() {
-    const confirmed = confirm('هل تريد فعلاً تسجيل الخروج؟');
-    if (confirmed) {
+  logout(): void {
+    if (confirm('هل تريد فعلاً تسجيل الخروج؟')) {
       localStorage.removeItem('user');
       this.authService.logout();
       this.router.navigate(['/']);
