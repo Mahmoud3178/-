@@ -34,21 +34,18 @@ export class RatingsComponent implements OnInit {
     if (userJson) {
       const user = JSON.parse(userJson);
 
-      // ✅ معالجة صورة المزود
- // ✅ معالجة صورة المزود
-let avatar = 'assets/images/provider1.jpg';
-
-if (user.image) {
-  try {
-    const fileName = user.image.split('/').pop();
-    if (fileName) {
-      avatar = `https://on-demand-service-backend.runasp.net/Uploads/${fileName}`;
-    }
-  } catch (e) {
-    console.error('❌ خطأ في معالجة صورة المزود:', e);
-  }
-}
-
+      // ✅ معالجة صورة المزود باستخدام /Uploads بدلاً من الرابط الطويل
+      let avatar = 'assets/images/provider1.jpg';
+      if (user.image) {
+        try {
+          const fileName = user.image.split('/').pop();
+          if (fileName) {
+            avatar = `/Uploads/${fileName}`; // ✅ هنا نستخدم الـ rewrite
+          }
+        } catch (e) {
+          console.error('❌ خطأ في معالجة صورة المزود:', e);
+        }
+      }
 
       this.provider = {
         id: user.id,
@@ -63,12 +60,13 @@ if (user.image) {
       this.ratingService.getRatingsByTechnician(this.provider.id).subscribe({
         next: (data) => {
           this.ratings = data.map(r => {
+            // ✅ معالجة صورة العميل
             let clientAvatar = 'assets/images/avatar1.jpg';
             if (r.userImage) {
               try {
                 const fileName = r.userImage.split('/').pop();
                 if (fileName) {
-                  clientAvatar = `/Uploads/${fileName}`;
+                  clientAvatar = `/Uploads/${fileName}`; // ✅ نفس النظام
                 }
               } catch (e) {
                 console.error('❌ خطأ في معالجة صورة العميل:', e);
