@@ -39,7 +39,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
           return { name: 'العميل', role: null, image: '' };
         }
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const name = user?.email?.split('@')[0] || 'العميل';
+        const name = user?.name || 'العميل';
         const role: 'client' | 'provider' | null = user?.role || null;
 
         let image = 'assets/images/default-avatar.png';
