@@ -1,7 +1,7 @@
 // src/app/services/request.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { RequestQueryDTO } from '../DTOS/request-query.dto';
 import { CreateRequestDto } from '../DTOS/create-request.dto';
 
@@ -97,26 +97,5 @@ export class RequestService {
     { params: new HttpParams().set('TechnicianId', technicianId), headers }
   );
 }
-/** ✅ الصور فقط من TechnicianRequest حسب TechnicianId + UserId */
-getTechnicianImages(technicianId: string, userId: string): Observable<string[]> {
-  return this.http.get<any[]>(
-    `/api/Requests/TechnicianRequest`,
-    {
-      params: new HttpParams()
-        .set('TechnicianId', technicianId)
-        .set('UserId', userId)
-    }
-  ).pipe(
-    map((orders: any[]) => {
-      if (!Array.isArray(orders)) return [];
-
-      return orders.flatMap(order =>
-        [order.image11, order.image12, order.image13].filter(img => !!img)
-      );
-    })
-  );
-}
-
-
 
 }

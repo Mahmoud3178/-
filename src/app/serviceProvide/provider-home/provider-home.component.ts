@@ -31,7 +31,6 @@ export class ProviderHomeComponent implements OnInit {
   selectedDate = new Date().toISOString().substring(0, 10);
   selectedStatusLabel = 'الطلبات الجديدة';
   selectedStatus = 1;
-images: string[] = [];
 
   provider: any = {};
   orders: any[] = [];
@@ -44,8 +43,6 @@ images: string[] = [];
 
   map: L.Map | null = null;
   marker: L.Marker | null = null;
-
-  private imageBaseUrl = '/Uploads/';
 
   address: any = {
     city: '',
@@ -87,49 +84,30 @@ images: string[] = [];
   }
 
   /** تحميل الطلبات */
-/** تحميل الطلبات */
-loadOrders(status: number, label: string) {
-  this.selectedStatus = status;
-  this.selectedStatusLabel = label;
+  loadOrders(status: number, label: string) {
+    this.selectedStatus = status;
+    this.selectedStatusLabel = label;
 
-  this.requestService
-    .getTechnicianRequests(this.provider.id, status)
-    .pipe(
-      timeout(10000),
-      retry(2),
-      catchError(() => of([]))
-    )
-    .subscribe({
-      next: (data) => {
-        this.orders = Array.isArray(data) ? data : [];
-        this.sortOrders();
-
-        // 👇 الصور تيجي من API منفصلة وتحفظ في this.images
-        this.loadImages();
-      },
-      error: () => {
-        this.orders = [];
-      }
-    });
-}
-
-/** تحميل صور الفني */
-loadImages() {
-  const userJson = localStorage.getItem('user');
-  let userId = '';
-  if (userJson) {
-    const user = JSON.parse(userJson);
-    userId = user.id; // ✅ ده الـ UserId
+    this.requestService
+      .getTechnicianRequests(this.provider.id, status)
+      .pipe(
+        timeout(10000),
+        retry(2),
+        catchError(() => of([]))
+      )
+      .subscribe({
+        next: (data) => {
+          this.orders = (Array.isArray(data) ? data : []).map(order => ({
+            ...order,
+            images: [order.image11, order.image12, order.image13].filter(img => !!img)
+          }));
+          this.sortOrders();
+        },
+        error: () => {
+          this.orders = [];
+        }
+      });
   }
-
-  this.requestService.getTechnicianImages(this.provider.id, userId).subscribe({
-    next: (images) => {
-      this.images = images
-        .filter(img => !!img) // استبعد null
-        .map(img => this.imageBaseUrl + img.split('/').pop());
-    }
-  });
-}
 
   /** فتح الصورة في مودال */
   openImage(imageUrl: string): void {
@@ -205,7 +183,7 @@ loadImages() {
           if (res.id) {
             this.orders = this.orders.map(o =>
               o.id === orderId
-                ? { ...res, images: [res.image11, res.image12, res.image13].filter(i => !!i).map(i => this.imageBaseUrl + i.split('/').pop()) }
+                ? { ...res, images: [res.image11, res.image12, res.image13].filter(i => !!i) }
                 : o
             );
           } else {
