@@ -100,6 +100,7 @@ loadProfile() {
 
 
   // ✅ تحديث بيانات البروفايل
+// ✅ تحديث بيانات البروفايل
 onSaveProfile() {
   if (this.profileForm.valid) {
     const data: UpdateProfileUser = {
@@ -107,16 +108,29 @@ onSaveProfile() {
       name: this.profileForm.value.name,
       phoneNumber: this.profileForm.value.phoneNumber,
       email: this.profileForm.value.email,
-      imageUrl: this.userImage // مفيش ?t
+      imageUrl: this.userImage
     };
 
     this.profileService.updateProfile(this.userId, data).subscribe({
       next: () => {
+        // ✅ رسالة نجاح مبدئية
         this.successMessage = '✅ تم تحديث الملف بنجاح.';
 
+        // ✅ حفظ البيانات الجديدة محلياً
         const user = JSON.parse(localStorage.getItem('user') || '{}');
+        user.name = data.name;
         user.image = this.userImage;
+        user.email = data.email;
         localStorage.setItem('user', JSON.stringify(user));
+
+        // ✅ Alert يخبره بضرورة تسجيل الدخول مرة أخرى
+        setTimeout(() => {
+          const confirmed = confirm('⚠️ يجب تسجيل الدخول مرة أخرى لتطبيق التغييرات.\nهل تريد تسجيل الخروج الآن؟');
+          if (confirmed) {
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          }
+        }, 500); // تأخير بسيط حتى يظهر Alert بعد رسالة النجاح
       },
       error: (err) => {
         console.error('❌ فشل التحديث:', err);
@@ -125,6 +139,7 @@ onSaveProfile() {
     });
   }
 }
+
 
   // ✅ تغيير كلمة المرور
   onChangePassword() {

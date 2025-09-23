@@ -166,38 +166,54 @@ export class EditProfileComponent implements OnInit {
     this.userImage = 'assets/images/default-avatar.png';
   }
 
-  onSave(): void {
-    this.successMessage = '';
-    this.errorMessage = '';
+ onSave(): void {
+  this.successMessage = '';
+  this.errorMessage = '';
 
-    if (!this.technicianId) {
-      this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
-      return;
-    }
-
-    const formData = new FormData();
-    Object.entries(this.profileData).forEach(([key, value]) =>
-      formData.append(key, value.toString())
-    );
-
-    const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
-    if (fileInput?.files?.[0]) {
-      formData.append('imageurll', fileInput.files[0]);
-    }
-
-    const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
-
-    this.http.patch(url, formData, { responseType: 'text' }).subscribe({
-      next: () => {
-        this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
-        this.reloadTechnicianDataWithRetry();
-      },
-      error: (err) => {
-        console.error('❌ خطأ في حفظ البيانات:', err);
-        this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
-      }
-    });
+  if (!this.technicianId) {
+    this.errorMessage = '❌ لا يمكن تحديد هوية المستخدم.';
+    return;
   }
+
+  const formData = new FormData();
+  Object.entries(this.profileData).forEach(([key, value]) =>
+    formData.append(key, value.toString())
+  );
+
+  const fileInput = document.getElementById('imageFileInput') as HTMLInputElement;
+  if (fileInput?.files?.[0]) {
+    formData.append('imageurll', fileInput.files[0]);
+  }
+
+  const url = `/api/Profile/UpdateTechnician?id=${this.technicianId}`;
+
+  this.http.patch(url, formData, { responseType: 'text' }).subscribe({
+    next: () => {
+      this.successMessage = '✅ تم تحديث الملف الشخصي بنجاح';
+
+      // ✅ ننتظر لحظة قبل اظهار الرسالة (اختياري)
+      setTimeout(() => {
+        const confirmed = confirm('⚠️ تم تحديث البيانات، يجب تسجيل الدخول مرة أخرى لتطبيق التغييرات.\nهل تريد تسجيل الخروج الآن؟');
+        if (confirmed) {
+          this.logoutAndRedirect();
+        } else {
+          this.reloadTechnicianDataWithRetry();
+        }
+      }, 500);
+    },
+    error: (err) => {
+      console.error('❌ خطأ في حفظ البيانات:', err);
+      this.errorMessage = '❌ حدث خطأ أثناء حفظ البيانات.';
+    }
+  });
+}
+
+private logoutAndRedirect(): void {
+  localStorage.removeItem('user');
+  this.authService.logout();
+  this.router.navigate(['/login']);
+}
+
 
   reloadTechnicianDataWithRetry(retries: number = 3, delayMs: number = 1500): void {
     const getUrl = `/api/Requests/GetTechnicianById?technicianId=${this.technicianId}`;
