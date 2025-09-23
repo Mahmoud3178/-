@@ -53,6 +53,22 @@
         <div class="mb-2">
           <textarea rows="5" class="form-control text-end" formControlName="description" placeholder="وصف الخدمة المطلوبة"></textarea>
         </div>
+        <div class="mb-2 position-relative">
+  <input type="text" class="form-control text-end pe-5" value="إضافة صور (اختياري)" disabled />
+  <i class="bi bi-image position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%)"></i>
+</div>
+
+<div class="d-flex gap-2 flex-wrap">
+  <ng-container *ngFor="let img of selectedImages; let i = index">
+    <label class="border rounded border-dashed position-relative d-flex justify-content-center align-items-center bg-light"
+           style="width: 80px; height: 80px; border-style: dashed; cursor: pointer">
+      <img *ngIf="img" [src]="img" class="rounded" style="width: 100%; height: 100%; object-fit: cover;" />
+      <i class="bi bi-plus-lg fs-3 text-muted" *ngIf="!img"></i>
+      <input type="file" (change)="onImageUpload($event, i)" hidden accept="image/*" />
+    </label>
+  </ng-container>
+</div>
+
       </div>
     </div>
 

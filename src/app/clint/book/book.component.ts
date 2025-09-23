@@ -40,6 +40,7 @@ export class BookComponent implements OnInit, AfterViewInit {
   successMessage: string | null = null;
   errorMessage: string | null = null;
   addressError: string | null = null;
+  selectedImages: (string | null)[] = [null, null, null]; // 3 صور
 
   departmentsOptions: { id: number; name: string }[] = [];
 
@@ -191,7 +192,23 @@ export class BookComponent implements OnInit, AfterViewInit {
     modal.hide();
   }
 
-  onSubmit() {
+
+    // دالة رفع الصور وتحويلها Base64
+  onImageUpload(event: Event, index: number) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.selectedImages[index] = reader.result as string;
+        this.cd.detectChanges();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+onSubmit() {
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -204,7 +221,7 @@ export class BookComponent implements OnInit, AfterViewInit {
         return;
       }
 
-      const payload: CreateRequestDto = {
+      const payload: any = {
         visitingDate: this.bookForm.value.date,
         description: this.bookForm.value.description,
         categoryName: this.bookForm.value.category,
@@ -216,13 +233,17 @@ export class BookComponent implements OnInit, AfterViewInit {
         buildingNumber: this.address.buildingNumber,
         floorNumber: this.address.floorNumber,
         distinctiveMark: `Lat: ${this.address.lat}, Lng: ${this.address.lng}`,
-        status: 1
+        status: 1,
+        image11: this.selectedImages[0] ? this.selectedImages[0].split(',')[1] : null,
+        image12: this.selectedImages[1] ? this.selectedImages[1].split(',')[1] : null,
+        image13: this.selectedImages[2] ? this.selectedImages[2].split(',')[1] : null,
       };
 
       this.requestService.createRequest(payload).subscribe({
         next: (createdId: number) => {
           this.successMessage = '@ تم إرسال الطلب بنجاح';
           this.bookForm.reset();
+          this.selectedImages = [null, null, null];
           setTimeout(() => {
             this.router.navigate(['/search'], {
               queryParams: {
@@ -243,6 +264,7 @@ export class BookComponent implements OnInit, AfterViewInit {
       this.errorMessage = '@ يرجى تعبئة جميع الحقول المطلوبة بما في ذلك العنوان';
     }
   }
+
 
   async reverseGeocode(lat: number, lng: number): Promise<any> {
     const response = await fetch(
