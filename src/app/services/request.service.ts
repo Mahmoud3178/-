@@ -97,7 +97,7 @@ export class RequestService {
     { params: new HttpParams().set('TechnicianId', technicianId), headers }
   );
 }
-// ✅ API جديدة تجيب الصور فقط
+/** ✅ الصور فقط من TechnicianRequest */
 getTechnicianImages(technicianId: string): Observable<string[]> {
   return this.http.get<any[]>(
     `/api/Requests/TechnicianRequest`,
@@ -111,5 +111,6 @@ getTechnicianImages(technicianId: string): Observable<string[]> {
     })
   );
 }
+
 
 }

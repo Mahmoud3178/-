@@ -31,6 +31,7 @@ export class ProviderHomeComponent implements OnInit {
   selectedDate = new Date().toISOString().substring(0, 10);
   selectedStatusLabel = 'الطلبات الجديدة';
   selectedStatus = 1;
+images: string[] = [];
 
   provider: any = {};
   orders: any[] = [];
@@ -104,16 +105,13 @@ loadOrders(status: number, label: string) {
         this.sortOrders();
 
         // ✅ بعد ما الطلبات تيجي، أجيب الصور بس من API التانية
-        this.requestService.getTechnicianImages(this.provider.id).subscribe({
-          next: (images) => {
-            if (images.length > 0) {
-              this.orders = this.orders.map(order => ({
-                ...order,
-                images: images.map(img => this.imageBaseUrl + img.split('/').pop())
-              }));
-            }
-          }
-        });
+this.requestService.getTechnicianImages(this.provider.id).subscribe({
+  next: (images) => {
+    this.images = images.map(img =>
+      this.imageBaseUrl + img.split('/').pop()
+    );
+  }
+});
       },
       error: () => {
         this.orders = [];
