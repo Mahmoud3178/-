@@ -25,6 +25,7 @@ declare var bootstrap: any;
 })
 export class ProviderHomeComponent implements OnInit {
   @ViewChild('locationModal') locationModalRef!: ElementRef;
+  @ViewChild('imageModal') imageModalRef!: ElementRef;
 
   toggleStatus = true;
   selectedDate = new Date().toISOString().substring(0, 10);
@@ -34,7 +35,6 @@ export class ProviderHomeComponent implements OnInit {
   provider: any = {};
   orders: any[] = [];
 
-  // ✅ متغير لعرض الصورة في المودال
   selectedImage: string | null = null;
 
   successMessage: string | null = null;
@@ -50,8 +50,6 @@ export class ProviderHomeComponent implements OnInit {
     lat: 26.1642,
     lng: 32.7267
   };
-  @ViewChild('imageModal') imageModalRef!: ElementRef;
-  // ✅ حط base url هنا
 
   constructor(
     private authService: AuthService,
@@ -86,69 +84,40 @@ export class ProviderHomeComponent implements OnInit {
   }
 
   /** تحميل الطلبات */
-/** تحميل الطلبات */
-loadOrders(status: number, label: string) {
-  this.selectedStatus = status;
-  this.selectedStatusLabel = label;
+  loadOrders(status: number, label: string) {
+    this.selectedStatus = status;
+    this.selectedStatusLabel = label;
 
-  // ✅ نجيب الطلبات الأول
-  this.requestService
-    .getTechnicianRequests(this.provider.id, status)
-    .pipe(
-      timeout(10000),
-      retry(2),
-      catchError(() => of([]))
-    )
-    .subscribe({
-      next: (data) => {
-        const orders = Array.isArray(data) ? data : [];
+    this.requestService
+      .getTechnicianRequests(this.provider.id, status)
+      .pipe(
+        timeout(10000),
+        retry(2),
+        catchError(() => of([]))
+      )
+      .subscribe({
+        next: (data) => {
+          this.orders = (Array.isArray(data) ? data : []).map(order => ({
+            ...order,
+            images: [order.image11, order.image12, order.image13].filter(img => !!img)
+          }));
+          this.sortOrders();
+        },
+        error: () => {
+          this.orders = [];
+        }
+      });
+  }
 
-        // ✅ نجيب الصور مرة واحدة من الـ API
-        fetch(`/api/Requests/TechnicianRequest?TechnicianId=${this.provider.id}`)
-          .then(res => res.json())
-          .then(imagesData => {
-            // imagesData لازم تكون array راجعة من الـ API
-            this.orders = orders.map(order => {
-              // ✅ فلترة الصور لو ليها علاقة بالـ order (حسب id أو requestId لو API بترجعهم)
-              const relatedImages = (imagesData || [])
-                .filter((img: any) => img.requestId === order.id)
-                .map((img: any) => `/Uploads/${img.imagePath?.split('/').pop()}`);
-
-              return {
-                ...order,
-                images: relatedImages // مصفوفة الصور الجاهزة للعرض
-              };
-            });
-
-            this.sortOrders();
-          })
-          .catch(err => {
-            console.error('❌ خطأ في جلب صور الفني:', err);
-            // لو حصل خطأ رجّع الطلبات بدون صور
-            this.orders = orders.map(order => ({
-              ...order,
-              images: []
-            }));
-            this.sortOrders();
-          });
-      },
-      error: () => {
-        this.orders = [];
-      }
-    });
-}
-
+  /** فتح الصورة في مودال */
   openImage(imageUrl: string): void {
     this.selectedImage = imageUrl;
     if (this.imageModalRef?.nativeElement) {
-      this.imageModalRef.nativeElement.style.display = 'flex';
-    }}
-      closeImage(): void {
-    this.selectedImage = null;
-    if (this.imageModalRef?.nativeElement) {
-      this.imageModalRef.nativeElement.style.display = 'none';
+      const modal = new bootstrap.Modal(this.imageModalRef.nativeElement);
+      modal.show();
     }
   }
+
   /** قبول الطلب */
   acceptOrder(order: any) {
     if (!order?.id) return;
@@ -212,7 +181,11 @@ loadOrders(status: number, label: string) {
         if (res) {
           this.successMessage = '✅ تم تحديث حالة الطلب';
           if (res.id) {
-            this.orders = this.orders.map(o => o.id === orderId ? { ...res, images: [res.image1, res.image2, res.image3].filter(i => !!i) } : o);
+            this.orders = this.orders.map(o =>
+              o.id === orderId
+                ? { ...res, images: [res.image11, res.image12, res.image13].filter(i => !!i) }
+                : o
+            );
           } else {
             this.applyLocalStatusChange(orderId, newState);
           }
@@ -225,16 +198,15 @@ loadOrders(status: number, label: string) {
     });
   }
 
-private applyLocalStatusChange(orderId: number, newState: number) {
-  this.orders = this.orders.filter(o => o.id !== orderId); // شيل من الحالة الحالية
-  // لو الحالة الجديدة هي اللي معروضة حالياً، أضفه هنا
-  if (newState === this.selectedStatus) {
-    this.orders.push({ ...this.orders.find(o => o.id === orderId), status: newState });
+  private applyLocalStatusChange(orderId: number, newState: number) {
+    this.orders = this.orders.filter(o => o.id !== orderId);
+    if (newState === this.selectedStatus) {
+      this.orders.push({ ...this.orders.find(o => o.id === orderId), status: newState });
+    }
   }
-}
 
   private sortOrders() {
-    this.orders.sort((a: any, b: any) => {
+    this.orders.sort((a, b) => {
       const ta = a.visitingDate ? new Date(a.visitingDate).getTime() : (a.id || 0);
       const tb = b.visitingDate ? new Date(b.visitingDate).getTime() : (b.id || 0);
       return ta - tb;
@@ -257,7 +229,7 @@ private applyLocalStatusChange(orderId: number, newState: number) {
     }
   }
 
-  // === الخريطة ===
+  /** فتح الخريطة */
   openModal() {
     const modal = new bootstrap.Modal(this.locationModalRef.nativeElement);
     modal.show();
