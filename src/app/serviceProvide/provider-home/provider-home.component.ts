@@ -104,19 +104,24 @@ loadOrders(status: number, label: string) {
         this.orders = Array.isArray(data) ? data : [];
         this.sortOrders();
 
-        // ✅ بعد ما الطلبات تيجي، أجيب الصور بس من API التانية
-this.requestService.getTechnicianImages(this.provider.id).subscribe({
-  next: (images) => {
-    this.images = images.map(img =>
-      this.imageBaseUrl + img.split('/').pop()
-    );
-  }
-});
+        // 👇 الصور تيجي من API منفصلة وتحفظ في this.images
+        this.loadImages();
       },
       error: () => {
         this.orders = [];
       }
     });
+}
+
+/** تحميل صور الفني */
+loadImages() {
+  this.requestService.getTechnicianImages(this.provider.id).subscribe({
+    next: (images) => {
+      this.images = images
+        .filter(img => !!img) // استبعد null
+        .map(img => this.imageBaseUrl + img.split('/').pop());
+    }
+  });
 }
 
   /** فتح الصورة في مودال */
