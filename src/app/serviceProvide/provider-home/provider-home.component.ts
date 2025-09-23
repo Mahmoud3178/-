@@ -44,7 +44,7 @@ export class ProviderHomeComponent implements OnInit {
   map: L.Map | null = null;
   marker: L.Marker | null = null;
 
-  private imageBaseUrl = '/uploads/';
+  private imageBaseUrl = '/Uploads/';
 
   address: any = {
     city: '',
@@ -86,32 +86,40 @@ export class ProviderHomeComponent implements OnInit {
   }
 
   /** تحميل الطلبات */
-  loadOrders(status: number, label: string) {
-    this.selectedStatus = status;
-    this.selectedStatusLabel = label;
+/** تحميل الطلبات */
+loadOrders(status: number, label: string) {
+  this.selectedStatus = status;
+  this.selectedStatusLabel = label;
 
-    this.requestService
-      .getTechnicianRequests(this.provider.id, status)
-      .pipe(
-        timeout(10000),
-        retry(2),
-        catchError(() => of([]))
-      )
-      .subscribe({
-        next: (data) => {
-          this.orders = (Array.isArray(data) ? data : []).map(order => ({
-            ...order,
-            images: [order.image11, order.image12, order.image13]
-              .filter(img => !!img)
-              .map(img => this.imageBaseUrl + img)
-          }));
-          this.sortOrders();
-        },
-        error: () => {
-          this.orders = [];
-        }
-      });
-  }
+  this.requestService
+    .getTechnicianRequests(this.provider.id, status)
+    .pipe(
+      timeout(10000),
+      retry(2),
+      catchError(() => of([]))
+    )
+    .subscribe({
+      next: (data) => {
+        this.orders = Array.isArray(data) ? data : [];
+        this.sortOrders();
+
+        // ✅ بعد ما الطلبات تيجي، أجيب الصور بس من API التانية
+        this.requestService.getTechnicianImages(this.provider.id).subscribe({
+          next: (images) => {
+            if (images.length > 0) {
+              this.orders = this.orders.map(order => ({
+                ...order,
+                images: images.map(img => this.imageBaseUrl + img.split('/').pop())
+              }));
+            }
+          }
+        });
+      },
+      error: () => {
+        this.orders = [];
+      }
+    });
+}
 
   /** فتح الصورة في مودال */
   openImage(imageUrl: string): void {
@@ -187,7 +195,7 @@ export class ProviderHomeComponent implements OnInit {
           if (res.id) {
             this.orders = this.orders.map(o =>
               o.id === orderId
-                ? { ...res, images: [res.image11, res.image12, res.image13].filter(i => !!i).map(i => this.imageBaseUrl + i) }
+                ? { ...res, images: [res.image11, res.image12, res.image13].filter(i => !!i).map(i => this.imageBaseUrl + i.split('/').pop()) }
                 : o
             );
           } else {

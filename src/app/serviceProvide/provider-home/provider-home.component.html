@@ -137,7 +137,7 @@
               <p><strong>الوصف:</strong> {{ order.description }}</p>
 
 <!-- ✅ الصور -->
-<div *ngIf="order.images.length > 0" class="mt-2">
+<div *ngIf="order.images?.length > 0" class="mt-2">
   <div class="d-flex gap-2 flex-wrap">
     <img *ngFor="let img of order.images"
          [src]="img"
@@ -146,6 +146,7 @@
          style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
   </div>
 </div>
+
 
 
               <!-- الطلبات الجديدة -->
