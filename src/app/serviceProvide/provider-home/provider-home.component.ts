@@ -115,7 +115,14 @@ loadOrders(status: number, label: string) {
 
 /** تحميل صور الفني */
 loadImages() {
-  this.requestService.getTechnicianImages(this.provider.id).subscribe({
+  const userJson = localStorage.getItem('user');
+  let userId = '';
+  if (userJson) {
+    const user = JSON.parse(userJson);
+    userId = user.id; // ✅ ده الـ UserId
+  }
+
+  this.requestService.getTechnicianImages(this.provider.id, userId).subscribe({
     next: (images) => {
       this.images = images
         .filter(img => !!img) // استبعد null
