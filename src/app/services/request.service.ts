@@ -97,20 +97,26 @@ export class RequestService {
     { params: new HttpParams().set('TechnicianId', technicianId), headers }
   );
 }
-/** ✅ الصور فقط من TechnicianRequest */
-getTechnicianImages(technicianId: string): Observable<string[]> {
+/** ✅ الصور فقط من TechnicianRequest حسب TechnicianId + UserId */
+getTechnicianImages(technicianId: string, userId: string): Observable<string[]> {
   return this.http.get<any[]>(
     `/api/Requests/TechnicianRequest`,
-    { params: new HttpParams().set('TechnicianId', technicianId) }
+    {
+      params: new HttpParams()
+        .set('TechnicianId', technicianId)
+        .set('UserId', userId)
+    }
   ).pipe(
     map((orders: any[]) => {
       if (!Array.isArray(orders)) return [];
+
       return orders.flatMap(order =>
         [order.image11, order.image12, order.image13].filter(img => !!img)
       );
     })
   );
 }
+
 
 
 }
