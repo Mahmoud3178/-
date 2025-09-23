@@ -50,7 +50,7 @@ export class ProviderHomeComponent implements OnInit {
     lat: 26.1642,
     lng: 32.7267
   };
-  imageModalRef: any;
+  @ViewChild('imageModal') imageModalRef!: ElementRef;
 
   constructor(
     private authService: AuthService,
@@ -100,7 +100,8 @@ export class ProviderHomeComponent implements OnInit {
         next: (data) => {
           this.orders = (Array.isArray(data) ? data : []).map(order => ({
             ...order,
-            images: [order.image1, order.image2, order.image3].filter(img => !!img)
+          // ✅ تعديل هنا: استخدم image11, image12, image13
+          images: [order.image11, order.image12, order.image13].filter(img => !!img)
           }));
           this.sortOrders();
         },
@@ -109,10 +110,16 @@ export class ProviderHomeComponent implements OnInit {
         }
       });
   }
-    openImage(img: string) {
-    this.selectedImage = img;
-    const modal = new bootstrap.Modal(this.imageModalRef.nativeElement);
-    modal.show();
+  openImage(imageUrl: string): void {
+    this.selectedImage = imageUrl;
+    if (this.imageModalRef?.nativeElement) {
+      this.imageModalRef.nativeElement.style.display = 'flex';
+    }}
+      closeImage(): void {
+    this.selectedImage = null;
+    if (this.imageModalRef?.nativeElement) {
+      this.imageModalRef.nativeElement.style.display = 'none';
+    }
   }
   /** قبول الطلب */
   acceptOrder(order: any) {
