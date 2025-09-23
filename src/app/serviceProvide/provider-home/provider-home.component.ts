@@ -51,6 +51,7 @@ export class ProviderHomeComponent implements OnInit {
     lng: 32.7267
   };
   @ViewChild('imageModal') imageModalRef!: ElementRef;
+  // ✅ حط base url هنا
 
   constructor(
     private authService: AuthService,
@@ -85,31 +86,58 @@ export class ProviderHomeComponent implements OnInit {
   }
 
   /** تحميل الطلبات */
-  loadOrders(status: number, label: string) {
-    this.selectedStatus = status;
-    this.selectedStatusLabel = label;
+/** تحميل الطلبات */
+loadOrders(status: number, label: string) {
+  this.selectedStatus = status;
+  this.selectedStatusLabel = label;
 
-    this.requestService
-      .getTechnicianRequests(this.provider.id, status)
-      .pipe(
-        timeout(10000),
-        retry(2),
-        catchError(() => of([]))
-      )
-      .subscribe({
-        next: (data) => {
-          this.orders = (Array.isArray(data) ? data : []).map(order => ({
-            ...order,
-          // ✅ تعديل هنا: استخدم image11, image12, image13
-          images: [order.image11, order.image12, order.image13].filter(img => !!img)
-          }));
-          this.sortOrders();
-        },
-        error: () => {
-          this.orders = [];
-        }
-      });
-  }
+  // ✅ نجيب الطلبات الأول
+  this.requestService
+    .getTechnicianRequests(this.provider.id, status)
+    .pipe(
+      timeout(10000),
+      retry(2),
+      catchError(() => of([]))
+    )
+    .subscribe({
+      next: (data) => {
+        const orders = Array.isArray(data) ? data : [];
+
+        // ✅ نجيب الصور مرة واحدة من الـ API
+        fetch(`/api/Requests/TechnicianRequest?TechnicianId=${this.provider.id}`)
+          .then(res => res.json())
+          .then(imagesData => {
+            // imagesData لازم تكون array راجعة من الـ API
+            this.orders = orders.map(order => {
+              // ✅ فلترة الصور لو ليها علاقة بالـ order (حسب id أو requestId لو API بترجعهم)
+              const relatedImages = (imagesData || [])
+                .filter((img: any) => img.requestId === order.id)
+                .map((img: any) => `/Uploads/${img.imagePath?.split('/').pop()}`);
+
+              return {
+                ...order,
+                images: relatedImages // مصفوفة الصور الجاهزة للعرض
+              };
+            });
+
+            this.sortOrders();
+          })
+          .catch(err => {
+            console.error('❌ خطأ في جلب صور الفني:', err);
+            // لو حصل خطأ رجّع الطلبات بدون صور
+            this.orders = orders.map(order => ({
+              ...order,
+              images: []
+            }));
+            this.sortOrders();
+          });
+      },
+      error: () => {
+        this.orders = [];
+      }
+    });
+}
+
   openImage(imageUrl: string): void {
     this.selectedImage = imageUrl;
     if (this.imageModalRef?.nativeElement) {
