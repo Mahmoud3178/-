@@ -34,6 +34,9 @@ export class ProviderHomeComponent implements OnInit {
   provider: any = {};
   orders: any[] = [];
 
+  // ✅ متغير لعرض الصورة في المودال
+  selectedImage: string | null = null;
+
   successMessage: string | null = null;
   errorMessage: string | null = null;
   processingIds = new Set<number>();
@@ -47,6 +50,7 @@ export class ProviderHomeComponent implements OnInit {
     lat: 26.1642,
     lng: 32.7267
   };
+  imageModalRef: any;
 
   constructor(
     private authService: AuthService,
@@ -94,7 +98,10 @@ export class ProviderHomeComponent implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          this.orders = (Array.isArray(data) ? data : []).map(order => ({ ...order }));
+          this.orders = (Array.isArray(data) ? data : []).map(order => ({
+            ...order,
+            images: [order.image1, order.image2, order.image3].filter(img => !!img)
+          }));
           this.sortOrders();
         },
         error: () => {
@@ -102,7 +109,11 @@ export class ProviderHomeComponent implements OnInit {
         }
       });
   }
-
+    openImage(img: string) {
+    this.selectedImage = img;
+    const modal = new bootstrap.Modal(this.imageModalRef.nativeElement);
+    modal.show();
+  }
   /** قبول الطلب */
   acceptOrder(order: any) {
     if (!order?.id) return;
@@ -152,37 +163,32 @@ export class ProviderHomeComponent implements OnInit {
   }
 
   /** تحديث حالة الطلب */
-/** تحديث حالة الطلب */
-updateOrderStatus(orderId: number, newState: number) {
-  if (!orderId) return;
-  this.processingIds.add(orderId);
+  updateOrderStatus(orderId: number, newState: number) {
+    if (!orderId) return;
+    this.processingIds.add(orderId);
 
-  this.requestService.updateOrderState(orderId, newState).pipe(
-    timeout(10000),
-    retry(1),
-    finalize(() => this.processingIds.delete(orderId)),
-    catchError(() => of(null))
-  ).subscribe({
-    next: (res) => {
-      if (res) {
-        // ✅ لو الـ API رجعت الطلب بعد التحديث استعمله
-        this.successMessage = '✅ تم تحديث حالة الطلب';
-        if (res.id) {
-          // استبدل الطلب باللي رجع من السيرفر عشان يكون متزامن مع الـ DB
-          this.orders = this.orders.map(o => o.id === orderId ? res : o);
+    this.requestService.updateOrderState(orderId, newState).pipe(
+      timeout(10000),
+      retry(1),
+      finalize(() => this.processingIds.delete(orderId)),
+      catchError(() => of(null))
+    ).subscribe({
+      next: (res) => {
+        if (res) {
+          this.successMessage = '✅ تم تحديث حالة الطلب';
+          if (res.id) {
+            this.orders = this.orders.map(o => o.id === orderId ? { ...res, images: [res.image1, res.image2, res.image3].filter(i => !!i) } : o);
+          } else {
+            this.applyLocalStatusChange(orderId, newState);
+          }
+          this.sortOrders();
         } else {
-          // fallback لو الـ API رجعت null أو boolean
-          this.applyLocalStatusChange(orderId, newState);
+          this.errorMessage = '❌ لم يتم تحديث الطلب';
         }
-        this.sortOrders();
-      } else {
-        this.errorMessage = '❌ لم يتم تحديث الطلب';
+        this.clearMessagesAfterDelay();
       }
-      this.clearMessagesAfterDelay();
-    }
-  });
-}
-
+    });
+  }
 
 private applyLocalStatusChange(orderId: number, newState: number) {
   this.orders = this.orders.filter(o => o.id !== orderId); // شيل من الحالة الحالية
