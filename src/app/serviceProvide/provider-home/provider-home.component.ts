@@ -44,6 +44,8 @@ export class ProviderHomeComponent implements OnInit {
   map: L.Map | null = null;
   marker: L.Marker | null = null;
 
+  private imageBaseUrl = '/uploads/';
+
   address: any = {
     city: '',
     area: '',
@@ -99,7 +101,9 @@ export class ProviderHomeComponent implements OnInit {
         next: (data) => {
           this.orders = (Array.isArray(data) ? data : []).map(order => ({
             ...order,
-            images: [order.image11, order.image12, order.image13].filter(img => !!img)
+            images: [order.image11, order.image12, order.image13]
+              .filter(img => !!img)
+              .map(img => this.imageBaseUrl + img)
           }));
           this.sortOrders();
         },
@@ -183,7 +187,7 @@ export class ProviderHomeComponent implements OnInit {
           if (res.id) {
             this.orders = this.orders.map(o =>
               o.id === orderId
-                ? { ...res, images: [res.image11, res.image12, res.image13].filter(i => !!i) }
+                ? { ...res, images: [res.image11, res.image12, res.image13].filter(i => !!i).map(i => this.imageBaseUrl + i) }
                 : o
             );
           } else {
