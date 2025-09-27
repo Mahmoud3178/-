@@ -64,15 +64,23 @@
           </div>
 
           <!-- كلمة المرور -->
-          <div class="col-md-6">
-            <input formControlName="password" type="password" class="form-control text-end" placeholder="كلمة المرور" />
-            <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')" class="text-danger small mt-1">
-              كلمة المرور مطلوبة
-            </div>
-            <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('pattern')" class="text-danger small mt-1">
-              كلمة المرور يجب أن تحتوي على حروف كبيرة وصغيرة ورقم ورمز خاص
-            </div>
-          </div>
+
+<!-- Password -->
+<div class="form-group mt-3">
+  <label for="password">كلمة المرور</label>
+  <input
+    id="password"
+    type="password"
+    class="form-control"
+    formControlName="password"
+  />
+  <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')" class="text-danger small mt-1">
+    كلمة المرور مطلوبة
+  </div>
+  <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('minlength')" class="text-danger small mt-1">
+    كلمة المرور يجب أن تكون 6 أحرف على الأقل
+  </div>
+</div>
 
           <!-- تأكيد كلمة المرور -->
           <div class="col-md-6">

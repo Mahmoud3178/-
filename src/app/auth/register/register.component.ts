@@ -43,13 +43,7 @@ export class RegisterComponent implements OnInit {
         fullName: ['', Validators.required],
         email: ['', [Validators.required, Validators.email]],
         phone: ['', Validators.required],
-        password: [
-          '',
-          [
-            Validators.required,
-            Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/)
-          ]
-        ],
+        password: ['', [Validators.required, Validators.minLength(6)]], // 👈 شرط مطلوب + طول لا يقل عن 6
         confirmPassword: ['', Validators.required],
         city: ['', Validators.required],   // ✅ بقت دروب داون
         department: [''],
