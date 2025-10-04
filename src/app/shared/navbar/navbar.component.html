@@ -1,23 +1,31 @@
 <ng-container *ngIf="ready">
   <header dir="rtl" class="bg-light shadow-sm">
-    <!-- ✅ Top bar -->
-    <div class="bg-primary-subtle py-1">
-      <div class="w-90-custom d-flex justify-content-between align-items-center mx-auto">
-        <ng-container *ngIf="(userData$ | async) as user">
-          <ng-container *ngIf="!(isLoggedIn$ | async) || user.role !== 'provider'; else placeholder">
-            <a routerLink="/dashboard" class="btn-outline-primary btn-sm d-flex align-items-center gap-1 fw-bold">
-            </a>
-          </ng-container>
-          <ng-template #placeholder>
-            <div style="width: 130px;"></div>
-          </ng-template>
+<!-- ✅ Top bar -->
+<div class="bg-primary-subtle py-2">
+  <div class="w-90-custom d-flex justify-content-between align-items-center mx-auto">
+    <ng-container *ngIf="(userData$ | async) as user">
+      <ng-container *ngIf="!(isLoggedIn$ | async) || user.role !== 'provider'; else placeholder">
+        <a routerLink="/dashboard" class="btn-outline-primary btn-sm d-flex align-items-center gap-1 fw-bold">
+        </a>
+      </ng-container>
+      <ng-template #placeholder>
+        <div style="width: 130px;"></div>
+      </ng-template>
 
-          <!-- اللغة ووسائل التواصل -->
-          <div class="d-flex align-items-center gap-3">
-          </div>
-        </ng-container>
+      <!-- ✅ Developed by Qadara -->
+      <div class="d-flex align-items-center gap-3">
+        <p class="fw-bold m-0" style="font-size: 1.1rem; color: #ff6600;">
+          Developed by
+          <a href="https://www.linkedin.com/company/qadara/" target="_blank"
+             class="text-decoration-none fw-bold" style="color: #ff6600; font-size: 1.15rem;">
+            Qadara ( قُدْرَة )
+          </a>
+        </p>
       </div>
-    </div>
+    </ng-container>
+  </div>
+</div>
+
 
     <!-- ✅ Main Navbar -->
     <nav class="navbar navbar-expand-lg py-3">
